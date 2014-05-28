@@ -2,7 +2,7 @@
 from lettuce import world, steps
 from nose.tools import assert_in, assert_equals, assert_true
 
-from common import i_am_registered_for_the_course, visit_scenario_item
+from common import i_am_registered_for_the_course, visit_scenario_item, publish
 from problems_setup import add_problem_to_course, answer_problem
 
 
@@ -41,6 +41,8 @@ class GraphicalSliderToolSteps(object):
             display_name="Test GST",
             data=DEFAULT_DATA
         )
+        publish(world.scenario_dict['GST'].location)
+
 
     def view_gst(self, step):
         r'I view the Graphical Slider Tool$'

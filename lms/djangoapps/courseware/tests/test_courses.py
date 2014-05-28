@@ -6,7 +6,7 @@ import mock
 
 from django.test.utils import override_settings
 from student.tests.factories import UserFactory
-from xmodule.modulestore.django import get_default_store_name_for_current_request
+from xmodule.modulestore.django import _get_modulestore_branch_setting
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
 from xmodule.tests.xml import factories as xml
@@ -48,20 +48,22 @@ class CoursesTest(ModuleStoreTestCase):
         mock.Mock(return_value='preview.localhost')
     )
     @override_settings(
-        HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS={r'preview\.': 'draft'}
+        HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS={r'preview\.': 'draft'},
+        MODULESTORE_BRANCH='fake_default_branch',
     )
     def test_default_modulestore_preview_mapping(self):
-        self.assertEqual(get_default_store_name_for_current_request(), 'draft')
+        self.assertEqual(_get_modulestore_branch_setting(), 'draft')
 
     @mock.patch(
         'xmodule.modulestore.django.get_current_request_hostname',
         mock.Mock(return_value='localhost')
     )
     @override_settings(
-        HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS={r'preview\.': 'draft'}
+        HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS={r'preview\.': 'draft'},
+        MODULESTORE_BRANCH='fake_default_branch',
     )
-    def test_default_modulestore_published_mapping(self):
-        self.assertEqual(get_default_store_name_for_current_request(), 'default')
+    def test_default_modulestore_branch_mapping(self):
+        self.assertEqual(_get_modulestore_branch_setting(), 'fake_default_branch')
 
 
 @override_settings(
@@ -138,11 +140,11 @@ class XmlCourseImageTestCase(XModuleXmlImportTest):
         self.assertEquals(course_image_url(course), u'/static/xml_test_course/before after.jpg')
 
 
+@override_settings(MODULESTORE=TEST_DATA_MIXED_MODULESTORE)
 class CoursesRenderTest(ModuleStoreTestCase):
     """Test methods related to rendering courses content."""
     toy_course_key = SlashSeparatedCourseKey('edX', 'toy', '2012_Fall')
 
-    @override_settings(MODULESTORE=TEST_DATA_MIXED_MODULESTORE)
     def test_get_course_info_section_render(self):
         course = get_course_by_id(self.toy_course_key)
         request = get_request_for_user(UserFactory.create())
@@ -159,7 +161,6 @@ class CoursesRenderTest(ModuleStoreTestCase):
             course_info = get_course_info_section(request, course, 'handouts')
             self.assertIn("this module is temporarily unavailable", course_info)
 
-    @override_settings(MODULESTORE=TEST_DATA_MIXED_MODULESTORE)
     @mock.patch('courseware.courses.get_request_for_thread')
     def test_get_course_about_section_render(self, mock_get_request):
         course = get_course_by_id(self.toy_course_key)

@@ -64,7 +64,7 @@ def check_has_course_method(modulestore, locator, locator_key_fields):
             for changes in locator_case_changes:
                 search_locator = locator.replace(**changes)
                 assert_equals(
-                    modulestore.has_course(search_locator, ignore_case),
+                    modulestore.has_course(search_locator, ignore_case) is not None,
                     ignore_case,
                     error_message.format(search_locator, ignore_case)
                 )

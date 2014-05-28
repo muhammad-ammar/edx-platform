@@ -53,7 +53,7 @@ class SplitWMongoCourseBoostrapper(unittest.TestCase):
         self.addCleanup(self.split_mongo.db.connection.close)
         self.addCleanup(self.tear_down_split)
         self.old_mongo = MongoModuleStore(self.db_config, **self.modulestore_options)
-        self.draft_mongo = DraftMongoModuleStore(self.db_config, **self.modulestore_options)
+        self.draft_mongo = DraftMongoModuleStore(self.db_config, branch_setting='draft', **self.modulestore_options)
         self.addCleanup(self.tear_down_mongo)
         self.old_course_key = None
         self.runtime = None
@@ -86,7 +86,7 @@ class SplitWMongoCourseBoostrapper(unittest.TestCase):
             mongo = self.old_mongo
         else:
             mongo = self.draft_mongo
-        mongo.create_and_save_xmodule(location, data, metadata, self.runtime)
+        mongo.create_and_save_xmodule(location, self.userid, definition_data=data, metadata=metadata, runtime=self.runtime)
         if isinstance(data, basestring):
             fields = {'data': data}
         else:

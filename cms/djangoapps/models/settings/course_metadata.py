@@ -1,7 +1,7 @@
 from xblock.fields import Scope
 
-from contentstore.utils import get_modulestore
-
+from cms.lib.xblock.mixin import CmsBlockMixin
+from xmodule.modulestore.django import modulestore
 
 class CourseMetadata(object):
     '''
@@ -73,6 +73,6 @@ class CourseMetadata(object):
                 setattr(descriptor, key, value)
 
         if dirty:
-            get_modulestore(descriptor.location).update_item(descriptor, user.id if user else None)
+            modulestore().update_item(descriptor, user.id if user else None)
 
         return cls.fetch(descriptor)

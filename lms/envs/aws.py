@@ -280,13 +280,15 @@ if FEATURES.get('AUTH_USE_CAS'):
         )
 
 
-HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS = ENV_TOKENS.get('HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS',{})
-
 ############################## SECURE AUTH ITEMS ###############
 # Secret things: passwords, access keys, etc.
 
 with open(CONFIG_ROOT / CONFIG_PREFIX + "auth.json") as auth_file:
     AUTH_TOKENS = json.load(auth_file)
+
+############### Module Store Items ##########
+HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS = ENV_TOKENS.get('HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS', {})
+MODULESTORE_BRANCH = AUTH_TOKENS.get("MODULESTORE_BRANCH", 'published')
 
 ############### Mixed Related(Secure/Not-Secure) Items ##########
 # If Segment.io key specified, load it and enable Segment.io if the feature flag is set
@@ -316,7 +318,7 @@ XQUEUE_INTERFACE = AUTH_TOKENS['XQUEUE_INTERFACE']
 
 # Get the MODULESTORE from auth.json, but if it doesn't exist,
 # use the one from common.py
-MODULESTORE = AUTH_TOKENS.get('MODULESTORE', MODULESTORE)
+MODULESTORE = convert_module_store_setting_if_needed(AUTH_TOKENS.get('MODULESTORE', MODULESTORE))
 CONTENTSTORE = AUTH_TOKENS.get('CONTENTSTORE', CONTENTSTORE)
 DOC_STORE_CONFIG = AUTH_TOKENS.get('DOC_STORE_CONFIG',DOC_STORE_CONFIG)
 MONGODB_LOG = AUTH_TOKENS.get('MONGODB_LOG', {})
