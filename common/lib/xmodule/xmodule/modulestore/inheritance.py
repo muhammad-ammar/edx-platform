@@ -48,7 +48,8 @@ class InheritanceMixin(XBlockMixin):
              "can be set by an instructor, and will override the global due "
              "date if it is set to a date that is later than the global due "
              "date.",
-        default=None
+        default=None,
+        scope=Scope.user_state,
     )
     course_edit_method = String(
         display_name=_("Course Editor"),
