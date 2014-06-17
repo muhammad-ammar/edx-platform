@@ -19,6 +19,31 @@ class VerticalModule(VerticalFields, XModule, StudioEditableModule):
     ''' Layout module for laying out submodules vertically.'''
 
     def student_view(self, context):
+        # When rendering a Studio preview, use a different template to support drag and drop.
+        if context and context.get('runtime_type', None) == 'studio':
+            return self.studio_preview_view(context)
+
+        return self.render_view(context, 'vert_module.html')
+
+    def studio_preview_view(self, context):
+        """
+        Renders the Studio preview view, which supports drag and drop.
+        """
+        fragment = Fragment()
+        root_xblock = context.get('root_xblock')
+        is_root = root_xblock and root_xblock.location == self.location
+
+        # For the container page we want the full drag-and-drop, but for unit pages we want
+        # a more concise version that appears alongside the "View =>" link-- unless it is
+        # the unit page and the vertical being rendered is itself the unit vertical (is_root == True).
+        if is_root or not context.get('is_unit_page'):
+            self.render_children(context, fragment, can_reorder=True, can_add=True)
+        return fragment
+
+    def render_view(self, context, template_name):
+        """
+        Helper method for rendering student_view and the Studio version.
+        """
         fragment = Fragment()
         contents = []
 

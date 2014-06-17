@@ -33,6 +33,7 @@ from ..utils import get_modulestore
 from .access import has_course_access
 from .helpers import _xmodule_recurse, xblock_has_own_studio_page
 from contentstore.utils import compute_publish_state, PublishState
+from contentstore.views.helpers import is_unit
 from xmodule.modulestore.draft import DIRECT_ONLY_CATEGORIES
 from contentstore.views.preview import get_preview_fragment
 from edxmako.shortcuts import render_to_string
@@ -215,6 +216,7 @@ def xblock_view_handler(request, usage_key_string, view_name):
             # with the new container view.
             context = {
                 'container_view': is_container_view,
+                'is_unit_page': is_unit(xblock) or (view_name in unit_views),  # view_name in unit_views needed for old unit page to keep working
                 'read_only': is_read_only,
                 'root_xblock': xblock if (view_name == 'container_preview') else None,
                 'reorderable_items': reorderable_items
