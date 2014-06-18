@@ -218,7 +218,7 @@ def get_module_for_descriptor(user, request, descriptor, field_data_cache, cours
     track_function = make_track_function(request)
     xqueue_callback_url_prefix = get_xqueue_callback_url_prefix(request)
 
-    user_location = request.session.get('country_code', None) if hasattr(request, 'session') else None
+    user_location = getattr(request, 'session', {}).get('country_code', None)
 
     return get_module_for_descriptor_internal(user, descriptor, field_data_cache, course_id,
                                               track_function, xqueue_callback_url_prefix,
