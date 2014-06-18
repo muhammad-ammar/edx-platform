@@ -180,9 +180,6 @@ def container_handler(request, usage_key_string):
         unit = None
         if is_unit_page:
             unit = xblock
-        subsection = get_parent_xblock(unit) if unit else None
-        section = get_parent_xblock(subsection) if subsection else None
-        unit_publish_state = compute_publish_state(unit) if unit else None
 
         while parent and parent.category != 'course':
             if is_unit(parent):
@@ -190,6 +187,10 @@ def container_handler(request, usage_key_string):
             ancestor_xblocks.append(parent)
             parent = get_parent_xblock(parent)
         ancestor_xblocks.reverse()
+
+        subsection = get_parent_xblock(unit) if unit else None
+        section = get_parent_xblock(subsection) if subsection else None
+        unit_publish_state = compute_publish_state(unit) if unit else None
 
         return render_to_response('container.html', {
             'context_course': course,  # Needed only for display of menus at top of page.

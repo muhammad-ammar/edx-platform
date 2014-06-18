@@ -38,9 +38,8 @@ class ContainerPageTestCase(StudioPageTestCase):
                 'data-locator="{0}" data-course-key="{0.course_key}">'.format(self.child_container.location)
             ),
             expected_breadcrumbs=(
-                r'<a href="/unit/{}"\s*'
-                r'class="navigation-link navigation-parent">Unit</a>\s*'
-                r'<a href="#" class="navigation-link navigation-current">Split Test</a>'
+                r'<a href="/container/{}" class="navigation-link navigation-parent">\s*Unit\s*</a>\s*'
+                r'<a href="#" class="navigation-link navigation-current">\s*Split Test\s*</a>'
             ).format(re.escape(unicode(self.vertical.location)))
         )
 
@@ -66,11 +65,9 @@ class ContainerPageTestCase(StudioPageTestCase):
                     'data-locator="{0}" data-course-key="{0.course_key}">'.format(published_container.location)
                 ),
                 expected_breadcrumbs=(
-                    r'<a href="/unit/{unit}"\s*'
-                    r'class="navigation-link navigation-parent">Unit</a>\s*'
-                    r'<a href="/container/{split_test}"\s*'
-                    r'class="navigation-link navigation-parent">Split Test</a>\s*'
-                    r'<a href="#" class="navigation-link navigation-current">Wrapper</a>'
+                    r'<a href="/container/{unit}" class="navigation-link navigation-parent">\s*Unit\s*</a>\s*'
+                    r'<a href="/container/{split_test}" class="navigation-link navigation-parent">\s*Split Test\s*</a>\s*'
+                    r'<a href="#" class="navigation-link navigation-current">\s*Wrapper\s*</a>'
                 ).format(
                     unit=re.escape(unicode(self.vertical.location)),
                     split_test=re.escape(unicode(self.child_container.location))
@@ -100,9 +97,9 @@ class ContainerPageTestCase(StudioPageTestCase):
         # Verify the link that allows users to change publish status.
         expected_message = None
         if publish_state == PublishState.public:
-            expected_message = 'you need to edit unit <a href="/unit/{}">Unit</a> as a draft.'
+            expected_message = 'you need to edit unit <a href="/container/{}">Unit</a> as a draft.'
         else:
-            expected_message = 'your changes will be published with unit <a href="/unit/{}">Unit</a>.'
+            expected_message = 'your changes will be published with unit <a href="/container/{}">Unit</a>.'
         expected_unit_link = expected_message.format(self.vertical.location)
         self.assertIn(expected_unit_link, html)
 

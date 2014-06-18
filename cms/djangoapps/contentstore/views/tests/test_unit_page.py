@@ -20,21 +20,6 @@ class UnitPageTestCase(StudioPageTestCase):
         self.video = ItemFactory.create(parent_location=self.vertical.location,
                                         category="video", display_name="My Video")
 
-    def test_public_unit_page_html(self):
-        """
-        Verify that an xblock returns the expected HTML for a public unit page.
-        """
-        html = self.get_page_html(self.vertical)
-        self.validate_html_for_add_buttons(html)
-
-    def test_draft_unit_page_html(self):
-        """
-        Verify that an xblock returns the expected HTML for a draft unit page.
-        """
-        draft_unit = modulestore('draft').convert_to_draft(self.vertical.location)
-        html = self.get_page_html(draft_unit)
-        self.validate_html_for_add_buttons(html)
-
     def test_public_component_preview_html(self):
         """
         Verify that a public xblock's preview returns the expected HTML.
