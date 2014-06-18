@@ -129,8 +129,7 @@ class CourseUpdateTest(CourseTestCase):
         '''
         # get the updates and populate 'data' field with some data.
         location = self.course.id.make_usage_key('course_info', 'updates')
-        modulestore().create_and_save_xmodule(location, self.user.id)
-        course_updates = modulestore().get_item(location)
+        course_updates = modulestore().create_and_save_xmodule(location, self.user.id)
         update_date = u"January 23, 2014"
         update_content = u"Hello world!"
         update_data = u"<ol><li><h2>" + update_date + "</h2>" + update_content + "</li></ol>"

@@ -207,14 +207,14 @@ class DraftModuleStore(MongoModuleStore):
             # ensure keys are in fixed and right order before inserting
             root['_id'] = self._id_dict_to_son(root['_id'])
             try:
-                self.collection.insert(root)
+                self.collection.insert({'_id': root['_id']})
             except pymongo.errors.DuplicateKeyError:
                 if not ignore_if_draft:
                     raise DuplicateItemError(root['_id'], self, 'collection')
 
             if delete_published:
                 root['_id']['revision'] = None
-                self.collection.remove(root)
+                self.collection.remove({'_id': root['_id']})
 
         _internal_depth_first(original)
         self.refresh_cached_metadata_inheritance_tree(location.course_key)
@@ -382,8 +382,6 @@ class DraftModuleStore(MongoModuleStore):
             except ItemNotFoundError:
                 original_published = None
 
-            draft.published_date = datetime.now(UTC)
-            draft.published_by = user_id
             if draft.has_children:
                 if original_published is not None:
                     # see if previously published children were deleted. 2 reasons for children lists to differ:
@@ -397,7 +395,7 @@ class DraftModuleStore(MongoModuleStore):
                                 # deleted from draft; so, delete published now that we're publishing
                                 self.delete_item(child, user_id, revision='all')
 
-            super(DraftModuleStore, self).update_item(draft, user_id)
+            super(DraftModuleStore, self).update_item(draft, user_id, isPublish=True)
             self.collection.remove({'_id': as_draft(root_location).to_deprecated_son()})
 
         _internal_depth_first(location)
@@ -411,7 +409,7 @@ class DraftModuleStore(MongoModuleStore):
         to remove things from the published version
         """
         assert self.branch_setting == DRAFT
-        self.convert_to_draft(location, user_id, delete_published=True)
+        return self.convert_to_draft(location, user_id, delete_published=True)
 
     def _query_children_for_cache_children(self, course_key, items):
         # first get non-draft in a round-trip

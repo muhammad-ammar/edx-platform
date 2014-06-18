@@ -17,7 +17,6 @@ from contentstore.utils import reverse_usage_url
 from contentstore.views.component import component_handler, get_component_templates
 
 from contentstore.tests.utils import CourseTestCase
-from contentstore.utils import compute_publish_state
 from student.tests.factories import UserFactory
 from xmodule.capa_module import CapaDescriptor
 from xmodule.modulestore import PublishState
@@ -220,9 +219,7 @@ class TestCreateItem(ItemTest):
             boilerplate=template_id
         )
         prob_usage_key = self.response_usage_key(resp)
-        problem = self.get_item_from_modulestore(prob_usage_key)
-        # ensure it's draft
-        self.assertTrue(problem.is_draft)
+        problem = self.get_item_from_modulestore(prob_usage_key, verify_is_draft=True)
         # check against the template
         template = CapaDescriptor.get_template(template_id)
         self.assertEqual(problem.data, template['data'])
@@ -409,6 +406,18 @@ class TestEditItem(ItemTest):
 
         self.course_update_url = reverse_usage_url("xblock_handler", self.usage_key)
 
+    def verify_publish_state(self, usage_key, expected_publish_state):
+        """
+        Helper method that gets the item from the module store and verifies that the publish state is as expected.
+        Returns the item corresponding to the given usage_key.
+        """
+        item = self.get_item_from_modulestore(
+            usage_key,
+            (expected_publish_state == PublishState.private) or (expected_publish_state == PublishState.draft)
+        )
+        self.assertEqual(expected_publish_state, self.store.compute_publish_state(item))
+        return item
+
     def test_delete_field(self):
         """
         Sending null in for a field 'deletes' it
@@ -417,26 +426,26 @@ class TestEditItem(ItemTest):
             self.problem_update_url,
             data={'metadata': {'rerandomize': 'onreset'}}
         )
-        problem = self.get_item_from_modulestore(self.problem_usage_key)
+        problem = self.get_item_from_modulestore(self.problem_usage_key, verify_is_draft=True)
         self.assertEqual(problem.rerandomize, 'onreset')
         self.client.ajax_post(
             self.problem_update_url,
             data={'metadata': {'rerandomize': None}}
         )
-        problem = self.get_item_from_modulestore(self.problem_usage_key)
+        problem = self.get_item_from_modulestore(self.problem_usage_key, verify_is_draft=True)
         self.assertEqual(problem.rerandomize, 'never')
 
     def test_null_field(self):
         """
         Sending null in for a field 'deletes' it
         """
-        problem = self.get_item_from_modulestore(self.problem_usage_key)
+        problem = self.get_item_from_modulestore(self.problem_usage_key, verify_is_draft=True)
         self.assertIsNotNone(problem.markdown)
         self.client.ajax_post(
             self.problem_update_url,
             data={'nullout': ['markdown']}
         )
-        problem = self.get_item_from_modulestore(self.problem_usage_key)
+        problem = self.get_item_from_modulestore(self.problem_usage_key, verify_is_draft=True)
         self.assertIsNone(problem.markdown)
 
     def test_date_fields(self):
@@ -517,20 +526,12 @@ class TestEditItem(ItemTest):
     def test_make_public(self):
         """ Test making a private problem public (publishing it). """
         # When the problem is first created, it is only in draft (because of its category).
-        private = self.get_item_from_modulestore(self.problem_usage_key)
-        self.assertEqual(
-            PublishState.private,
-            self.store.compute_publish_state(private)
-        )
+        self.verify_publish_state(self.problem_usage_key, PublishState.private)
         self.client.ajax_post(
             self.problem_update_url,
             data={'publish': 'make_public'}
         )
-        published = self.get_item_from_modulestore(self.problem_usage_key)
-        self.assertEqual(
-            PublishState.public,
-            self.store.compute_publish_state(published)
-        )
+        self.verify_publish_state(self.problem_usage_key, PublishState.public)
 
     def test_make_private(self):
         """ Test making a public problem private (un-publishing it). """
@@ -539,21 +540,14 @@ class TestEditItem(ItemTest):
             self.problem_update_url,
             data={'publish': 'make_public'}
         )
-        published = self.get_item_from_modulestore(self.problem_usage_key)
-        self.assertEqual(
-            PublishState.public,
-            self.store.compute_publish_state(published)
-        )
+        self.verify_publish_state(self.problem_usage_key, PublishState.public)
+
         # Now make it private
         self.client.ajax_post(
             self.problem_update_url,
             data={'publish': 'make_private'}
         )
-        private = self.get_item_from_modulestore(self.problem_usage_key)
-        self.assertEqual(
-            PublishState.private,
-            self.store.compute_publish_state(private)
-        )
+        self.verify_publish_state(self.problem_usage_key, PublishState.private)
 
     def test_make_draft(self):
         """ Test creating a draft version of a public problem. """
@@ -562,27 +556,21 @@ class TestEditItem(ItemTest):
             self.problem_update_url,
             data={'publish': 'make_public'}
         )
-        published = self.get_item_from_modulestore(self.problem_usage_key)
-        self.assertEqual(
-            PublishState.public,
-            self.store.compute_publish_state(published)
-        )
+        published = self.verify_publish_state(self.problem_usage_key, PublishState.public)
+
         # Now make it draft, which means both versions will exist.
         self.client.ajax_post(
             self.problem_update_url,
             data={'publish': 'create_draft'}
         )
-        draft = self.get_item_from_modulestore(self.problem_usage_key)
-        self.assertEqual(
-            PublishState.draft,
-            self.store.compute_publish_state(draft)
-        )
+        self.verify_publish_state(self.problem_usage_key, PublishState.draft)
+
         # Update the draft version and check that published is different.
         self.client.ajax_post(
             self.problem_update_url,
             data={'metadata': {'due': '2077-10-10T04:00Z'}}
         )
-        updated_draft = self.get_item_from_modulestore(self.problem_usage_key)
+        updated_draft = self.get_item_from_modulestore(self.problem_usage_key, verify_is_draft=True)
         self.assertEqual(updated_draft.due, datetime(2077, 10, 10, 4, 0, tzinfo=UTC))
         self.assertIsNone(published.due)
 
@@ -605,11 +593,9 @@ class TestEditItem(ItemTest):
             self.problem_update_url,
             data={'publish': 'make_public'}
         )
-        published = self.get_item_from_modulestore(self.problem_usage_key)
-        self.assertEqual(
-            PublishState.public,
-            self.store.compute_publish_state(published)
-        )
+        self.verify_publish_state(self.problem_usage_key, PublishState.public)
+
+        # Make problem private and update.
         self.client.ajax_post(
             self.problem_update_url,
             data={
@@ -617,11 +603,7 @@ class TestEditItem(ItemTest):
                 'publish': 'make_private'
             }
         )
-        draft = self.get_item_from_modulestore(self.problem_usage_key)
-        self.assertEqual(
-            PublishState.private,
-            self.store.compute_publish_state(draft)
-        )
+        draft = self.verify_publish_state(self.problem_usage_key, PublishState.private)
         self.assertEqual(draft.due, datetime(2077, 10, 10, 4, 0, tzinfo=UTC))
 
     def test_create_draft_with_update(self):
@@ -631,11 +613,8 @@ class TestEditItem(ItemTest):
             self.problem_update_url,
             data={'publish': 'make_public'}
         )
-        published = self.get_item_from_modulestore(self.problem_usage_key)
-        self.assertEqual(
-            PublishState.public,
-            self.store.compute_publish_state(published)
-        )
+        published = self.verify_publish_state(self.problem_usage_key, PublishState.public)
+
         # Now make it draft, which means both versions will exist.
         self.client.ajax_post(
             self.problem_update_url,
@@ -644,7 +623,7 @@ class TestEditItem(ItemTest):
                 'publish': 'create_draft'
             }
         )
-        draft = self.get_item_from_modulestore(self.problem_usage_key)
+        draft = self.get_item_from_modulestore(self.problem_usage_key, verify_is_draft=True)
         self.assertEqual(draft.due, datetime(2077, 10, 10, 4, 0, tzinfo=UTC))
         self.assertIsNone(published.due)
 
@@ -657,11 +636,8 @@ class TestEditItem(ItemTest):
             self.problem_update_url,
             data={'publish': 'make_public'}
         )
-        published = self.get_item_from_modulestore(self.problem_usage_key)
-        self.assertEqual(
-            PublishState.public,
-            self.store.compute_publish_state(published)
-        )
+        self.verify_publish_state(self.problem_usage_key, PublishState.public)
+
         # Now make it draft, which means both versions will exist.
         self.client.ajax_post(
             self.problem_update_url,
@@ -669,11 +645,7 @@ class TestEditItem(ItemTest):
                 'publish': 'create_draft'
             }
         )
-        draft_1 = self.get_item_from_modulestore(self.problem_usage_key)
-        self.assertEqual(
-            PublishState.draft,
-            self.store.compute_publish_state(draft_1)
-        )
+        draft_1 = self.verify_publish_state(self.problem_usage_key, PublishState.draft)
 
         # Now check that when a user sends request to create a draft when there is already a draft version then
         # user gets that already created draft instead of getting 'DuplicateItemError' exception.
@@ -683,7 +655,7 @@ class TestEditItem(ItemTest):
                 'publish': 'create_draft'
             }
         )
-        draft_2 = self.get_item_from_modulestore(self.problem_usage_key)
+        draft_2 = self.verify_publish_state(self.problem_usage_key, PublishState.draft)
         self.assertIsNotNone(draft_2)
         self.assertEqual(draft_1, draft_2)
 
@@ -706,11 +678,7 @@ class TestEditItem(ItemTest):
             }
         )
         self.assertEqual(resp.status_code, 200)
-        draft_1 = self.get_item_from_modulestore(self.problem_usage_key)
-        self.assertEqual(
-            PublishState.private,
-            self.store.compute_publish_state(draft_1)
-        )
+        draft_1 = self.verify_publish_state(self.problem_usage_key, PublishState.private)
 
         # Now check that when a user sends request to make it private when it already is private then
         # user gets that private version instead of getting 'ItemNotFoundError' exception.
@@ -721,11 +689,7 @@ class TestEditItem(ItemTest):
             }
         )
         self.assertEqual(resp.status_code, 200)
-        draft_2 = self.get_item_from_modulestore(self.problem_usage_key)
-        self.assertEqual(
-            PublishState.private,
-            self.store.compute_publish_state(draft_1)
-        )
+        draft_2 = self.verify_publish_state(self.problem_usage_key, PublishState.private)
         self.assertEqual(draft_1, draft_2)
 
     def test_published_and_draft_contents_with_update(self):
@@ -736,8 +700,7 @@ class TestEditItem(ItemTest):
             self.problem_update_url,
             data={'publish': 'make_public'}
         )
-        published = self.get_item_from_modulestore(self.problem_usage_key)
-        self.assertIsNotNone(published)
+        published = self.verify_publish_state(self.problem_usage_key, PublishState.public)
 
         # Now make a draft
         self.client.ajax_post(
@@ -751,7 +714,7 @@ class TestEditItem(ItemTest):
         )
 
         # Both published and draft content should be different
-        draft = self.get_item_from_modulestore(self.problem_usage_key)
+        draft = self.get_item_from_modulestore(self.problem_usage_key, verify_is_draft=True)
         self.assertNotEqual(draft.data, published.data)
 
         # Get problem by 'xblock_handler'
@@ -765,7 +728,7 @@ class TestEditItem(ItemTest):
         self.assertEqual(resp.status_code, 200)
 
         # Both published and draft content should still be different
-        draft = self.get_item_from_modulestore(self.problem_usage_key)
+        draft = self.get_item_from_modulestore(self.problem_usage_key, verify_is_draft=True)
         self.assertNotEqual(draft.data, published.data)
 
     def test_publish_states_of_nested_xblocks(self):
@@ -780,10 +743,8 @@ class TestEditItem(ItemTest):
 
         # The unit and its children should be private initially
         unit_update_url = reverse_usage_url('xblock_handler', unit_usage_key)
-        unit = self.get_item_from_modulestore(unit_usage_key)
-        html = self.get_item_from_modulestore(html_usage_key)
-        self.assertEqual(compute_publish_state(unit), PublishState.private)
-        self.assertEqual(compute_publish_state(html), PublishState.private)
+        self.verify_publish_state(unit_usage_key, PublishState.private)
+        self.verify_publish_state(html_usage_key, PublishState.private)
 
         # Make the unit public and verify that the problem is also made public
         resp = self.client.ajax_post(
@@ -791,10 +752,8 @@ class TestEditItem(ItemTest):
             data={'publish': 'make_public'}
         )
         self.assertEqual(resp.status_code, 200)
-        unit = self.get_item_from_modulestore(unit_usage_key)
-        html = self.get_item_from_modulestore(html_usage_key)
-        self.assertEqual(compute_publish_state(unit), PublishState.public)
-        self.assertEqual(compute_publish_state(html), PublishState.public)
+        self.verify_publish_state(unit_usage_key, PublishState.public)
+        self.verify_publish_state(html_usage_key, PublishState.public)
 
         # Make a draft for the unit and verify that the problem also has a draft
         resp = self.client.ajax_post(
@@ -806,10 +765,8 @@ class TestEditItem(ItemTest):
             }
         )
         self.assertEqual(resp.status_code, 200)
-        unit = self.get_item_from_modulestore(unit_usage_key)
-        html = self.get_item_from_modulestore(html_usage_key)
-        self.assertEqual(compute_publish_state(unit), PublishState.draft)
-        self.assertEqual(compute_publish_state(html), PublishState.draft)
+        self.verify_publish_state(unit_usage_key, PublishState.draft)
+        self.verify_publish_state(html_usage_key, PublishState.draft)
 
 
 class TestEditSplitModule(ItemTest):
@@ -948,6 +905,9 @@ class TestComponentHandler(TestCase):
         self.modulestore = patcher.start()
         self.addCleanup(patcher.stop)
 
+        # component_handler calls modulestore.get_item to get the descriptor of the requested xBlock.
+        # Here, we mock the return value of modulestore.get_item so it can be used to mock the handler
+        # of the xBlock descriptor.
         self.descriptor = self.modulestore.return_value.get_item.return_value
 
         self.usage_key_string = unicode(

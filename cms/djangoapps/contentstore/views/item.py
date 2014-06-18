@@ -112,17 +112,17 @@ def xblock_handler(request, usage_key_string):
                     # right now can't combine output of this w/ output of _get_module_info, but worthy goal
                     return JsonResponse(CourseGradingModel.get_section_grader_type(usage_key))
                 # TODO: pass fields to _get_module_info and only return those
-                rsp = _get_module_info(usage_key, request)
+                rsp = _get_module_info(usage_key, request.user)
                 return JsonResponse(rsp)
             else:
                 return HttpResponse(status=406)
 
         elif request.method == 'DELETE':
-            _delete_item(usage_key, request)
+            _delete_item(usage_key, request.user)
             return JsonResponse()
         else:  # Since we have a usage_key, we are updating an existing xblock.
             return _save_item(
-                request,
+                request.user,
                 usage_key,
                 data=request.json.get('data'),
                 children=request.json.get('children'),
@@ -260,7 +260,7 @@ def _is_xblock_read_only(xblock):
     return component_publish_state == PublishState.public
 
 
-def _save_item(request, usage_key, data=None, children=None, metadata=None, nullout=None,
+def _save_item(user, usage_key, data=None, children=None, metadata=None, nullout=None,
                grader_type=None, publish=None):
     """
     Saves xblock w/ its fields. Has special processing for grader_type, publish, and nullout and Nones in metadata.
@@ -275,7 +275,7 @@ def _save_item(request, usage_key, data=None, children=None, metadata=None, null
         if usage_key.category in CREATE_IF_NOT_FOUND:
             # New module at this location, for pages that are not pre-created.
             # Used for course info handouts.
-            existing_item = store.create_and_save_xmodule(usage_key, request.user.id)
+            existing_item = store.create_and_save_xmodule(usage_key, user.id)
         else:
             raise
     except InvalidLocationError:
@@ -288,14 +288,13 @@ def _save_item(request, usage_key, data=None, children=None, metadata=None, null
     if publish:
         if publish == 'make_private':
             try:
-                store.unpublish(existing_item.location, request.user.id),
+                store.unpublish(existing_item.location, user.id),
             except ItemNotFoundError:
                 pass
         elif publish == 'create_draft':
             try:
-                # This recursively clones the existing item location to a draft location (the draft is
-                # implicit, because modulestore is a Draft modulestore)
-                store.convert_to_draft(existing_item.location, request.user.id)
+                # This recursively clones the item subtree and marks the copies as draft
+                store.convert_to_draft(existing_item.location, user.id)
             except DuplicateItemError:
                 pass
 
@@ -340,10 +339,10 @@ def _save_item(request, usage_key, data=None, children=None, metadata=None, null
                     field.write_to(existing_item, value)
 
     if callable(getattr(existing_item, "editor_saved", None)):
-        existing_item.editor_saved(request.user, old_metadata, old_content)
+        existing_item.editor_saved(user, old_metadata, old_content)
 
     # commit to datastore
-    store.update_item(existing_item, request.user.id)
+    store.update_item(existing_item, user.id)
 
     # for static tabs, their containing course also records their display name
     if usage_key.category == 'static_tab':
@@ -353,7 +352,7 @@ def _save_item(request, usage_key, data=None, children=None, metadata=None, null
         # only update if changed
         if static_tab and static_tab['name'] != existing_item.display_name:
             static_tab['name'] = existing_item.display_name
-            store.update_item(course, request.user.id)
+            store.update_item(course, user.id)
 
     result = {
         'id': unicode(usage_key),
@@ -362,12 +361,12 @@ def _save_item(request, usage_key, data=None, children=None, metadata=None, null
     }
 
     if grader_type is not None:
-        result.update(CourseGradingModel.update_section_grader_type(existing_item, grader_type, request.user))
+        result.update(CourseGradingModel.update_section_grader_type(existing_item, grader_type, user))
 
     # Make public after updating the xblock, in case the caller asked
     # for both an update and a publish.
     if publish and publish == 'make_public':
-        modulestore().publish(existing_item.location, request.user.id)
+        modulestore().publish(existing_item.location, user.id)
 
     # Note that children aren't being returned until we have a use case.
     return JsonResponse(result)
@@ -484,7 +483,11 @@ def _duplicate_item(parent_usage_key, duplicate_source_usage_key, display_name=N
     return dest_usage_key
 
 
-def _delete_item(usage_key, request):
+def _delete_item(usage_key, user):
+    """
+    Deletes an existing xblock with the given usage_key.
+    If the xblock is a Static Tab, removes it from course.tabs as well.
+    """
     store = modulestore()
 
     # VS[compat] cdodge: This is a hack because static_tabs also have references from the course module, so
@@ -494,9 +497,9 @@ def _delete_item(usage_key, request):
         course = store.get_course(usage_key.course_key)
         existing_tabs = course.tabs or []
         course.tabs = [tab for tab in existing_tabs if tab.get('url_slug') != usage_key.name]
-        store.update_item(course, request.user.id)
+        store.update_item(course, user.id)
 
-    store.delete_item(usage_key, request.user.id)
+    store.delete_item(usage_key, user.id)
 
 
 # pylint: disable=W0613
@@ -530,7 +533,7 @@ def orphan_handler(request, course_key_string):
             raise PermissionDenied()
 
 
-def _get_module_info(usage_key, request, rewrite_static_links=True):
+def _get_module_info(usage_key, user, rewrite_static_links=True):
     """
     metadata, data, id representation of a leaf module fetcher.
     :param usage_key: A UsageKey
@@ -541,7 +544,7 @@ def _get_module_info(usage_key, request, rewrite_static_links=True):
     except ItemNotFoundError:
         if usage_key.category in CREATE_IF_NOT_FOUND:
             # Create a new one for certain categories only. Used for course info handouts.
-            module = store.create_and_save_xmodule(usage_key, request.user.id)
+            module = store.create_and_save_xmodule(usage_key, user.id)
         else:
             raise
 

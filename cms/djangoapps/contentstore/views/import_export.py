@@ -223,7 +223,7 @@ def import_handler(request, course_key_string):
                         [course_subdir],
                         load_error_modules=False,
                         static_content_store=contentstore(),
-                        target_course_id=course_key
+                        target_course_id=course_key,
                     )
 
                     new_location = course_items[0].location

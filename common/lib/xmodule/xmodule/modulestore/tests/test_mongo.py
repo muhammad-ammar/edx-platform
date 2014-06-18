@@ -578,7 +578,7 @@ class TestMongoModuleStore(unittest.TestCase):
         location = Location('edX', 'migration', '2012_Fall', 'html', 'test_html')
         published_date = datetime(1970, 1, 1, tzinfo=UTC)
         published_by = 123
-        self.store._update_single_item(
+        self.draft_store._update_single_item(
             as_draft(location),
             {
                 'definition.data': {},
