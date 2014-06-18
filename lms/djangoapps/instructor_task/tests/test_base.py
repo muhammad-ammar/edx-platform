@@ -16,7 +16,9 @@ from capa.tests.response_xml_factory import OptionResponseXMLFactory
 from xmodule.modulestore.django import editable_modulestore
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
-from opaque_keys.edx.locations import Location, SlashSeparatedCourseKey
+from opaque_keys import InvalidKeyError
+from opaque_keys.edx.keys import UsageKey
+from opaque_keys.edx.locations import SlashSeparatedCourseKey
 
 from student.tests.factories import CourseEnrollmentFactory, UserFactory
 from courseware.model_data import StudentModule
@@ -178,9 +180,9 @@ class InstructorTaskModuleTestCase(InstructorTaskCourseTestCase):
         """
         Create an internal location for a test problem.
         """
-        if "i4x:" in problem_url_name:
+        try:
             return UsageKey.from_string(problem_url_name)
-        else:
+        except InvalidKeyError:
             return TEST_COURSE_KEY.make_usage_key('problem', problem_url_name)
 
     def define_option_problem(self, problem_url_name):

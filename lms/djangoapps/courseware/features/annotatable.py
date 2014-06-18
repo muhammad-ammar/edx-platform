@@ -140,7 +140,7 @@ class AnnotatableSteps(object):
 
     def active_problem_selector(self, subselector):
         return 'div[data-problem-id="{}"] {}'.format(
-            world.scenario_dict['PROBLEMS'][self.active_problem]unicode(.location),
+            unicode(world.scenario_dict['PROBLEMS'][self.active_problem].location),
             subselector,
         )
 

@@ -54,6 +54,7 @@ import copy
 from pytz import UTC
 
 from xmodule.errortracker import null_error_tracker
+from opaque_keys.edx.keys import UsageKey
 from opaque_keys.edx.locator import (
     BlockUsageLocator, DefinitionLocator, CourseLocator, VersionTree,
     LocalId, Locator

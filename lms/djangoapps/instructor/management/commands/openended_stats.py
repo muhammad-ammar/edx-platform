@@ -8,7 +8,7 @@ from django.core.management.base import BaseCommand
 from optparse import make_option
 
 from xmodule.modulestore.django import modulestore
-from opaque_keys.edx.keys import CourseKey
+from opaque_keys.edx.keys import CourseKey, UsageKey
 from xmodule.open_ended_grading_classes.openendedchild import OpenEndedChild
 
 from courseware.courses import get_course

@@ -4,6 +4,7 @@ from uuid import uuid4
 
 from xmodule.modulestore import prefer_xmodules
 from opaque_keys.edx.keys import UsageKey
+from opaque_keys.edx.locations import Location
 from xblock.core import XBlock
 
 

@@ -18,6 +18,7 @@ from xmodule.open_ended_grading_classes.peer_grading_service import PeerGradingS
 from open_ended_grading_classes import combined_open_ended_rubric
 from django.utils.timezone import UTC
 from xmodule.open_ended_grading_classes.grading_service_module import GradingServiceError
+from opaque_keys.edx.keys import UsageKey
 
 log = logging.getLogger(__name__)
 

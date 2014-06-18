@@ -67,7 +67,7 @@ from .tools import (
     strip_if_string,
     bulk_email_is_enabled_for_course,
 )
-from opaque_keys.edx.keys import CourseKey
+from opaque_keys.edx.keys import CourseKey, UsageKey
 from opaque_keys import InvalidKeyError
 
 log = logging.getLogger(__name__)

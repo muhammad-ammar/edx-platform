@@ -1,11 +1,13 @@
+import warnings
+
 from django.db import models
 from django.core.exceptions import ValidationError
 from opaque_keys.edx.keys import CourseKey, UsageKey
 
 from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ["^xmodule_django\.models\.CourseKeyField"])
-add_introspection_rules([], ["^xmodule_django\.models\.LocationKeyField"])
-add_introspection_rules([], ["^xmodule_django\.models\.UsageKeyField"])
+add_introspection_rules([], [r"^xmodule_django\.models\.CourseKeyField"])
+add_introspection_rules([], [r"^xmodule_django\.models\.LocationKeyField"])
+add_introspection_rules([], [r"^xmodule_django\.models\.UsageKeyField"])
 
 
 class NoneToEmptyManager(models.Manager):
@@ -143,4 +145,7 @@ class UsageKeyField(models.CharField):
 
         return super(UsageKeyField, self).run_validators(value)
 
-LocationKeyField = UsageKeyField
+class LocationKeyField(UsageKeyField):
+    def __init__(self, *args, **kwargs):
+        warnings.warn("Use USageKeyField instead of LocationKeyField", DeprecationWarning)
+        super(LocationKeyField, self).__init__(*args, **kwargs)

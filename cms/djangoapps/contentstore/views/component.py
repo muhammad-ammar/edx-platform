@@ -60,7 +60,7 @@ else:
         # XBlocks from pmitros repos are prototypes. They should not be used
         # except for edX Learning Sciences experiments on edge.edx.org without
         # further work to make them robust, maintainable, finalize data formats,
-        # etc. 
+        # etc.
         'concept',  # Concept mapper. See https://github.com/pmitros/ConceptXBlock
         'done',  # Lets students mark things as done. See https://github.com/pmitros/DoneXBlock
         'audio',  # Embed an audio file. See https://github.com/pmitros/AudioXBlock
@@ -355,7 +355,7 @@ def get_component_templates(course):
             "type": category,
             "templates": templates_for_category,
             "display_name": component_display_names[category]
-            })
+        })
 
     # Check if there are any advanced modules specified in the course policy.
     # These modules should be specified as a list of strings, where the strings

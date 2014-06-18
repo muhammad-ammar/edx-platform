@@ -143,8 +143,8 @@ def visit_scenario_item(item_key):
     url = django_url(reverse(
         'jump_to',
         kwargs={
-            'course_id': world.scenario_dict['COURSE']unicode(.id),
-            'location': world.scenario_dict[item_key]unicode(.location),
+            'course_id': unicode(world.scenario_dict['COURSE'].id),
+            'location': unicode(world.scenario_dict[item_key].location),
         }
     ))
 

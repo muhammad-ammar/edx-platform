@@ -26,14 +26,16 @@ from django.core.urlresolvers import reverse
 from django.core.mail import send_mail
 from django.utils import timezone
 
+from opaque_keys import InvalidKeyError
+from opaque_keys.edx.keys import CourseKey, UsageKey
+from opaque_keys.edx.locations import i4xEncoder
+
 from xmodule_modifiers import wrap_xblock
 import xmodule.graders as xmgraders
 from xmodule.modulestore import XML_MODULESTORE_TYPE
 from xmodule.modulestore.django import modulestore
-from opaque_keys.edx.keys import CourseKey
 from xmodule.modulestore.exceptions import ItemNotFoundError
 from xmodule.html_module import HtmlDescriptor
-from opaque_keys import InvalidKeyError
 from lms.lib.xblock.runtime import quote_slashes
 
 from submissions import api as sub_api  # installed from the edx-submissions repository
@@ -76,7 +78,6 @@ from xblock.fields import ScopeIds
 from django.utils.translation import ugettext as _
 
 from microsite_configuration import microsite
-from opaque_keys.edx.locations import i4xEncoder
 
 log = logging.getLogger(__name__)
 

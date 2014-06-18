@@ -13,6 +13,7 @@ from pytz import UTC
 from xmodule.exceptions import InvalidVersionError
 from xmodule.modulestore.exceptions import ItemNotFoundError, DuplicateItemError
 from xmodule.modulestore.mongo.base import MongoModuleStore
+from opaque_keys.edx.keys import UsageKey
 from opaque_keys.edx.locations import Location
 
 DRAFT = 'draft'

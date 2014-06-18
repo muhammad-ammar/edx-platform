@@ -11,7 +11,7 @@ from urlparse import urlparse, urlunparse, parse_qsl
 from urllib import urlencode
 
 from opaque_keys.edx.locations import AssetLocation
-from opaque_keys.edx.keys import CourseKey
+from opaque_keys.edx.keys import CourseKey, AssetKey
 from .django import contentstore
 from PIL import Image
 

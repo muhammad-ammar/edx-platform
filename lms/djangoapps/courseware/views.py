@@ -458,10 +458,10 @@ def jump_to_id(request, course_id, module_id):
     if len(items) > 1:
         log.warning(
             u"Multiple items found with id: {0} in course_id: {1}. Referer: {2}. Using first: {3}".format(
-                module_id, course_id, request.META.get("HTTP_REFERER", ""), items[0]unicode(.location)
+                module_id, course_id, request.META.get("HTTP_REFERER", ""), unicode(items[0].location)
             ))
 
-    return jump_to(request, course_id, items[0]unicode(.location))
+    return jump_to(request, course_id, unicode(items[0].location))
 
 
 @ensure_csrf_cookie

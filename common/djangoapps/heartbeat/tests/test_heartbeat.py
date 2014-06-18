@@ -13,6 +13,7 @@ from xmodule.modulestore.tests.django_utils import mongo_store_config
 
 TEST_MODULESTORE = mongo_store_config(settings.TEST_ROOT / "data")
 
+
 @override_settings(MODULESTORE=TEST_MODULESTORE)
 class HeartbeatTestCase(TestCase):
     """
