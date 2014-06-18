@@ -6,7 +6,7 @@ from collections import namedtuple, defaultdict
 
 
 from edxmako.shortcuts import render_to_string
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import CourseKey
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User

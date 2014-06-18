@@ -12,7 +12,7 @@ from xmodule.contentstore.content import StaticContent
 from xmodule.contentstore.django import contentstore
 from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.exceptions import ItemNotFoundError
-from opaque_keys.edx.keys import CourseKey, UsageKey
+from opaque_keys.edx.keys import UsageKey
 from xmodule.modulestore.store_utilities import delete_course
 from student.roles import CourseInstructorRole, CourseStaffRole
 

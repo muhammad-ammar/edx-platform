@@ -23,6 +23,8 @@ from django_future.csrf import ensure_csrf_cookie
 from django.views.decorators.cache import cache_control
 from django.db import transaction
 from markupsafe import escape
+from opaque_keys import InvalidKeyError
+from opaque_keys.edx.keys import CourseKey, UsageKey
 
 from courseware import grades
 from courseware.access import has_access
@@ -43,10 +45,8 @@ from xmodule.modulestore.exceptions import ItemNotFoundError, NoPathToItem
 from xmodule.modulestore.search import path_to_location
 from xmodule.tabs import CourseTabList, StaffGradingTab, PeerGradingTab, OpenEndedGradingTab
 import shoppingcart
-from opaque_keys import InvalidKeyError
 
 from microsite_configuration import microsite
-from opaque_keys.edx.keys import CourseKey
 
 log = logging.getLogger("edx.courseware")
 

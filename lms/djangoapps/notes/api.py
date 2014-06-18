@@ -1,4 +1,4 @@
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import CourseKey
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404
 from django.core.exceptions import ValidationError

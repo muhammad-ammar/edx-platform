@@ -17,6 +17,7 @@ from django.test.utils import override_settings
 from courseware.tests.tests import TEST_DATA_MONGO_MODULESTORE
 from xmodule.contentstore.django import contentstore
 from xmodule.modulestore.django import modulestore
+from opaque_keys.edx.keys import CourseKey
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from xmodule.modulestore.store_utilities import delete_course
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase

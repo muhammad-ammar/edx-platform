@@ -7,7 +7,7 @@ from mock import Mock, patch
 from xblock.field_data import DictFieldData
 from xblock.fields import ScopeIds
 from xmodule.error_module import NonStaffErrorDescriptor
-from opaque_keys.edx.keys import UsageKeys
+from opaque_keys.edx.keys import UsageKey
 from opaque_keys.edx.locations import SlashSeparatedCourseKey, Location
 from xmodule.modulestore.xml import ImportSystem, XMLModuleStore, CourseLocationGenerator
 from xmodule.conditional_module import ConditionalDescriptor

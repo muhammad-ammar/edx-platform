@@ -25,6 +25,7 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import ObjectDoesNotExist
 
 from xmodule.modulestore.tests.factories import CourseFactory
+from opaque_keys.edx.keys import CourseKey
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from courseware.tests.tests import TEST_DATA_MONGO_MODULESTORE
 from student.tests.factories import UserFactory

@@ -11,6 +11,7 @@ from student.roles import (
     GlobalStaff, CourseRole, CourseStaffRole, CourseInstructorRole,
     OrgStaffRole, OrgInstructorRole, RoleCache, CourseBetaTesterRole
 )
+from opaque_keys.edx.keys import CourseKey
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 
 

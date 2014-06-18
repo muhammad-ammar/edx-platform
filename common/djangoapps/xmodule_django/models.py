@@ -145,6 +145,7 @@ class UsageKeyField(models.CharField):
 
         return super(UsageKeyField, self).run_validators(value)
 
+
 class LocationKeyField(UsageKeyField):
     def __init__(self, *args, **kwargs):
         warnings.warn("Use USageKeyField instead of LocationKeyField", DeprecationWarning)

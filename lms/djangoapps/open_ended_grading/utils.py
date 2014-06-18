@@ -1,5 +1,6 @@
 import logging
 
+from opaque_keys.edx.keys import UsageKey
 from xmodule.modulestore import search
 from xmodule.modulestore.django import modulestore, ModuleI18nService
 from xmodule.modulestore.exceptions import ItemNotFoundError, NoPathToItem
