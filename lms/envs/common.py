@@ -494,7 +494,7 @@ MODULESTORE = {
                     'DOC_STORE_CONFIG': DOC_STORE_CONFIG,
                     'OPTIONS': {
                         'default_class': 'xmodule.hidden_module.HiddenDescriptor',
-                        'fs_root': None,
+                        'fs_root': DATA_DIR,
                         'render_template': 'edxmako.shortcuts.render_to_string',
                     }
                 },
