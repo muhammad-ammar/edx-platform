@@ -26,7 +26,9 @@ class Migration(DataMigration):
         """
         # Note: Remember to use orm['appname.ModelName'] rather than "from appname.models..."
         loc_map_collection = loc_mapper().location_map
-        store = modulestore()
+        mixed_ms = modulestore()
+        xml_ms = mixed_ms._get_modulestore_by_type(XML_MODULESTORE_TYPE)
+        mongo_ms = mixed_ms._get_modulestore_by_type(MONGO_MODULESTORE_TYPE)
 
         query = Q(name__startswith='staff') | Q(name__startswith='instructor') | Q(name__startswith='beta_testers')
         for group in orm['auth.Group'].objects.filter(query).exclude(name__contains="/").all():
@@ -68,11 +70,21 @@ class Migration(DataMigration):
                 ).exists():
                     # old auth was of form role_coursenum. Grant access to all such courses wildcarding org and run
                     # look in xml for matching courses
+                    if xml_ms is not None:
+                        for course in xml_ms.get_courses():
+                            if course_id_string == course.id.course.lower():
+                                _migrate_users(course.id, role)
 
-                    course_key = SlashSeparatedCourseKey.from_deprecated_string(course_id_string)
-                    course_key = store.has_course(course_key, ignore_case=True)
-                    if course_key:
-                        _migrate_users(course_key, role)
+                    if mongo_ms is not None:
+                        mongo_query = re.compile(ur'^{}$'.format(course_id_string), re.IGNORECASE)
+                        for mongo_entry in mongo_ms.collection.find(
+                            {"_id.category": "course", "_id.course": mongo_query}, fields=["_id"]
+                        ):
+                            mongo_id_dict = mongo_entry['_id']
+                            course_key = SlashSeparatedCourseKey(
+                                mongo_id_dict['org'], mongo_id_dict['course'], mongo_id_dict['name']
+                            )
+                            _migrate_users(course_key, role)
 
 
     def backwards(self, orm):

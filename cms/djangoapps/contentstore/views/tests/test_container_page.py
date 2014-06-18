@@ -83,8 +83,8 @@ class ContainerPageTestCase(StudioPageTestCase):
         test_container_html(draft_container)
 
         # Now publish the unit and validate again
-        self.store.publish(self.vertical.location, 0)
-        draft_container = self.store.publish(draft_container.location, 0)
+        self.store.publish(self.vertical.location, self.user.id)
+        draft_container = self.store.get_item(draft_container.location)
         test_container_html(draft_container)
 
     def _test_html_content(self, xblock, expected_section_tag, expected_breadcrumbs):
@@ -110,9 +110,9 @@ class ContainerPageTestCase(StudioPageTestCase):
         """
         Verify that a public xblock's container preview returns the expected HTML.
         """
-        published_unit = self.store.publish(self.vertical.location, 0)
-        published_child_container = self.store.publish(self.child_container.location, 0)
-        published_child_vertical = self.store.publish(self.child_vertical.location, 0)
+        published_unit = self.store.publish(self.vertical.location, self.user.id)
+        published_child_container = self.store.get_item(self.child_container.location)
+        published_child_vertical = self.store.get_item(self.child_vertical.location)
         self.validate_preview_html(published_unit, self.container_view,
                                    can_edit=False, can_reorder=False, can_add=False)
         self.validate_preview_html(published_child_container, self.container_view,
