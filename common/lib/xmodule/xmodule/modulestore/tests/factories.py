@@ -3,7 +3,7 @@ from factory.containers import CyclicDefinitionError
 from uuid import uuid4
 
 from xmodule.modulestore import prefer_xmodules
-from opaque_keys.edx.locations import Location
+from opaque_keys.edx.keys import UsageKey
 from xblock.core import XBlock
 
 
@@ -142,7 +142,7 @@ class ItemFactory(XModuleFactory):
         metadata = kwargs.pop('metadata', {})
         location = kwargs.pop('location')
 
-        assert isinstance(location, Location)
+        assert isinstance(location, UsageKey)
         assert location != parent_location
 
         store = kwargs.pop('modulestore')

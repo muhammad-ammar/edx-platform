@@ -1607,7 +1607,7 @@ class SplitMongoModuleStore(ModuleStoreWriteBase):
                     ]
                 elif isinstance(xblock_class.fields[field_name], ReferenceValueDict):
                     for key, subvalue in value.iteritems():
-                        assert isinstance(subvalue, Location)
+                        assert isinstance(subvalue, UsageKey)
                         value[key] = subvalue.block_id
 
         # I think these are obsolete conditions; so, I want to confirm that. Thus the warnings

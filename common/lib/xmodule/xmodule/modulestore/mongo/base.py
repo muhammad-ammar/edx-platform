@@ -35,6 +35,7 @@ from xblock.fields import Scope, ScopeIds, Reference, ReferenceList, ReferenceVa
 
 from xmodule.modulestore import ModuleStoreWriteBase, MONGO_MODULESTORE_TYPE
 from opaque_keys.edx.locations import Location
+from opaque_keys.edx.keys import UsageKey
 from xmodule.modulestore.exceptions import ItemNotFoundError, InvalidLocationError
 from xmodule.modulestore.inheritance import own_metadata, InheritanceMixin, inherit_metadata, InheritanceKeyValueStore
 from xmodule.tabs import StaticTab, CourseTabList
@@ -125,7 +126,7 @@ class CachingDescriptorSystem(MakoDescriptorSystem):
 
         course_key: the course for which everything in this runtime will be relative
 
-        module_data: a dict mapping Location -> json that was cached from the
+        module_data: a dict mapping UsageKey -> json that was cached from the
             underlying modulestore
 
         default_class: The default_class to use when loading an
@@ -158,7 +159,7 @@ class CachingDescriptorSystem(MakoDescriptorSystem):
         """
         Return an XModule instance for the specified location
         """
-        assert isinstance(location, Location)
+        assert isinstance(location, UsageKey)
         json_data = self.module_data.get(location)
         if json_data is None:
             module = self.modulestore.get_item(location)
@@ -266,7 +267,7 @@ class CachingDescriptorSystem(MakoDescriptorSystem):
 # The only thing using this w/ wildcards is contentstore.mongo for asset retrieval
 def location_to_query(location, wildcard=True, tag='i4x'):
     """
-    Takes a Location and returns a SON object that will query for that location by subfields
+    Takes a UsageKey and returns a SON object that will query for that location by subfields
     rather than subdoc.
     Fields in location that are None are ignored in the query.
 
@@ -289,7 +290,7 @@ class MongoModuleStore(ModuleStoreWriteBase):
     """
     A Mongodb backed ModuleStore
     """
-    reference_type = Location
+    reference_type = UsageKey
 
     # TODO (cpennington): Enable non-filesystem filestores
     # pylint: disable=C0103
@@ -360,7 +361,7 @@ class MongoModuleStore(ModuleStoreWriteBase):
             ('_id.course', course_id.course),
             ('_id.category', {'$in': list(block_types_with_children)})
         ])
-        # we just want the Location, children, and inheritable metadata
+        # we just want the UsageKey, children, and inheritable metadata
         record_filter = {'_id': 1, 'definition.children': 1}
 
         # just get the inheritable metadata since that is all we need for the computation
@@ -490,7 +491,7 @@ class MongoModuleStore(ModuleStoreWriteBase):
 
     def _cache_children(self, course_key, items, depth=0):
         """
-        Returns a dictionary mapping Location -> item data, populated with json data
+        Returns a dictionary mapping UsageKey -> item data, populated with json data
         for all descendents of items up to the specified depth.
         (0 = no descendents, 1 = children, 2 = grandchildren, etc)
         If depth is None, will load all the children.
@@ -602,7 +603,7 @@ class MongoModuleStore(ModuleStoreWriteBase):
         specified, returns the latest.  If the item is not present, raise
         ItemNotFoundError.
         '''
-        assert isinstance(location, Location)
+        assert isinstance(location, UsageKey)
         item = self.collection.find_one(
             {'_id': location.to_deprecated_son()},
             sort=[('revision', pymongo.ASCENDING)],
@@ -797,7 +798,7 @@ class MongoModuleStore(ModuleStoreWriteBase):
         """
         Create the new xmodule but don't save it. Returns the new module.
 
-        :param location: a Location--must have a category
+        :param location: a UsageKey--must have a category
         :param definition_data: can be empty. The initial definition_data for the kvs
         :param metadata: can be empty, the initial metadata for the kvs
         :param system: if you already have an xblock from the course, the xblock.runtime value
@@ -853,7 +854,7 @@ class MongoModuleStore(ModuleStoreWriteBase):
         between this and just doing create_xmodule and update_item is this ensures static_tabs get
         pointed to by the course.
 
-        :param location: a Location--must have a category
+        :param location: a UsageKey--must have a category
         :param definition_data: can be empty. The initial definition_data for the kvs
         :param metadata: can be empty, the initial metadata for the kvs
         :param system: if you already have an xblock from the course, the xblock.runtime value
@@ -971,7 +972,7 @@ class MongoModuleStore(ModuleStoreWriteBase):
                     ]
                 elif isinstance(xblock.fields[field_name], ReferenceValueDict):
                     for key, subvalue in value.iteritems():
-                        assert isinstance(subvalue, Location)
+                        assert isinstance(subvalue, UsageKey)
                         value[key] = unicode(subvalue)
         return jsonfields
 
