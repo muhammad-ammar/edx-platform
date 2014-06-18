@@ -51,18 +51,6 @@ class TestPublish(SplitWMongoCourseBoostrapper):
         self._create_item('about', 'overview', "<p>overview</p>", {}, None, None, split=False)
         self._create_item('course_info', 'updates', "<ol><li><h2>Sep 22</h2><p>test</p></li></ol>", {}, None, None, split=False)
 
-    def _xmodule_recurse(self, item, action):
-        """
-        Applies action depth-first down tree and to item last.
-
-        A copy of  cms.djangoapps.contentstore.views.helpers._xmodule_recurse to reproduce its use and behavior
-        outside of django.
-        """
-        for child in item.get_children():
-            self._xmodule_recurse(child, action)
-
-        action(item)
-
     def test_publish_draft_delete(self):
         """
         To reproduce a bug (STUD-811) publish a vertical, convert to draft, delete a child, move a child, publish.
