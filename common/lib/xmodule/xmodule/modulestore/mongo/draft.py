@@ -254,27 +254,20 @@ class DraftModuleStore(MongoModuleStore):
         are internal calls like deleting orphans (during publishing as well as from delete_orphan view).
         To signal such pass the keyword revision='all' which makes it clear that all should go away.
 
-        * Deleting a DIRECT_ONLY block, deletes both draft and published children and removes from parent.
-        * Deleting a specific version of block whose parent is DIRECT_ONLY, only removes it from parent if
-        the other version of block does not exist. deletes only children of same version.
+        * Deleting a DIRECT_ONLY_CATEGORIES block, deletes both draft and published children and removes from parent.
+        * Deleting a specific version of block whose parent is of DIRECT_ONLY_CATEGORIES, only removes it from parent if
+        the other version of the block does not exist. Deletes only children of same version.
         * Other deletions remove from parent of same version and subtree of same version
 
-        This method also side effects Course if a static tab is deleted.
-
         Args:
-            location (UsageKey)
+            location: UsageKey of the item to be deleted
+            user_id: id of the user deleting the item
+            revision:
+                if None, deletes the item and its subtree, and updates the parents per description above
+                if 'published-only', removes only Published versions
+                if 'all', removes both Draft and Published parents
         """
         assert self.branch_setting == DRAFT
-
-        # VS[compat] cdodge: This is a hack because static_tabs also have references from the course module, so
-        # if we add one then we need to also add it to the policy information (i.e. metadata)
-        # we should remove this once we can break this reference from the course to static tabs
-        if location.category == 'static_tab':
-            item = self.get_item(location)
-            course = self._get_course_for_item(item.scope_ids.usage_id)
-            existing_tabs = course.tabs or []
-            course.tabs = [tab for tab in existing_tabs if tab.get('url_slug') != location.name]
-            self.update_item(course, user_id)
 
         direct_only_root = location.category in DIRECT_ONLY_CATEGORIES
         if direct_only_root or revision == 'published-only':

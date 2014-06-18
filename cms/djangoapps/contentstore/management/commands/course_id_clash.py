@@ -11,9 +11,9 @@ from xmodule.modulestore import MONGO_MODULESTORE_TYPE
 #
 class Command(BaseCommand):
     """
-    Script for finding all courses whose org/name pairs == other courses when ignoring case
+    Script for finding all courses in the Mongo Modulestore whose org/name pairs == other courses when ignoring case
     """
-    help = 'List all courses ids which may collide when ignoring case'
+    help = 'List all courses ids in the Mongo Modulestore which may collide when ignoring case'
 
     def handle(self, *args, **options):
         mstore = modulestore()._get_modulestore_by_type(MONGO_MODULESTORE_TYPE)

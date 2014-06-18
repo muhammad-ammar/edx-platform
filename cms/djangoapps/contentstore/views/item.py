@@ -119,8 +119,7 @@ def xblock_handler(request, usage_key_string):
                 return HttpResponse(status=406)
 
         elif request.method == 'DELETE':
-            # need to just delete the draft (if not direct_only)
-            modulestore().delete_item(usage_key, request.user.id)
+            _delete_item(usage_key, request)
             return JsonResponse()
         else:  # Since we have a usage_key, we are updating an existing xblock.
             return _save_item(
@@ -484,6 +483,21 @@ def _duplicate_item(parent_usage_key, duplicate_source_usage_key, display_name=N
         store.update_item(parent, user.id if user else None)
 
     return dest_usage_key
+
+
+def _delete_item(usage_key, request):
+    store = modulestore()
+
+    # VS[compat] cdodge: This is a hack because static_tabs also have references from the course module, so
+    # if we add one then we need to also add it to the policy information (i.e. metadata)
+    # we should remove this once we can break this reference from the course to static tabs
+    if usage_key.category == 'static_tab':
+        course = store.get_course(usage_key.course_key)
+        existing_tabs = course.tabs or []
+        course.tabs = [tab for tab in existing_tabs if tab.get('url_slug') != usage_key.name]
+        store.update_item(course, request.user.id)
+
+    store.delete_item(usage_key, request.user.id)
 
 
 # pylint: disable=W0613

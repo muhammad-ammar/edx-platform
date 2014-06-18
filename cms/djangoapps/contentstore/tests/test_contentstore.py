@@ -685,17 +685,7 @@ class ContentStoreToyCourseTest(ContentStoreTestCase):
 
             # also make sure that metadata was cloned over and filtered with own_metadata, i.e. inherited
             # values were not explicitly set
-            # TODO remove after Ben's change to publish date gets merged.
-            # since we published during clone, we obviously have new published dates/by
-            source_metadata = own_metadata(source_item)
-            lookup_metadata = own_metadata(lookup_item)
-            if 'published_date' in lookup_metadata:
-                source_metadata['published_date'] = lookup_metadata['published_date']
-                source_metadata['published_by'] = lookup_metadata['published_by']
-            elif 'published_date' in source_metadata:
-                del source_metadata['published_date']
-                del source_metadata['published_by']
-            self.assertEqual(source_metadata, lookup_metadata)
+            self.assertEqual(own_metadata(source_item), own_metadata(lookup_item))
 
             # check that the children are as expected
             self.assertEqual(source_item.has_children, lookup_item.has_children)
@@ -930,7 +920,7 @@ class ContentStoreToyCourseTest(ContentStoreTestCase):
         # reimport
         import_from_xml(
             module_store,
-            0,
+            self.user.id,
             root_dir,
             ['test_export'],
             static_content_store=content_store,
@@ -1781,7 +1771,7 @@ class ContentStoreTest(ContentStoreTestCase):
         # Use conditional_and_poll, as it's got an image already
         import_from_xml(
             module_store,
-            0,
+            self.user.id,
             'common/test/data/',
             ['conditional_and_poll'],
             static_content_store=content_store
