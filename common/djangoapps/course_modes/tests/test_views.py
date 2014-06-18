@@ -55,7 +55,7 @@ class CourseModeViewTest(TestCase):
             get_params = {}
 
         response = self.client.get(
-            reverse('course_modes_choose', args=[self.course_id.to_deprecated_string()]),
+            reverse('course_modes_choose', args=[unicode(self.course_id)]),
             get_params,
             follow=False,
         )
@@ -91,7 +91,7 @@ class CourseModeViewTest(TestCase):
         )
 
         response = self.client.get(
-            reverse('course_modes_choose', args=[self.course_id.to_deprecated_string()]),
+            reverse('course_modes_choose', args=[unicode(self.course_id)]),
             follow=False,
         )
 

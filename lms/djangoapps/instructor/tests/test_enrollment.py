@@ -326,8 +326,8 @@ class TestInstructorEnrollmentStudentModule(TestCase):
         # Create a submission and score for the student using the submissions API
         student_item = {
             'student_id': anonymous_id_for_user(user, self.course_key),
-            'course_id': self.course_key.to_deprecated_string(),
-            'item_id': problem_location.to_deprecated_string(),
+            'course_id': unicode(self.course_key),
+            'item_id': unicode(problem_location),
             'item_type': 'openassessment'
         }
         submission = sub_api.create_submission(student_item, 'test answer')
@@ -443,7 +443,7 @@ class TestGetEmailParams(TestCase):
         site = settings.SITE_NAME
         self.course_url = u'https://{}/courses/{}/'.format(
             site,
-            self.course.id.to_deprecated_string()
+            unicode(self.course.id)
         )
         self.course_about_url = self.course_url + 'about'
         self.registration_url = u'https://{}/register'.format(

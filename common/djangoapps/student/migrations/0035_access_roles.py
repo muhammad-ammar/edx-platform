@@ -4,6 +4,7 @@ from south.v2 import DataMigration
 from django.db import models
 from xmodule.modulestore.django import loc_mapper
 import re
+from opaque_keys.edx.keys import CourseKey
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from opaque_keys import InvalidKeyError
 import bson.son
@@ -61,7 +62,7 @@ class Migration(DataMigration):
             else:
                 course_id_string = parsed_entry.group('course_id_string')
                 try:
-                    course_key = SlashSeparatedCourseKey.from_deprecated_string(course_id_string)
+                    course_key = CourseKey.from_string(course_id_string)
                     # course_key is the downcased version, get the normal cased one. loc_mapper() has no
                     # methods taking downcased SSCK; so, need to do it manually here
                     correct_course_key = self._map_downcased_ssck(course_key, loc_map_collection)

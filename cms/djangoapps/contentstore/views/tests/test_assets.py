@@ -18,7 +18,8 @@ from xmodule.contentstore.django import contentstore
 from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.xml_importer import import_from_xml
 from django.test.utils import override_settings
-from opaque_keys.edx.locations import SlashSeparatedCourseKey, AssetLocation
+from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import AssetKey
 
 
 class AssetsTestCase(CourseTestCase):
@@ -62,7 +63,7 @@ class BasicAssetsTestCase(AssetsTestCase):
         # Test valid contentType for pdf asset (textbook.pdf)
         resp = self.client.get(url, HTTP_ACCEPT='application/json')
         self.assertContains(resp, "/c4x/edX/toy/asset/textbook.pdf")
-        asset_location = AssetLocation.from_deprecated_string('/c4x/edX/toy/asset/textbook.pdf')
+        asset_location = AssetKey.from_string('/c4x/edX/toy/asset/textbook.pdf')
         content = contentstore().find(asset_location)
         # Check after import textbook.pdf has valid contentType ('application/pdf')
 

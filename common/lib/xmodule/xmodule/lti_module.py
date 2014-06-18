@@ -466,7 +466,7 @@ class LTIModule(LTIFields, LTI20ModuleMixin, XModule):
         context_id is an opaque identifier that uniquely identifies the context (e.g., a course)
         that contains the link being launched.
         """
-        return self.course_id.to_deprecated_string()
+        return unicode(self.course_id)
 
     @property
     def role(self):

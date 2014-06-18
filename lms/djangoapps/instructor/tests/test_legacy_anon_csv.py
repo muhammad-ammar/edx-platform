@@ -56,7 +56,7 @@ class TestInstructorDashboardAnonCSV(ModuleStoreTestCase, LoginEnrollmentTestCas
     @patch.object(instructor.views.legacy, 'unique_id_for_user', Mock(return_value='41'))
     def test_download_anon_csv(self):
         course = self.toy
-        url = reverse('instructor_dashboard_legacy', kwargs={'course_id': course.id.to_deprecated_string()})
+        url = reverse('instructor_dashboard_legacy', kwargs={'course_id': unicode(course.id)})
         response = self.client.post(url, {'action': 'Download CSV of all student anonymized IDs'})
 
         self.assertEqual(response['Content-Type'], 'text/csv')

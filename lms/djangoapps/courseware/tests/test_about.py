@@ -23,13 +23,13 @@ class AboutTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
 
     def test_logged_in(self):
         self.setup_user()
-        url = reverse('about_course', args=[self.course.id.to_deprecated_string()])
+        url = reverse('about_course', args=[unicode(self.course.id)])
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertIn("OOGIE BLOOGIE", resp.content)
 
     def test_anonymous_user(self):
-        url = reverse('about_course', args=[self.course.id.to_deprecated_string()])
+        url = reverse('about_course', args=[unicode(self.course.id)])
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertIn("OOGIE BLOOGIE", resp.content)
@@ -49,14 +49,14 @@ class AboutTestCaseXML(LoginEnrollmentTestCase, ModuleStoreTestCase):
     @mock.patch.dict('django.conf.settings.FEATURES', {'DISABLE_START_DATES': False})
     def test_logged_in_xml(self):
         self.setup_user()
-        url = reverse('about_course', args=[self.xml_course_id.to_deprecated_string()])
+        url = reverse('about_course', args=[unicode(self.xml_course_id)])
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertIn(self.xml_data, resp.content)
 
     @mock.patch.dict('django.conf.settings.FEATURES', {'DISABLE_START_DATES': False})
     def test_anonymous_user_xml(self):
-        url = reverse('about_course', args=[self.xml_course_id.to_deprecated_string()])
+        url = reverse('about_course', args=[unicode(self.xml_course_id)])
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertIn(self.xml_data, resp.content)
@@ -83,7 +83,7 @@ class AboutWithCappedEnrollmentsTestCase(LoginEnrollmentTestCase, ModuleStoreTes
         This test will make sure that enrollment caps are enforced
         """
         self.setup_user()
-        url = reverse('about_course', args=[self.course.id.to_deprecated_string()])
+        url = reverse('about_course', args=[unicode(self.course.id)])
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertIn('<a href="#" class="register">', resp.content)

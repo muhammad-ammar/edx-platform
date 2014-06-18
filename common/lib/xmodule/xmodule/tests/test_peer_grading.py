@@ -26,7 +26,7 @@ class PeerGradingModuleTest(unittest.TestCase, DummyModulestore):
     problem_location = course_id.make_usage_key("peergrading", "PeerGradingSample")
     coe_location = course_id.make_usage_key("combinedopenended", "SampleQuestion")
     calibrated_dict = {'location': "blah"}
-    coe_dict = {'location': coe_location.to_deprecated_string()}
+    coe_dict = {'location': unicode(coe_location)}
     save_dict = MultiDict({
         'location': "blah",
         'submission_id': 1,
@@ -317,7 +317,7 @@ class PeerGradingModuleLinkedTest(unittest.TestCase, DummyModulestore):
             'data': '<peergrading/>',
             'location': self.problem_location,
             'use_for_single_location': True,
-            'link_to_location': self.coe_location.to_deprecated_string(),
+            'link_to_location': unicode(self.coe_location),
             'graded': True,
             })
 
@@ -429,7 +429,7 @@ class PeerGradingModuleLinkedTest(unittest.TestCase, DummyModulestore):
         peer_grading = self._create_peer_grading_with_linked_problem(self.coe_location)
 
         # If we specify a location, it will render the problem for that location.
-        data = peer_grading.handle_ajax('problem', {'location': self.coe_location.to_deprecated_string()})
+        data = peer_grading.handle_ajax('problem', {'location': unicode(self.coe_location)})
         self.assertTrue(json.loads(data)['success'])
 
         # If we don't specify a location, it should use the linked location.

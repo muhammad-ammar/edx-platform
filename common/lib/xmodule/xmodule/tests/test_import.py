@@ -344,7 +344,7 @@ class ImportTestCase(BaseCourseTestCase):
 
         def check_for_key(key, node, value):
             "recursive check for presence of key"
-            print("Checking {0}".format(node.location.to_deprecated_string()))
+            print("Checking {0}".format(unicode(node.location)))
             self.assertEqual(getattr(node, key), value)
             for c in node.get_children():
                 check_for_key(key, c, value)

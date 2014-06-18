@@ -339,7 +339,7 @@ def import_module(
         source_course_id, dest_course_id,
         do_import_static=True, system=None):
 
-    logging.debug(u'processing import of module {}...'.format(module.location.to_deprecated_string()))
+    logging.debug(u'processing import of module {}...'.format(unicode(module.location)))
 
     if do_import_static and 'data' in module.fields and isinstance(module.fields['data'], xblock.fields.String):
         # we want to convert all 'non-portable' links in the module_data
@@ -523,7 +523,7 @@ def import_course_draft(
                             sequential_url = module.xml_attributes['parent_sequential_url']
                             index = int(module.xml_attributes['index_in_children_list'])
 
-                            seq_location = course_key.make_usage_key_from_deprecated_string(sequential_url)
+                            seq_location = UsageKey.from_string(sequential_url).map_into_course(course_key)
 
                             # IMPORTANT: Be sure to update the sequential
                             # in the NEW namespace
@@ -577,7 +577,7 @@ def check_module_metadata_editability(module):
         print(
             ": found non-editable metadata on {url}. "
             "These metadata keys are not supported = {keys}".format(
-                url=module.location.to_deprecated_string(), keys=illegal_keys
+                url=unicode(module.location), keys=illegal_keys
             )
         )
 

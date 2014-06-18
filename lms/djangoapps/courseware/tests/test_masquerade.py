@@ -45,7 +45,7 @@ class TestStaffMasqueradeAsStudent(ModuleStoreTestCase, LoginEnrollmentTestCase)
 
     def get_cw_section(self):
         url = reverse('courseware_section',
-                      kwargs={'course_id': self.graded_course.id.to_deprecated_string(),
+                      kwargs={'course_id': unicode(self.graded_course.id),
                               'chapter': 'GradedChapter',
                               'section': 'Homework1'})
 
@@ -84,8 +84,8 @@ class TestStaffMasqueradeAsStudent(ModuleStoreTestCase, LoginEnrollmentTestCase)
         problem_location = self.graded_course.id.make_usage_key("problem", pun)
 
         modx_url = reverse('xblock_handler',
-                           kwargs={'course_id': self.graded_course.id.to_deprecated_string(),
-                                   'usage_id': quote_slashes(problem_location.to_deprecated_string()),
+                           kwargs={'course_id': unicode(self.graded_course.id),
+                                   'usage_id': quote_slashes(unicode(problem_location)),
                                    'handler': 'xmodule_handler',
                                    'suffix': 'problem_get'})
 

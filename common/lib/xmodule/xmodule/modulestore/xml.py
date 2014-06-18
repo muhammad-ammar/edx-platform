@@ -268,7 +268,7 @@ def _make_usage_key(course_key, value):
     """
     if isinstance(value, UsageKey):
         return value
-    return course_key.make_usage_key_from_deprecated_string(value)
+    return UsageKey.from_string(value).map_into_course(course_key)
 
 
 def _convert_reference_fields_to_keys(xblock):  # pylint: disable=invalid-name
@@ -390,7 +390,7 @@ class XMLModuleStore(ModuleStoreReadBase):
         self.errored_courses = {}  # course_dir -> errorlog, for dirs that failed to load
 
         if course_ids is not None:
-            course_ids = [SlashSeparatedCourseKey.from_deprecated_string(course_id) for course_id in course_ids]
+            course_ids = [CourseKey.from_string(course_id) for course_id in course_ids]
 
         self.load_error_modules = load_error_modules
 

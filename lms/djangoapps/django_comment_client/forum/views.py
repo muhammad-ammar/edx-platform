@@ -21,7 +21,7 @@ from django_comment_client.utils import (merge_dict, extract, strip_none, add_co
 import django_comment_client.utils as utils
 import lms.lib.comment_client as cc
 
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import CourseKey
 
 THREADS_PER_PAGE = 20
 INLINE_THREADS_PER_PAGE = 20
@@ -43,7 +43,7 @@ def get_threads(request, course_id, discussion_id=None, per_page=THREADS_PER_PAG
         'sort_order': 'desc',
         'text': '',
         'commentable_id': discussion_id,
-        'course_id': course_id.to_deprecated_string(),
+        'course_id': unicode(course_id),
         'user_id': request.user.id,
     }
 
@@ -114,7 +114,7 @@ def inline_discussion(request, course_id, discussion_id):
     Renders JSON for DiscussionModules
     """
     nr_transaction = newrelic.agent.current_transaction()
-    course_id = SlashSeparatedCourseKey.from_deprecated_string(course_id)
+    course_id = CourseKey.from_string(course_id)
 
     course = get_course_with_access(request.user, 'load_forum', course_id)
 
@@ -170,7 +170,7 @@ def forum_form_discussion(request, course_id):
     """
     Renders the main Discussion page, potentially filtered by a search query
     """
-    course_id = SlashSeparatedCourseKey.from_deprecated_string(course_id)
+    course_id = CourseKey.from_string(course_id)
     nr_transaction = newrelic.agent.current_transaction()
 
     course = get_course_with_access(request.user, 'load_forum', course_id)
@@ -218,7 +218,7 @@ def forum_form_discussion(request, course_id):
             'user_info': saxutils.escape(json.dumps(user_info), escapedict),
             'flag_moderator': cached_has_permission(request.user, 'openclose_thread', course.id) or has_access(request.user, 'staff', course),
             'annotated_content_info': saxutils.escape(json.dumps(annotated_content_info), escapedict),
-            'course_id': course.id.to_deprecated_string(),
+            'course_id': unicode(course.id),
             'category_map': category_map,
             'roles': saxutils.escape(json.dumps(utils.get_role_ids(course_id)), escapedict),
             'is_moderator': cached_has_permission(request.user, "see_all_cohorts", course_id),
@@ -235,7 +235,7 @@ def forum_form_discussion(request, course_id):
 @require_GET
 @login_required
 def single_thread(request, course_id, discussion_id, thread_id):
-    course_id = SlashSeparatedCourseKey.from_deprecated_string(course_id)
+    course_id = CourseKey.from_string(course_id)
     nr_transaction = newrelic.agent.current_transaction()
 
     course = get_course_with_access(request.user, 'load_forum', course_id)
@@ -305,7 +305,7 @@ def single_thread(request, course_id, discussion_id, thread_id):
             'annotated_content_info': saxutils.escape(json.dumps(annotated_content_info), escapedict),
             'course': course,
             #'recent_active_threads': recent_active_threads,
-            'course_id': course.id.to_deprecated_string(),   # TODO: Why pass both course and course.id to template?
+            'course_id': unicode(course.id),   # TODO: Why pass both course and course.id to template?
             'thread_id': thread_id,
             'threads': saxutils.escape(json.dumps(threads), escapedict),
             'category_map': category_map,
@@ -324,7 +324,7 @@ def single_thread(request, course_id, discussion_id, thread_id):
 @require_GET
 @login_required
 def user_profile(request, course_id, user_id):
-    course_id = SlashSeparatedCourseKey.from_deprecated_string(course_id)
+    course_id = CourseKey.from_string(course_id)
     nr_transaction = newrelic.agent.current_transaction()
 
     #TODO: Allow sorting?
@@ -373,7 +373,7 @@ def user_profile(request, course_id, user_id):
 
 @login_required
 def followed_threads(request, course_id, user_id):
-    course_id = SlashSeparatedCourseKey.from_deprecated_string(course_id)
+    course_id = CourseKey.from_string(course_id)
     nr_transaction = newrelic.agent.current_transaction()
 
     course = get_course_with_access(request.user, 'load_forum', course_id)

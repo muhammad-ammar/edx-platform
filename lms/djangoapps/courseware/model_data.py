@@ -12,7 +12,7 @@ from .models import (
     XModuleStudentInfoField
 )
 import logging
-from opaque_keys.edx.locations import SlashSeparatedCourseKey, Location
+from opaque_keys.edx.keys import CourseKey, UsageKey
 
 from django.db import DatabaseError
 from django.contrib.auth.models import User
@@ -61,7 +61,7 @@ class FieldDataCache(object):
         self.descriptors = descriptors
         self.select_for_update = select_for_update
 
-        assert isinstance(course_id, SlashSeparatedCourseKey)
+        assert isinstance(course_id, CourseKey)
         self.course_id = course_id
         self.user = user
 

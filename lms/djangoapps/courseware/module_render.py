@@ -254,9 +254,9 @@ def get_module_system_for_user(user, field_data_cache,
         relative_xqueue_callback_url = reverse(
             'xqueue_callback',
             kwargs=dict(
-                course_id=course_id.to_deprecated_string(),
+                course_id=unicode(course_id),
                 userid=str(user.id),
-                mod_id=descriptor.location.to_deprecated_string(),
+                mod_id=unicode(descriptor.location),
                 dispatch=dispatch
             ),
         )
@@ -403,8 +403,8 @@ def get_module_system_for_user(user, field_data_cache,
     if wrap_xmodule_display is True:
         block_wrappers.append(partial(
             wrap_xblock, 'LmsRuntime',
-            extra_data={'course-id': course_id.to_deprecated_string()},
-            usage_id_serializer=lambda usage_id: quote_slashes(usage_id.to_deprecated_string())
+            extra_data={'course-id': unicode(course_id)},
+            usage_id_serializer=lambda usage_id: quote_slashes(unicode(usage_id))
         ))
 
     # TODO (cpennington): When modules are shared between courses, the static
@@ -431,7 +431,7 @@ def get_module_system_for_user(user, field_data_cache,
     block_wrappers.append(partial(
         replace_jump_to_id_urls,
         course_id,
-        reverse('jump_to_id', kwargs={'course_id': course_id.to_deprecated_string(), 'module_id': ''}),
+        reverse('jump_to_id', kwargs={'course_id': unicode(course_id), 'module_id': ''}),
     ))
 
     if settings.FEATURES.get('DISPLAY_DEBUG_INFO_TO_STAFF'):
@@ -480,7 +480,7 @@ def get_module_system_for_user(user, field_data_cache,
         replace_jump_to_id_urls=partial(
             static_replace.replace_jump_to_id_urls,
             course_id=course_id,
-            jump_to_id_base_url=reverse('jump_to_id', kwargs={'course_id': course_id.to_deprecated_string(), 'module_id': ''})
+            jump_to_id_base_url=reverse('jump_to_id', kwargs={'course_id': unicode(course_id), 'module_id': ''})
         ),
         node_path=settings.NODE_PATH,
         publish=publish,
@@ -553,8 +553,8 @@ def find_target_student_module(request, user_id, course_id, mod_id):
     """
     Retrieve target StudentModule
     """
-    course_id = SlashSeparatedCourseKey.from_deprecated_string(course_id)
-    usage_key = course_id.make_usage_key_from_deprecated_string(mod_id)
+    course_id = CourseKey.from_string(course_id)
+    usage_key = UsageKey.from_string(mod_id).map_into_course(course_id)
     user = User.objects.get(id=user_id)
     field_data_cache = FieldDataCache.cache_for_descriptor_descendents(
         course_id,
@@ -671,8 +671,8 @@ def _invoke_xblock_handler(request, course_id, usage_id, handler, suffix, user):
 
     """
     try:
-        course_id = SlashSeparatedCourseKey.from_deprecated_string(course_id)
-        usage_key = course_id.make_usage_key_from_deprecated_string(unquote_slashes(usage_id))
+        course_id = CourseKey.from_string(course_id)
+        usage_key = UsageKey.from_string(unquote_slashes(usage_id)).map_into_course(course_id)
     except InvalidKeyError:
         raise Http404("Invalid location")
 

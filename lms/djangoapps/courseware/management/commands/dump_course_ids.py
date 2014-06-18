@@ -30,6 +30,6 @@ class Command(BaseCommand):
         except KeyError:
             raise CommandError("Unknown modulestore {}".format(name))
 
-        output = u'\n'.join(course.id.to_deprecated_string() for course in store.get_courses()) + '\n'
+        output = u'\n'.join(unicode(course.id) for course in store.get_courses()) + '\n'
 
         return output.encode('utf-8')

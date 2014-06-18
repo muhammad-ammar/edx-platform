@@ -43,7 +43,7 @@ class TestHandlerUrl(TestCase):
 
     def setUp(self):
         self.block = Mock()
-        self.block.scope_ids.usage_id.to_deprecated_string.return_value.encode.return_value = 'dummy'
+        self.block.scope_ids.usage_id.__unicode__.return_value.encode.return_value = 'dummy'
         self.course_key = SlashSeparatedCourseKey("org", "course", "run")
         self.runtime = LmsModuleSystem(
             static_url='/static',

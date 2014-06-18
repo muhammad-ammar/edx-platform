@@ -258,4 +258,4 @@ class OfflineComputedGradeLog(models.Model):
     nstudents = models.IntegerField(default=0)
 
     def __unicode__(self):
-        return "[OCGLog] %s: %s" % (self.course_id.to_deprecated_string(), self.created)  # pylint: disable=no-member
+        return "[OCGLog] %s: %s" % (unicode(self.course_id), self.created)  # pylint: disable=no-member

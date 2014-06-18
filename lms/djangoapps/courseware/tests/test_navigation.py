@@ -80,10 +80,10 @@ class TestNavigation(ModuleStoreTestCase, LoginEnrollmentTestCase):
         self.enroll(self.test_course, True)
 
         resp = self.client.get(reverse('courseware',
-                               kwargs={'course_id': self.course.id.to_deprecated_string()}))
+                               kwargs={'course_id': unicode(self.course.id)}))
 
         self.assertRedirects(resp, reverse(
-            'courseware_section', kwargs={'course_id': self.course.id.to_deprecated_string(),
+            'courseware_section', kwargs={'course_id': unicode(self.course.id),
                                           'chapter': 'Overview',
                                           'section': 'Welcome'}))
 
@@ -98,18 +98,18 @@ class TestNavigation(ModuleStoreTestCase, LoginEnrollmentTestCase):
         self.enroll(self.test_course, True)
 
         self.client.get(reverse('courseware_section', kwargs={
-            'course_id': self.course.id.to_deprecated_string(),
+            'course_id': unicode(self.course.id),
             'chapter': 'Overview',
             'section': 'Welcome',
         }))
 
         resp = self.client.get(reverse('courseware',
-                               kwargs={'course_id': self.course.id.to_deprecated_string()}))
+                               kwargs={'course_id': unicode(self.course.id)}))
 
         self.assertRedirects(resp, reverse(
             'courseware_chapter',
             kwargs={
-                'course_id': self.course.id.to_deprecated_string(),
+                'course_id': unicode(self.course.id),
                 'chapter': 'Overview'
             }
         ))
@@ -127,7 +127,7 @@ class TestNavigation(ModuleStoreTestCase, LoginEnrollmentTestCase):
         check_for_get_code(self, 200, reverse(
             'courseware_section',
             kwargs={
-                'course_id': self.course.id.to_deprecated_string(),
+                'course_id': unicode(self.course.id),
                 'chapter': 'factory_chapter',
                 'section': 'factory_section'
             }
@@ -135,10 +135,10 @@ class TestNavigation(ModuleStoreTestCase, LoginEnrollmentTestCase):
 
         # And now hitting the courseware tab should redirect to 'factory_chapter'
         resp = self.client.get(reverse('courseware',
-                               kwargs={'course_id': self.course.id.to_deprecated_string()}))
+                               kwargs={'course_id': unicode(self.course.id)}))
 
         self.assertRedirects(resp, reverse('courseware_chapter',
-                                           kwargs={'course_id': self.course.id.to_deprecated_string(),
+                                           kwargs={'course_id': unicode(self.course.id),
                                                    'chapter': 'factory_chapter'}))
 
     def test_incomplete_course(self):
@@ -147,7 +147,7 @@ class TestNavigation(ModuleStoreTestCase, LoginEnrollmentTestCase):
         self.login(email, password)
         self.enroll(self.test_course, True)
 
-        test_course_id = self.test_course.id.to_deprecated_string()
+        test_course_id = unicode(self.test_course.id)
 
         check_for_get_code(
             self, 200,

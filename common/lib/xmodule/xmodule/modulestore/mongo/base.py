@@ -8,7 +8,7 @@ structure:
     '_id': <location.as_dict>,
     'metadata': <dict containing all Scope.settings fields>
     'definition': <dict containing all Scope.content fields>
-    'definition.children': <list of all child location.to_deprecated_string()s>
+    'definition.children': <list of all child unicode(location)s>
 }
 """
 
@@ -181,7 +181,7 @@ class CachingDescriptorSystem(MakoDescriptorSystem):
                         del metadata[old_name]
 
                 children = [
-                    location.course_key.make_usage_key_from_deprecated_string(childloc)
+                    UsageKey.from_string(childloc).map_into_course(location.course_key)
                     for childloc in definition.get('children', [])
                 ]
                 data = definition.get('data', {})
@@ -207,7 +207,7 @@ class CachingDescriptorSystem(MakoDescriptorSystem):
 
                     # Convert the serialized fields values in self.cached_metadata
                     # to python values
-                    metadata_to_inherit = self.cached_metadata.get(non_draft_loc.to_deprecated_string(), {})
+                    metadata_to_inherit = self.cached_metadata.get(unicode(non_draft_loc), {})
                     inherit_metadata(module, metadata_to_inherit)
 
                 edit_info = json_data.get('edit_info')
@@ -251,15 +251,15 @@ class CachingDescriptorSystem(MakoDescriptorSystem):
                 if field is None:
                     continue
                 elif isinstance(field, Reference):
-                    jsonfields[field_name] = course_key.make_usage_key_from_deprecated_string(value)
+                    jsonfields[field_name] = UsageKey.from_string(value).map_into_course(course_key)
                 elif isinstance(field, ReferenceList):
                     jsonfields[field_name] = [
-                        course_key.make_usage_key_from_deprecated_string(ele) for ele in value
+                        UsageKey.from_string(ele).map_into_course(course_key) for ele in value
                     ]
                 elif isinstance(field, ReferenceValueDict):
                     for key, subvalue in value.iteritems():
                         assert isinstance(subvalue, basestring)
-                        value[key] = course_key.make_usage_key_from_deprecated_string(subvalue)
+                        value[key] = UsageKey.from_string(subvalue).map_into_course(course_key)
         return jsonfields
 
 
@@ -381,7 +381,7 @@ class MongoModuleStore(ModuleStoreWriteBase):
             # manually pick it apart b/c the db has tag and we want revision = None regardless
             location = Location._from_deprecated_son(result['_id'], course_id.run).replace(revision=None)
 
-            location_url = location.to_deprecated_string()
+            location_url = unicode(location)
             if location_url in results_by_url:
                 # found either draft or live to complement the other revision
                 existing_children = results_by_url[location_url].get('definition', {}).get('children', [])
@@ -483,7 +483,7 @@ class MongoModuleStore(ModuleStoreWriteBase):
         # first get non-draft in a round-trip
         query = {
             '_id': {'$in': [
-                course_key.make_usage_key_from_deprecated_string(item).to_deprecated_son() for item in items
+                UsageKey.from_string(item).map_into_course(course_key).to_deprecated_son() for item in items
             ]}
         }
         return list(self.collection.find(query))
@@ -964,15 +964,15 @@ class MongoModuleStore(ModuleStoreWriteBase):
         for field_name, value in jsonfields.iteritems():
             if value:
                 if isinstance(xblock.fields[field_name], Reference):
-                    jsonfields[field_name] = value.to_deprecated_string()
+                    jsonfields[field_name] = unicode(value)
                 elif isinstance(xblock.fields[field_name], ReferenceList):
                     jsonfields[field_name] = [
-                        ele.to_deprecated_string() for ele in value
+                        unicode(ele) for ele in value
                     ]
                 elif isinstance(xblock.fields[field_name], ReferenceValueDict):
                     for key, subvalue in value.iteritems():
                         assert isinstance(subvalue, Location)
-                        value[key] = subvalue.to_deprecated_string()
+                        value[key] = unicode(subvalue)
         return jsonfields
 
     # pylint: disable=unused-argument
@@ -1005,7 +1005,7 @@ class MongoModuleStore(ModuleStoreWriteBase):
         course.  Needed for path_to_location().
         '''
         query = self._course_key_to_son(location.course_key)
-        query['definition.children'] = location.to_deprecated_string()
+        query['definition.children'] = unicode(location)
         items = self.collection.find(query, {'_id': True})
         return [
             location.course_key.make_usage_key(i['_id']['category'], i['_id']['name'])
@@ -1036,7 +1036,7 @@ class MongoModuleStore(ModuleStoreWriteBase):
             if item['_id']['category'] != 'course':
                 # It would be nice to change this method to return UsageKeys instead of the deprecated string.
                 item_locs.add(
-                    Location._from_deprecated_son(item['_id'], course_key.run).replace(revision=None).to_deprecated_string()
+                    unicode(Location._from_deprecated_son(item['_id'], course_key.run).replace(revision=None))
                 )
             all_reachable = all_reachable.union(item.get('definition', {}).get('children', []))
         item_locs -= all_reachable

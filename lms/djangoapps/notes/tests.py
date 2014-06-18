@@ -88,7 +88,7 @@ class ApiTest(TestCase):
         self.client.login(username=username, password=password)
 
     def url(self, name, args={}):
-        args.update({'course_id': self.course_key.to_deprecated_string()})
+        args.update({'course_id': unicode(self.course_key)})
         return reverse(name, kwargs=args)
 
     def create_notes(self, num_notes, create=True):

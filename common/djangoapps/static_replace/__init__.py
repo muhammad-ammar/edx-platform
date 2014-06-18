@@ -82,7 +82,7 @@ def replace_course_urls(text, course_key):
     returns: text with the links replaced
     """
 
-    course_id = course_key.to_deprecated_string()
+    course_id = unicode(course_key)
 
     def replace_course_url(match):
         quote = match.group('quote')

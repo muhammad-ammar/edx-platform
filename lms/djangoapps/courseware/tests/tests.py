@@ -71,22 +71,22 @@ class PageLoaderTestCase(LoginEnrollmentTestCase):
 
             if descriptor.location.category == 'about':
                 self._assert_loads('about_course',
-                                   {'course_id': course_key.to_deprecated_string()},
+                                   {'course_id': unicode(course_key)},
                                    descriptor)
 
             elif descriptor.location.category == 'static_tab':
-                kwargs = {'course_id': course_key.to_deprecated_string(),
+                kwargs = {'course_id': unicode(course_key),
                           'tab_slug': descriptor.location.name}
                 self._assert_loads('static_tab', kwargs, descriptor)
 
             elif descriptor.location.category == 'course_info':
-                self._assert_loads('info', {'course_id': course_key.to_deprecated_string()},
+                self._assert_loads('info', {'course_id': unicode(course_key)},
                                    descriptor)
 
             else:
 
-                kwargs = {'course_id': course_key.to_deprecated_string(),
-                          'location': descriptor.location.to_deprecated_string()}
+                kwargs = {'course_id': unicode(course_key),
+                          'location': unicode(descriptor.location)}
 
                 self._assert_loads('jump_to', kwargs, descriptor,
                                    expect_redirect=True,

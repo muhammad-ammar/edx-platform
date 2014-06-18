@@ -158,7 +158,7 @@ class TestMixedModuleStore(LocMapperSetupSansDjango):
 
         # convert to CourseKeys
         self.course_locations = {
-            course_id: SlashSeparatedCourseKey.from_deprecated_string(course_id)
+            course_id: CourseKey.from_string(course_id)
             for course_id in [self.MONGO_COURSEID, self.XML_COURSEID1, self.XML_COURSEID2]
         }
         # and then to the root UsageKey
@@ -337,7 +337,7 @@ class TestMixedModuleStore(LocMapperSetupSansDjango):
         if default_ms == 'split':
             self.assertEqual(found_orphans, [orphan.location.version_agnostic()])
         else:
-            self.assertEqual(found_orphans, [orphan.location.to_deprecated_string()])
+            self.assertEqual(found_orphans, [unicode(orphan.location)])
 
     @ddt.data('direct')
     def test_create_item_from_parent_location(self, default_ms):

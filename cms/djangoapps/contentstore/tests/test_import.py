@@ -17,7 +17,8 @@ from contentstore.tests.modulestore_config import TEST_MODULESTORE
 
 from xmodule.modulestore.django import modulestore
 from xmodule.contentstore.django import contentstore
-from opaque_keys.edx.locations import SlashSeparatedCourseKey, AssetLocation
+from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import AssetKey
 from xmodule.modulestore.xml_importer import import_from_xml
 from xmodule.contentstore.content import StaticContent
 from xmodule.contentstore.django import _CONTENTSTORE
@@ -131,7 +132,7 @@ class ContentStoreImportTest(ModuleStoreTestCase):
 
         content = None
         try:
-            location = AssetLocation.from_deprecated_string(
+            location = AssetKey.from_string(
                 '/c4x/edX/test_import_course/asset/should_be_imported.html'
             )
             content = content_store.find(location)

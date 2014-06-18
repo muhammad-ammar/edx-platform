@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand
 from optparse import make_option
 
 from xmodule.modulestore.django import modulestore
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import CourseKey
 from xmodule.open_ended_grading_classes.openendedchild import OpenEndedChild
 from xmodule.open_ended_grading_classes.open_ended_module import OpenEndedModule
 
@@ -38,8 +38,8 @@ class Command(BaseCommand):
         task_number = options['task_number']
 
         if len(args) == 4:
-            course_id = SlashSeparatedCourseKey.from_deprecated_string(args[0])
-            location = course_id.make_usage_key_from_deprecated_string(args[1])
+            course_id = CourseKey.from_string(args[0])
+            location = UsageKey.from_string(args[1]).map_into_course(course_id)
             students_ids = [line.strip() for line in open(args[2])]
             hostname = args[3]
         else:

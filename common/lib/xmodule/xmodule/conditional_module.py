@@ -6,6 +6,7 @@ import json
 import logging
 from lazy import lazy
 from lxml import etree
+from opaque_keys.edx.keys import UsageKey
 from pkg_resources import resource_string
 
 from xmodule.x_module import XModule
@@ -198,7 +199,7 @@ class ConditionalDescriptor(ConditionalFields, SequenceDescriptor):
         if not self.sources_list:
             if 'sources' in self.xml_attributes and isinstance(self.xml_attributes['sources'], basestring):
                 self.sources_list = [
-                    self.location.course_key.make_usage_key_from_deprecated_string(item)
+                    UsageKey.from_string(item).map_into_course(self.location.course_key)
                     for item in ConditionalDescriptor.parse_sources(self.xml_attributes)
                 ]
 
@@ -253,11 +254,11 @@ class ConditionalDescriptor(ConditionalFields, SequenceDescriptor):
 
         if self.show_tag_list:
             show_str = u'<{tag_name} sources="{sources}" />'.format(
-                tag_name='show', sources=';'.join(location.to_deprecated_string() for location in self.show_tag_list))
+                tag_name='show', sources=';'.join(unicode(location) for location in self.show_tag_list))
             xml_object.append(etree.fromstring(show_str))
 
         # Overwrite the original sources attribute with the value from sources_list, as
         # Locations may have been changed to Locators.
-        stringified_sources_list = map(lambda loc: loc.to_deprecated_string(), self.sources_list)
+        stringified_sources_list = map(lambda loc: unicode(loc), self.sources_list)
         self.xml_attributes['sources'] = ';'.join(stringified_sources_list)
         return xml_object

@@ -514,18 +514,18 @@ def orphan_handler(request, course_key_string):
     An orphan is a block whose category is not in the DETACHED_CATEGORY list, is not the root, and is not reachable
     from the root via children
     """
-    course_usage_key = CourseKey.from_string(course_key_string)
+    course_key = CourseKey.from_string(course_key_string)
     if request.method == 'GET':
-        if has_course_access(request.user, course_usage_key):
-            return JsonResponse(modulestore().get_orphans(course_usage_key))
+        if has_course_access(request.user, course_key):
+            return JsonResponse(modulestore().get_orphans(course_key))
         else:
             raise PermissionDenied()
     if request.method == 'DELETE':
         if request.user.is_staff:
-            items = modulestore().get_orphans(course_usage_key)
+            items = modulestore().get_orphans(course_key)
             for itemloc in items:
                 # get_orphans returns the deprecated string format
-                usage_key = course_usage_key.make_usage_key_from_deprecated_string(itemloc)
+                usage_key = UsageKey.from_string(itemloc).map_into_course(course_key)
                 modulestore().delete_item(usage_key, delete_all_versions=True)
             return JsonResponse({'deleted': items})
         else:

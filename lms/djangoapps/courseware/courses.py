@@ -117,7 +117,7 @@ def course_image_url(course):
             url += '/images/course_image.jpg'
     else:
         loc = StaticContent.compute_location(course.id, course.course_image)
-        url = loc.to_deprecated_string()
+        url = unicode(loc)
     return url
 
 
@@ -207,7 +207,7 @@ def get_course_about_section(course, section_key):
 
         except ItemNotFoundError:
             log.warning(
-                u"Missing about section {key} in course {url}".format(key=section_key, url=course.location.to_deprecated_string())
+                u"Missing about section {key} in course {url}".format(key=section_key, url=unicode(course.location))
             )
             return None
     elif section_key == "title":
@@ -293,7 +293,7 @@ def get_course_syllabus_section(course, section_key):
                 )
         except ResourceNotFoundError:
             log.exception(
-                u"Missing syllabus section {key} in course {url}".format(key=section_key, url=course.location.to_deprecated_string())
+                u"Missing syllabus section {key} in course {url}".format(key=section_key, url=unicode(course.location))
             )
             return "! Syllabus missing !"
 

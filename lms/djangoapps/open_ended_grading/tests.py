@@ -115,7 +115,7 @@ class TestStaffGradingService(ModuleStoreTestCase, LoginEnrollmentTestCase):
         self.activate_user(self.instructor)
 
         self.course_id = SlashSeparatedCourseKey("edX", "toy", "2012_Fall")
-        self.location_string = self.course_id.make_usage_key('html', 'TestLocation').to_deprecated_string()
+        self.location_string = unicode(self.course_id.make_usage_key('html', 'TestLocation'))
         self.toy = modulestore().get_course(self.course_id)
 
         make_instructor(self.toy, self.instructor)
@@ -132,14 +132,14 @@ class TestStaffGradingService(ModuleStoreTestCase, LoginEnrollmentTestCase):
 
         # both get and post should return 404
         for view_name in ('staff_grading_get_next', 'staff_grading_save_grade'):
-            url = reverse(view_name, kwargs={'course_id': self.course_id.to_deprecated_string()})
+            url = reverse(view_name, kwargs={'course_id': unicode(self.course_id)})
             check_for_get_code(self, 404, url)
             check_for_post_code(self, 404, url)
 
     def test_get_next(self):
         self.login(self.instructor, self.password)
 
-        url = reverse('staff_grading_get_next', kwargs={'course_id': self.course_id.to_deprecated_string()})
+        url = reverse('staff_grading_get_next', kwargs={'course_id': unicode(self.course_id)})
         data = {'location': self.location_string}
 
         response = check_for_post_code(self, 200, url, data)
@@ -160,7 +160,7 @@ class TestStaffGradingService(ModuleStoreTestCase, LoginEnrollmentTestCase):
     def save_grade_base(self, skip=False):
         self.login(self.instructor, self.password)
 
-        url = reverse('staff_grading_save_grade', kwargs={'course_id': self.course_id.to_deprecated_string()})
+        url = reverse('staff_grading_save_grade', kwargs={'course_id': unicode(self.course_id)})
 
         data = {'score': '12',
                 'feedback': 'great!',
@@ -185,7 +185,7 @@ class TestStaffGradingService(ModuleStoreTestCase, LoginEnrollmentTestCase):
     def test_get_problem_list(self):
         self.login(self.instructor, self.password)
 
-        url = reverse('staff_grading_get_problem_list', kwargs={'course_id': self.course_id.to_deprecated_string()})
+        url = reverse('staff_grading_get_problem_list', kwargs={'course_id': unicode(self.course_id)})
         data = {}
 
         response = check_for_post_code(self, 200, url, data)
@@ -208,7 +208,7 @@ class TestStaffGradingService(ModuleStoreTestCase, LoginEnrollmentTestCase):
             user=instructor,
         )
         # Get the response and load its content.
-        response = json.loads(staff_grading_service.get_problem_list(request, self.course_id.to_deprecated_string()).content)
+        response = json.loads(staff_grading_service.get_problem_list(request, unicode(self.course_id)).content)
 
         # A valid response will have an "error" key.
         self.assertTrue('error' in response)
@@ -221,7 +221,7 @@ class TestStaffGradingService(ModuleStoreTestCase, LoginEnrollmentTestCase):
         """
         self.login(self.instructor, self.password)
 
-        url = reverse('staff_grading_save_grade', kwargs={'course_id': self.course_id.to_deprecated_string()})
+        url = reverse('staff_grading_save_grade', kwargs={'course_id': unicode(self.course_id)})
 
         data = {
             'score': '12',
@@ -268,7 +268,7 @@ class TestPeerGradingService(ModuleStoreTestCase, LoginEnrollmentTestCase):
         self.activate_user(self.instructor)
 
         self.course_id = SlashSeparatedCourseKey("edX", "toy", "2012_Fall")
-        self.location_string = self.course_id.make_usage_key('html', 'TestLocation').to_deprecated_string()
+        self.location_string = unicode(self.course_id.make_usage_key('html', 'TestLocation'))
         self.toy = modulestore().get_course(self.course_id)
         location = "i4x://edX/toy/peergrading/init"
         field_data = DictFieldData({'data': "<peergrading/>", 'location': location, 'category':'peergrading'})
@@ -472,7 +472,7 @@ class TestPanel(ModuleStoreTestCase):
         @return:
         """
         request = Mock(user=self.user)
-        response = views.student_problem_list(request, self.course.id.to_deprecated_string())
+        response = views.student_problem_list(request, unicode(self.course.id))
         self.assertRegexpMatches(response.content, "Here is a list of open ended problems for this course.")
 
 

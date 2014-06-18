@@ -34,7 +34,7 @@ class EdxJSONEncoder(json.JSONEncoder):
     """
     def default(self, obj):
         if isinstance(obj, Location):
-            return obj.to_deprecated_string()
+            return unicode(obj)
         elif isinstance(obj, datetime.datetime):
             if obj.tzinfo is not None:
                 if obj.utcoffset() is None:
@@ -134,7 +134,7 @@ def export_to_xml(modulestore, contentstore, course_key, root_dir, course_dir, d
                 # Don't try to export orphaned items.
                 if len(parent_locs) > 0:
                     logging.debug('parent_locs = {0}'.format(parent_locs))
-                    draft_vertical.xml_attributes['parent_sequential_url'] = parent_locs[0].to_deprecated_string()
+                    draft_vertical.xml_attributes['parent_sequential_url'] = unicode(parent_locs[0])
                     sequential = modulestore.get_item(parent_locs[0])
                     index = sequential.children.index(draft_vertical.location)
                     draft_vertical.xml_attributes['index_in_children_list'] = str(index)

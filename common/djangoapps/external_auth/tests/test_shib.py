@@ -489,7 +489,7 @@ class ShibSPTest(ModuleStoreTestCase):
             for student in [shib_student, other_ext_student, int_student]:
                 request = self.request_factory.post('/change_enrollment')
                 request.POST.update({'enrollment_action': 'enroll',
-                                     'course_id': course.id.to_deprecated_string()})
+                                     'course_id': unicode(course.id)})
                 request.user = student
                 response = change_enrollment(request)
                 # If course is not limited or student has correct shib extauth then enrollment should be allowed
@@ -529,7 +529,7 @@ class ShibSPTest(ModuleStoreTestCase):
         self.assertFalse(CourseEnrollment.is_enrolled(student, course.id))
         self.client.logout()
         request_kwargs = {'path': '/shib-login/',
-                          'data': {'enrollment_action': 'enroll', 'course_id': course.id.to_deprecated_string(), 'next': '/testredirect'},
+                          'data': {'enrollment_action': 'enroll', 'course_id': unicode(course.id), 'next': '/testredirect'},
                           'follow': False,
                           'REMOTE_USER': 'testuser@stanford.edu',
                           'Shib-Identity-Provider': 'https://idp.stanford.edu/'}

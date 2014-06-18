@@ -32,13 +32,13 @@ class StaticTabDateTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
 
     def test_logged_in(self):
         self.setup_user()
-        url = reverse('static_tab', args=[self.course.id.to_deprecated_string(), 'new_tab'])
+        url = reverse('static_tab', args=[unicode(self.course.id), 'new_tab'])
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertIn("OOGIE BLOOGIE", resp.content)
 
     def test_anonymous_user(self):
-        url = reverse('static_tab', args=[self.course.id.to_deprecated_string(), 'new_tab'])
+        url = reverse('static_tab', args=[unicode(self.course.id), 'new_tab'])
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertIn("OOGIE BLOOGIE", resp.content)
@@ -51,7 +51,7 @@ class StaticTabDateTestCase(LoginEnrollmentTestCase, ModuleStoreTestCase):
 
         # Test render works okay
         tab_content = get_static_tab_contents(request, course, tab)
-        self.assertIn(self.toy_course_key.to_deprecated_string(), tab_content)
+        self.assertIn(unicode(self.toy_course_key), tab_content)
         self.assertIn('static_tab', tab_content)
 
         # Test when render raises an exception
@@ -78,14 +78,14 @@ class StaticTabDateTestCaseXML(LoginEnrollmentTestCase, ModuleStoreTestCase):
     @patch.dict('django.conf.settings.FEATURES', {'DISABLE_START_DATES': False})
     def test_logged_in_xml(self):
         self.setup_user()
-        url = reverse('static_tab', args=[self.xml_course_key.to_deprecated_string(), self.xml_url])
+        url = reverse('static_tab', args=[unicode(self.xml_course_key), self.xml_url])
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertIn(self.xml_data, resp.content)
 
     @patch.dict('django.conf.settings.FEATURES', {'DISABLE_START_DATES': False})
     def test_anonymous_user_xml(self):
-        url = reverse('static_tab', args=[self.xml_course_key.to_deprecated_string(), self.xml_url])
+        url = reverse('static_tab', args=[unicode(self.xml_course_key), self.xml_url])
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertIn(self.xml_data, resp.content)

@@ -226,7 +226,7 @@ class ConditionalModuleXmlTest(unittest.TestCase):
             'conditional_ajax.html',
             {
                 # Test ajax url is just usage-id / handler_name
-                'ajax_url': '{}/xmodule_handler'.format(location.to_deprecated_string()),
+                'ajax_url': '{}/xmodule_handler'.format(unicode(location)),
                 'element_id': u'i4x-HarvardX-ER22x-conditional-condone',
                 'depends': u'i4x-HarvardX-ER22x-problem-choiceprob'
             }
@@ -274,7 +274,7 @@ class ConditionalModuleXmlTest(unittest.TestCase):
         )
         self.assertEqual(
             conditional.sources_list[0],
-            conditional.location.course_key.make_usage_key_from_deprecated_string(conditional.xml_attributes['sources'])
+            UsageKey.from_string(conditional.xml_attributes['sources']).map_into_course(conditional.location.course_key)
         )
 
     def test_conditional_module_parse_sources(self):

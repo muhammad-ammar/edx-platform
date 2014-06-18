@@ -86,7 +86,7 @@ class SysadminBaseTestCase(ModuleStoreTestCase):
         response = self.client.post(
             reverse('sysadmin_courses'),
             {
-                'course_id': course.id.to_deprecated_string(),
+                'course_id': unicode(course.id),
                 'action': 'del_course',
             }
         )

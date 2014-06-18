@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
-from opaque_keys.edx.locations import SlashSeparatedCourseKey, Location
+from opaque_keys.edx.keys import CourseKey, UsageKey
 
 from south.modelsinspector import add_introspection_rules
 add_introspection_rules([], ["^xmodule_django\.models\.CourseKeyField"])
@@ -54,13 +54,13 @@ class CourseKeyField(models.CharField):
         if value is self.Empty or value is None:
             return None
 
-        assert isinstance(value, (basestring, SlashSeparatedCourseKey))
+        assert isinstance(value, (basestring, CourseKey))
         if value == '':
             # handle empty string for models being created w/o fields populated
             return None
 
         if isinstance(value, basestring):
-            return SlashSeparatedCourseKey.from_deprecated_string(value)
+            return CourseKey.from_string(value)
         else:
             return value
 
@@ -74,8 +74,8 @@ class CourseKeyField(models.CharField):
         if value is self.Empty or value is None:
             return ''  # CharFields should use '' as their empty value, rather than None
 
-        assert isinstance(value, SlashSeparatedCourseKey)
-        return value.to_deprecated_string()
+        assert isinstance(value, CourseKey)
+        return unicode(value)
 
     def validate(self, value, model_instance):
         """Validate Empty values, otherwise defer to the parent"""
@@ -110,7 +110,7 @@ class LocationKeyField(models.CharField):
             return None
 
         if isinstance(value, basestring):
-            return Location.from_deprecated_string(value)
+            return UsageKey.from_string(value)
         else:
             return value
 
@@ -125,7 +125,7 @@ class LocationKeyField(models.CharField):
             return ''
 
         assert isinstance(value, Location)
-        return value.to_deprecated_string()
+        return unicode(value)
 
     def validate(self, value, model_instance):
         """Validate Empty values, otherwise defer to the parent"""

@@ -297,7 +297,7 @@ class EnrollInCourseTest(TestCase):
         self.mock_tracker.emit.assert_called_once_with(  # pylint: disable=maybe-no-member
             'edx.course.enrollment.activated',
             {
-                'course_id': course_key.to_deprecated_string(),
+                'course_id': unicode(course_key),
                 'user_id': user.pk,
                 'mode': 'honor'
             }
@@ -309,7 +309,7 @@ class EnrollInCourseTest(TestCase):
         self.mock_tracker.emit.assert_called_once_with(  # pylint: disable=maybe-no-member
             'edx.course.enrollment.deactivated',
             {
-                'course_id': course_key.to_deprecated_string(),
+                'course_id': unicode(course_key),
                 'user_id': user.pk,
                 'mode': 'honor'
             }
@@ -449,7 +449,7 @@ class PaidRegistrationTest(ModuleStoreTestCase):
 
     @unittest.skipUnless(settings.FEATURES.get('ENABLE_SHOPPING_CART'), "Shopping Cart not enabled in settings")
     def test_change_enrollment_add_to_cart(self):
-        request = self.req_factory.post(reverse('change_enrollment'), {'course_id': self.course.id.to_deprecated_string(),
+        request = self.req_factory.post(reverse('change_enrollment'), {'course_id': unicode(self.course.id),
                                                                        'enrollment_action': 'add_to_cart'})
         request.user = self.user
         response = change_enrollment(request)

@@ -264,11 +264,11 @@ def encode_problem_and_student_input(usage_key, student=None):  # pylint: disabl
 
     assert isinstance(usage_key, Location)
     if student is not None:
-        task_input = {'problem_url': usage_key.to_deprecated_string(), 'student': student.username}
-        task_key_stub = "{student}_{problem}".format(student=student.id, problem=usage_key.to_deprecated_string())
+        task_input = {'problem_url': unicode(usage_key), 'student': student.username}
+        task_key_stub = "{student}_{problem}".format(student=student.id, problem=unicode(usage_key))
     else:
-        task_input = {'problem_url': usage_key.to_deprecated_string()}
-        task_key_stub = "_{problem}".format(problem=usage_key.to_deprecated_string())
+        task_input = {'problem_url': unicode(usage_key)}
+        task_key_stub = "_{problem}".format(problem=unicode(usage_key))
 
     # create the key value by using MD5 hash:
     task_key = hashlib.md5(task_key_stub).hexdigest()
