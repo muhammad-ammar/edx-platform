@@ -108,6 +108,7 @@ STATICFILES_DIRS += [
     if os.path.isdir(COMMON_TEST_DATA_ROOT / course_dir)
 ]
 
+MODULESTORE_BRANCH = 'draft'
 update_module_store_settings(
     MODULESTORE,
     module_store_options={
@@ -117,7 +118,6 @@ update_module_store_settings(
         'data_dir': COMMON_TEST_DATA_ROOT,
     }
 )
-MODULESTORE_BRANCH = 'draft'
 
 CONTENTSTORE = {
     'ENGINE': 'xmodule.contentstore.mongo.MongoContentStore',

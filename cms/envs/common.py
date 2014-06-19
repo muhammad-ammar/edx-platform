@@ -245,6 +245,9 @@ XBLOCK_MIXINS = (LmsBlockMixin, InheritanceMixin, XModuleMixin)
 # xblocks can be added via advanced settings
 XBLOCK_SELECT_FUNCTION = prefer_xmodules
 
+############################ Modulestore Configuration ################################
+MODULESTORE_BRANCH = 'draft'
+
 ############################ DJANGO_BUILTINS ################################
 # Change DEBUG/TEMPLATE_DEBUG in your environment settings files, not here
 DEBUG = False

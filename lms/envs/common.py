@@ -475,6 +475,7 @@ XBLOCK_SELECT_FUNCTION = prefer_xmodules
 
 ############# ModuleStore Configuration ##########
 
+MODULESTORE_BRANCH = 'published'
 CONTENTSTORE = None
 DOC_STORE_CONFIG = {
     'host': 'localhost',

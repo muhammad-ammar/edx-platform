@@ -288,7 +288,6 @@ with open(CONFIG_ROOT / CONFIG_PREFIX + "auth.json") as auth_file:
 
 ############### Module Store Items ##########
 HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS = ENV_TOKENS.get('HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS', {})
-MODULESTORE_BRANCH = AUTH_TOKENS.get("MODULESTORE_BRANCH", 'published')
 
 ############### Mixed Related(Secure/Not-Secure) Items ##########
 # If Segment.io key specified, load it and enable Segment.io if the feature flag is set
