@@ -291,6 +291,7 @@ PUBLISHED = 'published'
 def as_draft(location):
     """
     Returns the Location that is the draft for `location`
+    If the location is in the DIRECT_ONLY_CATEGORIES, returns itself
     """
     if location.category in DIRECT_ONLY_CATEGORIES:
         return location
@@ -800,8 +801,7 @@ class MongoModuleStore(ModuleStoreWriteBase):
                 ]))
 
         location = course_id.make_usage_key('course', course_id.run)
-        course = self.create_xmodule(location, fields=fields, **kwargs)
-        self.update_item(course, user_id)
+        course = self.create_and_save_xmodule(location, user_id, fields=fields, **kwargs)
 
         # clone a default 'about' overview module as well
         about_location = location.replace(
@@ -835,6 +835,7 @@ class MongoModuleStore(ModuleStoreWriteBase):
         :param definition_data: can be empty. The initial definition_data for the kvs
         :param metadata: can be empty, the initial metadata for the kvs
         :param system: if you already have an xblock from the course, the xblock.runtime value
+        :param fields: a dictionary of field names and values for the new xmodule
         """
         # differs from split mongo in that I believe most of this logic should be above the persistence
         # layer but added it here to enable quick conversion. I'll need to reconcile these.

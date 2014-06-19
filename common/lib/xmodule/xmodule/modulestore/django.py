@@ -72,9 +72,9 @@ def create_modulestore_instance(engine, doc_store_config, options, i18n_service=
     )
 
 
+# A singleton instance of the Mixed Modulestore
+# Later: make this thread-safe
 _MIXED_MODULESTORE = None
-
-
 def modulestore():
     """
     Returns the Mixed modulestore

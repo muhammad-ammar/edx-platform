@@ -435,8 +435,7 @@ class ModuleStoreWriteBase(ModuleStoreReadBase, ModuleStoreWrite):
         Delete an item from persistence. Pass the user's unique id which the persistent store
         should save with the update if it has that ability.
 
-        :param delete_all_versions: removes both the draft and published version of this item from
-        the course if using draft and old mongo. Split may or may not implement this.
+        :param user_id: ID of the user deleting the item
         :param force: fork the structure and don't update the course draftVersion if there's a version
         conflict (only applicable to version tracking and conflict detecting persistence stores)
 
@@ -448,14 +447,14 @@ class ModuleStoreWriteBase(ModuleStoreReadBase, ModuleStoreWrite):
     def create_and_save_xmodule(self, location, user_id, definition_data=None, metadata=None, runtime=None, fields={}):
         """
         Create the new xmodule and save it. Does not return the new module because if the caller
-        will insert it as a child, it's inherited metadata will completely change. The difference
-        between this and just doing create_xmodule and update_item is this ensures static_tabs get
-        pointed to by the course.
+        will insert it as a child, its inherited metadata will completely change.
 
         :param location: a Location--must have a category
+        :param user_id: ID of the user creating and saving the xmodule
         :param definition_data: can be empty. The initial definition_data for the kvs
         :param metadata: can be empty, the initial metadata for the kvs
         :param runtime: if you already have an xblock from the course, the xblock.runtime value
+        :param fields: a dictionary of field names and values for the new xmodule
         """
         # let create_xmodule do the is implemented check
         new_object = self.create_xmodule(location, definition_data, metadata, runtime, fields)
@@ -478,13 +477,3 @@ def prefer_xmodules(identifier, entry_points):
     else:
         return default_select(identifier, entry_points)
 
-
-def default_get_settings_attr(attr, default=None):
-    """
-    The default implementation of django.get_settings_attr which should only be used if not using django.
-    Acts like getattr on settings. This just returns the default.
-    """
-    return default
-
-
-get_settings_attr = default_get_settings_attr

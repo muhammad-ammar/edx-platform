@@ -320,23 +320,15 @@ class MixedModuleStore(ModuleStoreWriteBase):
         Update the xblock persisted to be the same as the given for all types of fields
         (content, children, and metadata) attribute the change to the given user.
         """
-        course_id = xblock.scope_ids.usage_id.course_key
-        store = self._get_modulestore_for_courseid(course_id)
-        if hasattr(store, 'update_item'):
-            return store.update_item(xblock, user_id, allow_not_found)
-        else:
-            raise NotImplementedError(u"Cannot update item on store {}".format(store))
+        store = self._verify_modulestore_support(xblock.location, 'update_item')
+        return store.update_item(xblock, user_id, allow_not_found)
 
     def delete_item(self, location, user_id=None, **kwargs):
         """
         Delete the given item from persistence. kwargs allow modulestore specific parameters.
         """
-        course_id = location.course_key
-        store = self._get_modulestore_for_courseid(course_id)
-        if hasattr(store, 'delete_item'):
-            return store.delete_item(location, user_id=user_id, **kwargs)
-        else:
-            raise NotImplementedError(u"Cannot delete item on store {}".format(store))
+        store = self._verify_modulestore_support(location, 'delete_item')
+        return store.delete_item(location, user_id=user_id, **kwargs)
 
     def close_all_connections(self):
         """
@@ -351,13 +343,15 @@ class MixedModuleStore(ModuleStoreWriteBase):
     def create_xmodule(self, location, definition_data=None, metadata=None, system=None, fields={}):
         """
         Create the new xmodule but don't save it. Returns the new module.
+
+        :param location: a Location--must have a category
+        :param definition_data: can be empty. The initial definition_data for the kvs
+        :param metadata: can be empty, the initial metadata for the kvs
+        :param system: if you already have an xblock from the course, the xblock.runtime value
+        :param fields: a dictionary of field names and values for the new xmodule
         """
-        course_id = location.course_key
-        store = self._get_modulestore_for_courseid(course_id)
-        if hasattr(store, 'create_xmodule'):
-            return store.create_xmodule(location, definition_data, metadata, system, fields)
-        else:
-            raise NotImplementedError(u"Cannot create_xmodule on store {}".format(store))
+        store = self._verify_modulestore_support(location, 'create_xmodule')
+        return store.create_xmodule(location, definition_data, metadata, system, fields)
 
     def get_courses_for_wiki(self, wiki_slug):
         """
@@ -406,24 +400,16 @@ class MixedModuleStore(ModuleStoreWriteBase):
         Save a current draft to the underlying modulestore
         Returns the newly published item.
         """
-        course_id = location.course_key
-        store = self._get_modulestore_for_courseid(course_id)
-        if hasattr(store, 'publish'):
-            return store.publish(location, user_id)
-        else:
-            raise NotImplementedError(u"Cannot publish on store {}".format(store))
+        store = self._verify_modulestore_support(location, 'publish')
+        return store.publish(location, user_id)
 
     def unpublish(self, location, user_id):
         """
         Save a current draft to the underlying modulestore
         Returns the newly unpublished item.
         """
-        course_id = location.course_key
-        store = self._get_modulestore_for_courseid(course_id)
-        if hasattr(store, 'unpublish'):
-            return store.unpublish(location, user_id)
-        else:
-            raise NotImplementedError(u"Cannot unpublish on store {}".format(store))
+        store = self._verify_modulestore_support(location, 'unpublish')
+        return store.unpublish(location, user_id)
 
     def convert_to_draft(self, location, user_id):
         """
@@ -432,10 +418,19 @@ class MixedModuleStore(ModuleStoreWriteBase):
 
         :param source: the location of the source (its revision must be None)
         """
+        store = self._verify_modulestore_support(location, 'convert_to_draft')
+        return store.convert_to_draft(location, user_id)
+
+    def _verify_modulestore_support(self, location, method):
+        """
+        Finds and returns the store that contains the course for the given location, and verifying
+        that the store supports the given method.
+
+        Raises NotImplementedError if the found store does not support the given method.
+        """
         course_id = location.course_key
         store = self._get_modulestore_for_courseid(course_id)
-        if hasattr(store, 'convert_to_draft'):
-            return store.convert_to_draft(location, user_id)
+        if hasattr(store, method):
+            return store
         else:
-            raise NotImplementedError(u"Cannot convert_to_draft on store {}".format(store))
-
+            raise NotImplementedError(u"Cannot call {} on store {}".format(method, store))

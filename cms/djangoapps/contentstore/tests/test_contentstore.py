@@ -819,7 +819,7 @@ class ContentStoreToyCourseTest(ContentStoreTestCase):
             self.assertTrue(filesystem.exists(item.location.name + filename_suffix))
 
     @mock.patch('xmodule.course_module.requests.get')
-    def test_export_course(self, mock_get):
+    def test_export_course_round_trip(self, mock_get):
         mock_get.return_value.text = dedent("""
             <?xml version="1.0"?><table_of_contents>
             <entry page="5" page_label="ii" name="Table of Contents"/>

@@ -105,7 +105,7 @@ class DraftModuleStore(MongoModuleStore):
         course.  Needed for path_to_location().
 
         Returns w/ revision set. If a block has both a draft and non-draft parents, it returns both
-        unless revision is set to 'published-only' or the thread's branch is set to 'published'.
+        unless revision is set to 'published-only' or the branch is set to 'published'.
         '''
         if self.branch_setting == PUBLISHED or revision == 'published-only':
             revision = PUBLISHED
@@ -120,6 +120,7 @@ class DraftModuleStore(MongoModuleStore):
         :param definition_data: can be empty. The initial definition_data for the kvs
         :param metadata: can be empty, the initial metadata for the kvs
         :param system: if you already have an xmodule from the course, the xmodule.system value
+        :param fields: a dictionary of field names and values for the new xmodule
         """
         assert self.branch_setting == DRAFT
 
@@ -176,6 +177,7 @@ class DraftModuleStore(MongoModuleStore):
         Copy the subtree rooted at source_location and mark the copies as draft.
 
         :param location: the location of the source (its revision must be None)
+        :param user_id: the ID of the user doing the operation
         :param delete_published (Boolean): intended for use by unpublish
         :param ignore_if_draft(Boolean): for internal use only as part of depth first change
 
