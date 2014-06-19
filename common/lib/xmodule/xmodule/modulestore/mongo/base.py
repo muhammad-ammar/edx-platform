@@ -345,6 +345,18 @@ class MongoModuleStore(ModuleStoreWriteBase):
 
         self.ignore_write_events_on_courses = set()
 
+    def _validate_course_key(self, course_key):
+        if not course_key.deprecated:
+            log.warning("MongoModuleStore only supports deprecated course key formats, not %s", course_id)
+            return False
+        return True
+
+    def _validate_usage_key(self, usage_key):
+        if not usage_key.deprecated or not self._validate_course_key(usage_key.course_key):
+            log.warning("MongoModuleStore only supports deprecated usage key formats, not %s", usage_key)
+            return False
+        return True
+
     def _compute_metadata_inheritance_tree(self, course_id):
         '''
         TODO (cdodge) This method can be deleted when the 'split module store' work has been completed
@@ -582,7 +594,7 @@ class MongoModuleStore(ModuleStoreWriteBase):
         base_list = sum(
             [
                 self._load_items(
-                    SlashSeparatedCourseKey(course['_id']['org'], course['_id']['course'], course['_id']['name']),
+                    SlashSeparatedCourseKey(course['_id']['org'], course['_id']['course'], course['_id']['name'], deprecated=True),
                     [course]
                 )
                 for course
@@ -616,7 +628,9 @@ class MongoModuleStore(ModuleStoreWriteBase):
         """
         Get the course with the given courseid (org/course/run)
         """
-        assert(isinstance(course_key, SlashSeparatedCourseKey))
+        if not self._validate_course_key(course_key):
+            return None
+
         location = course_key.make_usage_key('course', course_key.run)
         try:
             return self.get_item(location, depth=depth)
@@ -630,7 +644,9 @@ class MongoModuleStore(ModuleStoreWriteBase):
         If ignore_case is True, do a case insensitive search,
         otherwise, do a case sensitive search
         """
-        assert(isinstance(course_key, SlashSeparatedCourseKey))
+        if not self._validate_course_key(course_key):
+            return False
+
         location = course_key.make_usage_key('course', course_key.run)
         if ignore_case:
             course_query = location.to_deprecated_son('_id.')
@@ -645,6 +661,9 @@ class MongoModuleStore(ModuleStoreWriteBase):
         """
         Returns True if location exists in this ModuleStore.
         """
+        if not self._validate_usage_key(usage_key):
+            return False
+
         try:
             self._find_one(usage_key)
             return True
@@ -666,6 +685,9 @@ class MongoModuleStore(ModuleStoreWriteBase):
             in the request. The depth is counted in the number of
             calls to get_children() to cache. None indicates to cache all descendents.
         """
+        if not self._validate_usage_key(usage_key):
+            raise ItemNotFoundError(usage_key)
+
         item = self._find_one(usage_key)
         module = self._load_items(usage_key.course_key, [item], depth)[0]
         return module
@@ -712,6 +734,9 @@ class MongoModuleStore(ModuleStoreWriteBase):
                 This modulestore does not allow searching dates by comparison or edited_by, previous_version,
                 update_version info.
         """
+        if not self._validate_course_key(course_id):
+            return False
+
         query = self._course_key_to_son(course_id)
         query['_id.revision'] = revision
         for field in ['category', 'name']:
@@ -752,7 +777,7 @@ class MongoModuleStore(ModuleStoreWriteBase):
             InvalidLocationError: If a course with the same org, course, and run already exists
         """
 
-        course_id = SlashSeparatedCourseKey(org, course, run)
+        course_id = SlashSeparatedCourseKey(org, course, run, deprecated=True)
 
         # Check if a course with this org/course has been defined before (case-insensitive)
         course_search_location = SON([
@@ -791,6 +816,9 @@ class MongoModuleStore(ModuleStoreWriteBase):
         :param course_key:
         :param user_id:
         """
+        if not self._validate_course_key(course_key):
+            return False
+
         course_query = self._course_key_to_son(course_key)
         self.collection.remove(course_query, multi=True)
 
@@ -798,11 +826,18 @@ class MongoModuleStore(ModuleStoreWriteBase):
         """
         Create the new xmodule but don't save it. Returns the new module.
 
-        :param location: a UsageKey--must have a category
-        :param definition_data: can be empty. The initial definition_data for the kvs
-        :param metadata: can be empty, the initial metadata for the kvs
-        :param system: if you already have an xblock from the course, the xblock.runtime value
+        Args:
+            location: a UsageKey--must have a category
+            definition_data: can be empty. The initial definition_data for the kvs
+            metadata: can be empty, the initial metadata for the kvs
+            system: if you already have an xblock from the course, the xblock.runtime value
+
+        Raises:
+            ItemNotFoundError: raised if the location is invalid
         """
+        if not self._validate_usage_key(location):
+            raise ItemNotFoundError(location)
+
         # differs from split mongo in that I believe most of this logic should be above the persistence
         # layer but added it here to enable quick conversion. I'll need to reconcile these.
         if metadata is None:
@@ -896,6 +931,9 @@ class MongoModuleStore(ModuleStoreWriteBase):
         if the location doesn't exist
         """
 
+        if not self._validate_usage_key(location):
+            raise ItemNotFoundError(location)
+
         # See http://www.mongodb.org/display/DOCS/Updating for
         # atomic update syntax
         result = self.collection.update(
@@ -919,6 +957,11 @@ class MongoModuleStore(ModuleStoreWriteBase):
         allow_not_found: whether to create a new object if one didn't already exist or give an error
         force: force is meaningless for this modulestore
         """
+
+        if not self._validate_usage_key(xblock.scope_ids.usage_id):
+            if not allow_not_found:
+                raise ItemNotFoundError(xblock.scope_ids.usage_id)
+
         try:
             definition_data = self._convert_reference_fields_to_strings(xblock, xblock.get_explicitly_set_fields_by_scope())
             payload = {
@@ -984,6 +1027,10 @@ class MongoModuleStore(ModuleStoreWriteBase):
         Args:
             location (UsageKey)
         """
+
+        if not self._validate_usage_key(location):
+            raise ItemNotFoundError(location)
+
         # pylint: enable=unused-argument
         # VS[compat] cdodge: This is a hack because static_tabs also have references from the course module, so
         # if we add one then we need to also add it to the policy information (i.e. metadata)
@@ -1005,6 +1052,10 @@ class MongoModuleStore(ModuleStoreWriteBase):
         '''Find all locations that are the parents of this location in this
         course.  Needed for path_to_location().
         '''
+
+        if not self._validate_usage_key(location):
+            raise ItemNotFoundError(location)
+
         query = self._course_key_to_son(location.course_key)
         query['definition.children'] = unicode(location)
         items = self.collection.find(query, {'_id': True})
@@ -1027,6 +1078,9 @@ class MongoModuleStore(ModuleStoreWriteBase):
         """
         Return an array all of the locations (deprecated string format) for orphans in the course.
         """
+        if not self._validate_course_key(course_key):
+            return []
+
         detached_categories = [name for name, __ in XBlock.load_tagged_classes("detached")]
         query = self._course_key_to_son(course_key)
         query['_id.category'] = {'$nin': detached_categories}

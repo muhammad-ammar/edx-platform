@@ -135,6 +135,22 @@ class SplitMongoModuleStore(ModuleStoreWriteBase):
         self.render_template = render_template
         self.i18n_service = i18n_service
 
+    def _validate_course_key(self, course_key):
+        if course_key.deprecated:
+            log.warning("SplitMongoModuleStore only supports non-deprecated course key formats, not %s", course_id)
+            return False
+        return True
+
+    def _validate_usage_key(self, usage_key):
+        if not self._validate_course_key(usage_key.course_key):
+            return False
+
+        if usage_key.deprecated:
+            log.warning("SplitMongoModuleStore only supports non-deprecated usage key formats, not %s", usage_key)
+            return False
+
+        return True
+
     def cache_items(self, system, base_block_ids, course_key, depth=0, lazy=True):
         '''
         Handles caching of items once inheritance and any other one time
@@ -346,7 +362,9 @@ class SplitMongoModuleStore(ModuleStoreWriteBase):
         '''
         Gets the course descriptor for the course identified by the locator
         '''
-        assert(isinstance(course_id, CourseLocator))
+        if not self._validate_course_key(course_id):
+            raise ItemNotFoundError(course_id)
+
         course_entry = self._lookup_course(course_id)
         root = course_entry['structure']['root']
         result = self._load_items(course_entry, [root], 0, lazy=True)
@@ -356,7 +374,8 @@ class SplitMongoModuleStore(ModuleStoreWriteBase):
         '''
         Does this course exist in this modulestore.
         '''
-        assert(isinstance(course_id, CourseLocator))
+        if not self._validate_course_key(course_id):
+            return False
         course_entry = self.db_connection.get_course_index(course_id, ignore_case)
         return course_entry is not None
 
@@ -366,6 +385,10 @@ class SplitMongoModuleStore(ModuleStoreWriteBase):
         the course or the block w/in the course do not exist for the given version.
         raises InsufficientSpecificationError if the locator does not id a block
         """
+
+        if not self._validate_usage_key(usage_key):
+            return False
+
         if usage_key.block_id is None:
             raise InsufficientSpecificationError(usage_key)
         try:
@@ -399,7 +422,8 @@ class SplitMongoModuleStore(ModuleStoreWriteBase):
             descendants.
         raises InsufficientSpecificationError or ItemNotFoundError
         """
-        assert isinstance(usage_key, BlockUsageLocator)
+        if not self._validate_usage_key(usage_key):
+            raise ItemNotFoundError(usage_key)
         course = self._lookup_course(usage_key)
         items = self._load_items(course, [usage_key.block_id], depth, lazy=True)
         if len(items) == 0:
@@ -428,6 +452,10 @@ class SplitMongoModuleStore(ModuleStoreWriteBase):
                 For split,
                 you can search by ``edited_by``, ``edited_on`` providing a function testing limits.
         """
+
+        if not self._validate_course_key(course_locator):
+            return []
+
         course = self._lookup_course(course_locator)
         items = []
 
@@ -477,6 +505,8 @@ class SplitMongoModuleStore(ModuleStoreWriteBase):
         :param locator: BlockUsageLocator restricting search scope
         :param course_id: ignored. Only included for API compatibility. Specify the course_id within the locator.
         '''
+        if not self._validate_course_key(locator):
+            return []
         course = self._lookup_course(locator)
         items = self._get_parents_from_structure(locator.block_id, course['structure'])
         return [
@@ -492,6 +522,8 @@ class SplitMongoModuleStore(ModuleStoreWriteBase):
         """
         Return a dict of all of the orphans in the course.
         """
+        if not self._validate_course_key(course_key):
+            return {}
         detached_categories = [name for name, __ in XBlock.load_tagged_classes("detached")]
         course = self._lookup_course(course_key)
         items = {LocMapperStore.decode_key_from_mongo(block_id) for block_id in course['structure']['blocks'].keys()}
@@ -520,6 +552,8 @@ class SplitMongoModuleStore(ModuleStoreWriteBase):
             'edited_on': when the course was originally created
         }
         """
+        if not self._validate_course_key(course_locator):
+            return None
         if not (course_locator.org and course_locator.course and course_locator.run):
             return None
         index = self.db_connection.get_course_index(course_locator)
@@ -1323,7 +1357,9 @@ class SplitMongoModuleStore(ModuleStoreWriteBase):
         change to this item, it raises a VersionConflictError unless force is True. In the force case, it forks
         the course but leaves the head pointer where it is (this change will not be in the course head).
         """
-        assert isinstance(usage_locator, BlockUsageLocator)
+        if not self._validate_usage_key(usage_locator):
+            raise ItemNotFoundError(usage_locator)
+
         original_structure = self._lookup_course(usage_locator.course_key)['structure']
         if original_structure['root'] == usage_locator.block_id:
             raise ValueError("Cannot delete the root of a course")
@@ -1374,6 +1410,10 @@ class SplitMongoModuleStore(ModuleStoreWriteBase):
         with a versions hash to restore the course; however, the edited_on and
         edited_by won't reflect the originals, of course.
         """
+
+        if not self._validate_course_key(course_key):
+            raise ItemNotFoundError(course_key)
+
         index = self.db_connection.get_course_index(course_key)
         if index is None:
             raise ItemNotFoundError(course_key)

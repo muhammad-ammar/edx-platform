@@ -390,7 +390,8 @@ class XMLModuleStore(ModuleStoreReadBase):
         self.errored_courses = {}  # course_dir -> errorlog, for dirs that failed to load
 
         if course_ids is not None:
-            course_ids = [CourseKey.from_string(course_id) for course_id in course_ids]
+            course_ids = (CourseKey.from_string(course_id) for course_id in course_ids)
+            course_ids = [course_key for course_key in course_ids if self._validate_course_key(course_key)]
 
         self.load_error_modules = load_error_modules
 
@@ -419,6 +420,18 @@ class XMLModuleStore(ModuleStoreReadBase):
                                   os.path.exists(self.data_dir / d / "course.xml")])
         for course_dir in course_dirs:
             self.try_load_course(course_dir, course_ids)
+
+    def _validate_course_key(self, course_key):
+        if not course_key.deprecated:
+            log.warning("XMLModuleStore only supports deprecated course key formats, not %s", course_id)
+            return False
+        return True
+
+    def _validate_usage_key(self, usage_key):
+        if not usage_key.deprecated or not self._validate_course_key(usage_key.course_key):
+            log.warning("XMLModuleStore only supports deprecated usage key formats, not %s", usage_key)
+            return False
+        return True
 
     def try_load_course(self, course_dir, course_ids=None):
         '''
@@ -539,7 +552,7 @@ class XMLModuleStore(ModuleStoreReadBase):
                     raise ValueError("Can't load a course without a 'url_name' "
                                      "(or 'name') set.  Set url_name.")
 
-            course_id = SlashSeparatedCourseKey(org, course, url_name)
+            course_id = SlashSeparatedCourseKey(org, course, url_name, deprecated=True)
             if course_ids is not None and course_id not in course_ids:
                 return None
 
@@ -697,7 +710,7 @@ class XMLModuleStore(ModuleStoreReadBase):
         """
         Returns True if location exists in this ModuleStore.
         """
-        return usage_key in self.modules[usage_key.course_key]
+        return self._validate_usage_key(usage_key) and usage_key in self.modules[usage_key.course_key]
 
     def get_item(self, usage_key, depth=0):
         """
@@ -711,6 +724,9 @@ class XMLModuleStore(ModuleStoreReadBase):
 
         usage_key: a UsageKey that matches the module we are looking for.
         """
+        if not self._validate_usage_key(usage_key):
+            raise ItemNotFoundError(usage_key)
+
         try:
             return self.modules[usage_key.course_key][usage_key]
         except KeyError:
@@ -741,6 +757,9 @@ class XMLModuleStore(ModuleStoreReadBase):
                 you can search dates by providing either a datetime for == (probably
                 useless) or a tuple (">"|"<" datetime) for after or before, etc.
         """
+        if not self._validate_course_key(course_id):
+            return []
+
         items = []
 
         category = kwargs.pop('category', None)
@@ -792,6 +811,9 @@ class XMLModuleStore(ModuleStoreReadBase):
         returns an iterable of things that can be passed to Location.  This may
         be empty if there are no parents.
         '''
+        if not self._validate_usage_key(location):
+            raise ItemNotFoundError(location)
+
         if not self.parent_trackers[location.course_key].is_known(location):
             raise ItemNotFoundError("{0} not in {1}".format(location, location.course_key))
 
