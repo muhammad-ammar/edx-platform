@@ -387,9 +387,9 @@ class MixedModuleStore(ModuleStoreWriteBase):
         Returns whether this xblock is 'draft', 'public', or 'private'.
 
         'draft' content is in the process of being edited, but still has a previous
-            version visible in the LMS
-        'public' content is locked and visible in the LMS
-        'private' content is editable and not visible in the LMS
+            version deployed to LMS
+        'public' content is locked and deployed to LMS
+        'private' content is editable and not deployed to LMS
         """
         course_id = xblock.scope_ids.usage_id.course_key
         store = self._get_modulestore_for_courseid(course_id)
@@ -428,6 +428,7 @@ class MixedModuleStore(ModuleStoreWriteBase):
     def convert_to_draft(self, location, user_id):
         """
         Create a copy of the source and mark its revision as draft.
+        Note: This method is to support the Mongo Modulestore and may be deprecated.
 
         :param source: the location of the source (its revision must be None)
         """

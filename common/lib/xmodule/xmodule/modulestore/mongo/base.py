@@ -115,8 +115,6 @@ class CachingDescriptorSystem(MakoDescriptorSystem):
     """
     A system that has a cache of module json that it will use to load modules
     from, with a backup of calling to the underlying modulestore for more data
-    TODO (cdodge) when the 'split module store' work has been completed we can remove all
-    references to metadata_inheritance_tree
     """
     def __init__(self, modulestore, course_key, module_data, default_class, cached_metadata, **kwargs):
         """

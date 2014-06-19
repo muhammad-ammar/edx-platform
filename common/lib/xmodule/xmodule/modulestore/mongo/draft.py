@@ -207,7 +207,7 @@ class DraftModuleStore(MongoModuleStore):
             # ensure keys are in fixed and right order before inserting
             root['_id'] = self._id_dict_to_son(root['_id'])
             try:
-                self.collection.insert({'_id': root['_id']})
+                self.collection.insert(root)
             except pymongo.errors.DuplicateKeyError:
                 if not ignore_if_draft:
                     raise DuplicateItemError(root['_id'], self, 'collection')
