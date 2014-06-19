@@ -86,6 +86,6 @@ class TestMigrateToSplit(ModuleStoreTestCase):
             str(self.user.id),
             "org.dept+name.run",
         )
-        locator = CourseLocator(org="org.dept", offering="name.run", branch="published")
+        locator = CourseLocator(org="org.dept", course="name", run="run", branch="published")
         course_from_split = modulestore('split').get_course(locator)
         self.assertIsNotNone(course_from_split)

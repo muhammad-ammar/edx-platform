@@ -124,11 +124,7 @@ class TestMixedModuleStore(LocMapperSetupSansDjango):
         """
         Create a course w/ one item in the persistence store using the given course & item location.
         """
-        if default == 'split':
-            offering = course_key.offering.replace('/', '.')
-        else:
-            offering = course_key.offering
-        course = self.store.create_course(course_key.org, offering, store_name=default)
+        course = self.store.create_course(course_key.org, course_key.course, course_key.run, store_name=default)
         category = self.import_chapter_location.category
         block_id = self.import_chapter_location.name
         chapter = self.store.create_item(

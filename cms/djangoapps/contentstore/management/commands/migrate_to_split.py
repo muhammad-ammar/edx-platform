@@ -30,12 +30,12 @@ class Command(BaseCommand):
     "Migrate a course from old-Mongo to split-Mongo"
 
     help = "Migrate a course from old-Mongo to split-Mongo"
-    args = "course_key email <new org> <new offering>"
+    args = "course_key email <new org> <new course> <new run>"
 
     def parse_args(self, *args):
         """
-        Return a 4-tuple of (course_key, user, org, offering).
-        If the user didn't specify an org & offering, those will be None.
+        Return a 5-tuple of (course_key, user, org, course, run).
+        If the user didn't specify an org, course, and run, those will be None.
         """
         if len(args) < 2:
             raise CommandError(
@@ -52,14 +52,15 @@ class Command(BaseCommand):
 
         try:
             org = args[2]
-            offering = args[3]
+            course = args[3]
+            run = args[4]
         except IndexError:
-            org = offering = None
+            org = course = run = None
 
-        return course_key, user, org, offering
+        return course_key, user, org, course run
 
     def handle(self, *args, **options):
-        course_key, user, org, offering = self.parse_args(*args)
+        course_key, user, org, course, run = self.parse_args(*args)
 
         migrator = SplitMigrator(
             draft_modulestore=modulestore('default'),
@@ -68,4 +69,4 @@ class Command(BaseCommand):
             loc_mapper=loc_mapper(),
         )
 
-        migrator.migrate_mongo_course(course_key, user, org, offering)
+        migrator.migrate_mongo_course(course_key, user, org, course, run)

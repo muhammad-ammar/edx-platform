@@ -697,7 +697,8 @@ class CourseEnrollment(models.Model):
                 dog_stats_api.increment(
                     "common.student.enrollment",
                     tags=[u"org:{}".format(self.course_id.org),
-                          u"offering:{}".format(self.course_id.offering),
+                          u"course:{}".format(self.course_id.course),
+                          u"run:{}".format(self.course_id.run),
                           u"mode:{}".format(self.mode)]
                 )
 
@@ -709,7 +710,8 @@ class CourseEnrollment(models.Model):
                 dog_stats_api.increment(
                     "common.student.unenrollment",
                     tags=[u"org:{}".format(self.course_id.org),
-                          u"offering:{}".format(self.course_id.offering),
+                          u"course:{}".format(self.course_id.course),
+                          u"run:{}".format(self.course_id.run),
                           u"mode:{}".format(self.mode)]
                 )
 

@@ -56,7 +56,8 @@ class SplitModuleTest(unittest.TestCase):
     COURSE_CONTENT = {
         "testx.GreekHero": {
             "org": "testx",
-            "offering": "GreekHero",
+            "course": "GreekHero",
+            "run": "run",
             "root_block_id": "head12345",
             "user_id": "test@edx.org",
             "fields": {
@@ -276,7 +277,8 @@ class SplitModuleTest(unittest.TestCase):
         },
         "testx.wonderful": {
             "org": "testx",
-            "offering": "wonderful",
+            "course": "wonderful",
+            "run": "run",
             "root_block_id": "head23456",
             "user_id": "test@edx.org",
             "fields": {
@@ -382,7 +384,8 @@ class SplitModuleTest(unittest.TestCase):
         },
         "guestx.contender": {
             "org": "guestx",
-            "offering": "contender",
+            "course": "contender",
+            "run": "run",
             "root_block_id": "head345679",
             "user_id": "test@guestx.edu",
             "fields": {
@@ -444,7 +447,7 @@ class SplitModuleTest(unittest.TestCase):
         split_store = modulestore()
         for _course_id, course_spec in SplitModuleTest.COURSE_CONTENT.iteritems():
             course = split_store.create_course(
-                course_spec['org'], course_spec['offering'], course_spec['user_id'],
+                course_spec['org'], course_spec['course'], course_spec['run'], course_spec['user_id'],
                 fields=course_spec['fields'],
                 root_block_id=course_spec['root_block_id']
             )
@@ -477,11 +480,11 @@ class SplitModuleTest(unittest.TestCase):
                 course = split_store.persist_xblock_dag(course, revision['user_id'])
         # publish "testx.wonderful"
         to_publish = BlockUsageLocator(
-            CourseLocator(org="testx", offering="wonderful", branch="draft"),
+            CourseLocator(org="testx", course="wonderful", run="run", branch="draft"),
             block_type='course',
             block_id="head23456"
         )
-        destination = CourseLocator(org="testx", offering="wonderful", branch="published")
+        destination = CourseLocator(org="testx", course="wonderful", run="run", branch="published")
         split_store.xblock_publish("test@edx.org", to_publish, destination, [to_publish], None)
 
     def tearDown(self):
@@ -511,7 +514,7 @@ class TestHasChildrenAtDepth(SplitModuleTest):
 
     def test_has_children_at_depth(self):
         course_locator = CourseLocator(
-            org='testx', offering='GreekHero', branch='draft'
+            org='testx', course="GreekHero", run="run", branch='draft'
         )
         block_locator = BlockUsageLocator(
             course_locator, 'course', 'head12345'
@@ -577,7 +580,8 @@ class SplitModuleCourseTests(SplitModuleTest):
             course = self.findByIdInResult(courses_published, "head23456")
             self.assertIsNotNone(course, "published courses")
             self.assertEqual(course.location.course_key.org, "testx")
-            self.assertEqual(course.location.course_key.offering, "wonderful")
+            self.assertEqual(course.location.course_key.course, "wonderful")
+            self.assertEqual(course.location.course_key.run, "run")
             self.assertEqual(course.category, 'course', 'wrong category')
             self.assertEqual(len(course.tabs), 4, "wrong number of tabs")
             self.assertEqual(course.display_name, "The most wonderful course",
@@ -602,15 +606,15 @@ class SplitModuleCourseTests(SplitModuleTest):
 
         check_has_course_method(
             modulestore(),
-            CourseLocator(org='testx', offering='wonderful', branch="draft"),
-            locator_key_fields=['org', 'offering']
+            CourseLocator(org='testx', course="wonderful", run="run", branch="draft"),
+            locator_key_fields=['org', 'course', 'run']
         )
 
     def test_get_course(self):
         '''
         Test the various calling forms for get_course
         '''
-        locator = CourseLocator(org='testx', offering='GreekHero', branch="draft")
+        locator = CourseLocator(org='testx', course="GreekHero", run="run", branch="draft")
         head_course = modulestore().get_course(locator)
         self.assertNotEqual(head_course.location.version_guid, head_course.previous_version)
         locator = CourseLocator(version_guid=head_course.previous_version)
@@ -628,10 +632,11 @@ class SplitModuleCourseTests(SplitModuleTest):
         self.assertEqual(course.edited_by, "testassist@edx.org")
         self.assertDictEqual(course.grade_cutoffs, {"Pass": 0.55})
 
-        locator = CourseLocator(org='testx', offering='GreekHero', branch='draft')
+        locator = CourseLocator(org='testx', course="GreekHero", run="run", branch='draft')
         course = modulestore().get_course(locator)
         self.assertEqual(course.location.course_key.org, "testx")
-        self.assertEqual(course.location.course_key.offering, "GreekHero")
+        self.assertEqual(course.location.course_key.course, "GreekHero")
+        self.assertEqual(course.location.course_key.run, "run")
         self.assertEqual(course.category, 'course')
         self.assertEqual(len(course.tabs), 6)
         self.assertEqual(course.display_name, "The Ancient Greek Hero")
@@ -641,28 +646,28 @@ class SplitModuleCourseTests(SplitModuleTest):
         self.assertEqual(course.edited_by, "testassist@edx.org")
         self.assertDictEqual(course.grade_cutoffs, {"Pass": 0.45})
 
-        locator = CourseLocator(org='testx', offering='wonderful', branch='published')
+        locator = CourseLocator(org='testx', course="wonderful", run="run", branch='published')
         course = modulestore().get_course(locator)
         published_version = course.location.version_guid
 
-        locator = CourseLocator(org='testx', offering='wonderful', branch='draft')
+        locator = CourseLocator(org='testx', course="wonderful", run="run", branch='draft')
         course = modulestore().get_course(locator)
         self.assertNotEqual(course.location.version_guid, published_version)
 
     def test_get_course_negative(self):
         # Now negative testing
         with self.assertRaises(InsufficientSpecificationError):
-            modulestore().get_course(CourseLocator(org='edu', offering='meh.blah'))
+            modulestore().get_course(CourseLocator(org='edu', course="meh.blah", run="run"))
         with self.assertRaises(ItemNotFoundError):
-            modulestore().get_course(CourseLocator(org='edu', offering='nosuchthing', branch='draft'))
+            modulestore().get_course(CourseLocator(org='edu', course="nosuchthing", run="run", branch='draft'))
         with self.assertRaises(ItemNotFoundError):
-            modulestore().get_course(CourseLocator(org='testx', offering='GreekHero', branch='published'))
+            modulestore().get_course(CourseLocator(org='testx', course="GreekHero", run="run", branch='published'))
 
     def test_cache(self):
         """
         Test that the mechanics of caching work.
         """
-        locator = CourseLocator(org='testx', offering='GreekHero', branch='draft')
+        locator = CourseLocator(org='testx', course="GreekHero", run="run", branch='draft')
         course = modulestore().get_course(locator)
         block_map = modulestore().cache_items(
             course.system, [child.block_id for child in course.children], course.id, depth=3
@@ -674,7 +679,7 @@ class SplitModuleCourseTests(SplitModuleTest):
         """
         get_course_successors(course_locator, version_history_depth=1)
         """
-        locator = CourseLocator(org='testx', offering='GreekHero', branch='draft')
+        locator = CourseLocator(org='testx', course="GreekHero", run="run", branch='draft')
         course = modulestore().get_course(locator)
         versions = [course.location.version_guid, course.previous_version]
         locator = CourseLocator(version_guid=course.previous_version)
@@ -711,8 +716,9 @@ class SplitModuleItemTests(SplitModuleTest):
         has_item(BlockUsageLocator)
         '''
         org = 'testx'
-        offering = 'GreekHero'
-        course_locator = CourseLocator(org=org, offering=offering, branch='draft')
+        course = 'GreekHero'
+        run = 'run'
+        course_locator = CourseLocator(org=org, course=course, run=run, branch='draft')
         course = modulestore().get_course(course_locator)
         previous_version = course.previous_version
         # positive tests of various forms
@@ -745,7 +751,7 @@ class SplitModuleItemTests(SplitModuleTest):
 
         # in published course
         locator = BlockUsageLocator(
-            CourseLocator(org="testx", offering="wonderful", branch='draft'),
+            CourseLocator(org="testx", course="wonderful", run="run", branch='draft'),
             block_type="course",
             block_id="head23456"
         )
@@ -757,13 +763,13 @@ class SplitModuleItemTests(SplitModuleTest):
         # negative tests--not found
         # no such course or block
         locator = BlockUsageLocator(
-            CourseLocator(org="foo", offering="doesnotexist", branch='draft'),
+            CourseLocator(org="foo", course="doesnotexist", run="run", branch='draft'),
             block_type="course",
             block_id="head23456"
         )
         self.assertFalse(modulestore().has_item(locator))
         locator = BlockUsageLocator(
-            CourseLocator(org="testx", offering="wonderful", branch='draft'),
+            CourseLocator(org="testx", course="wonderful", run="run", branch='draft'),
             block_type="vertical",
             block_id="doesnotexist"
         )
@@ -773,7 +779,7 @@ class SplitModuleItemTests(SplitModuleTest):
         '''
         get_item(blocklocator)
         '''
-        hero_locator = CourseLocator(org="testx", offering="GreekHero", branch='draft')
+        hero_locator = CourseLocator(org="testx", course="GreekHero", run="run", branch='draft')
         course = modulestore().get_course(hero_locator)
         previous_version = course.previous_version
 
@@ -788,7 +794,8 @@ class SplitModuleItemTests(SplitModuleTest):
             Check contents of block
             """
             self.assertEqual(block.location.org, "testx")
-            self.assertEqual(block.location.offering, "GreekHero")
+            self.assertEqual(block.location.course, "GreekHero")
+            self.assertEqual(block.location.run, "run")
             self.assertEqual(len(block.tabs), 6, "wrong number of tabs")
             self.assertEqual(block.display_name, "The Ancient Greek Hero")
             self.assertEqual(block.advertised_start, "Fall 2013")
@@ -809,8 +816,8 @@ class SplitModuleItemTests(SplitModuleTest):
         """
         Tests that has_changes() only returns true when changes are present
         """
-        draft_course = CourseLocator(org='testx', offering='GreekHero', branch='draft')
-        published_course = CourseLocator(org='testx', offering='GreekHero', branch='published')
+        draft_course = CourseLocator(org='testx', course="GreekHero", run="run", branch='draft')
+        published_course = CourseLocator(org='testx', course="GreekHero", run="run", branch='published')
         head = draft_course.make_usage_key('course', 'head12345')
         dummy_user = 'testUser'
 
@@ -834,18 +841,19 @@ class SplitModuleItemTests(SplitModuleTest):
     def test_get_non_root(self):
         # not a course obj
         locator = BlockUsageLocator(
-            CourseLocator(org='testx', offering='GreekHero', branch='draft'), 'chapter', 'chapter1'
+            CourseLocator(org='testx', course="GreekHero", run="run", branch='draft'), 'chapter', 'chapter1'
         )
         block = modulestore().get_item(locator)
         self.assertEqual(block.location.org, "testx")
-        self.assertEqual(block.location.offering, "GreekHero")
+        self.assertEqual(block.location.course, "GreekHero")
+        self.assertEqual(block.location.run, "run")
         self.assertEqual(block.category, 'chapter')
         self.assertEqual(block.display_name, "Hercules")
         self.assertEqual(block.edited_by, "testassist@edx.org")
 
         # in published course
         locator = BlockUsageLocator(
-            CourseLocator(org='testx', offering='wonderful', branch='published'), 'course', 'head23456'
+            CourseLocator(org='testx', course="wonderful", run="run", branch='published'), 'course', 'head23456'
         )
         self.assertIsInstance(
             modulestore().get_item(locator),
@@ -855,12 +863,12 @@ class SplitModuleItemTests(SplitModuleTest):
         # negative tests--not found
         # no such course or block
         locator = BlockUsageLocator(
-            CourseLocator(org='doesnotexist', offering='doesnotexist', branch='draft'), 'course', 'head23456'
+            CourseLocator(org='doesnotexist', course="doesnotexist", run="run", branch='draft'), 'course', 'head23456'
         )
         with self.assertRaises(ItemNotFoundError):
             modulestore().get_item(locator)
         locator = BlockUsageLocator(
-            CourseLocator(org='testx', offering='wonderful', branch='draft'), 'html', 'doesnotexist'
+            CourseLocator(org='testx', course="wonderful", run="run", branch='draft'), 'html', 'doesnotexist'
         )
         with self.assertRaises(ItemNotFoundError):
             modulestore().get_item(locator)
@@ -894,7 +902,7 @@ class SplitModuleItemTests(SplitModuleTest):
         '''
         get_items(locator, qualifiers, [branch])
         '''
-        locator = CourseLocator(org='testx', offering='GreekHero', branch='draft')
+        locator = CourseLocator(org='testx', course="GreekHero", run="run", branch='draft')
         # get all modules
         matches = modulestore().get_items(locator)
         self.assertEqual(len(matches), 6)
@@ -920,14 +928,15 @@ class SplitModuleItemTests(SplitModuleTest):
         get_parent_locations(locator): [BlockUsageLocator]
         '''
         locator = BlockUsageLocator(
-            CourseLocator(org='testx', offering='GreekHero', branch='draft'),
+            CourseLocator(org='testx', course="GreekHero", run="run", branch='draft'),
             'chapter', block_id='chapter1'
         )
         parents = modulestore().get_parent_locations(locator)
         self.assertEqual(len(parents), 1)
         self.assertEqual(parents[0].block_id, 'head12345')
         self.assertEqual(parents[0].org, "testx")
-        self.assertEqual(parents[0].offering, "GreekHero")
+        self.assertEqual(parents[0].course, "GreekHero")
+        self.assertEqual(parents[0].run, "run")
         locator = locator.course_key.make_usage_key('Chapter', 'chapter2')
         parents = modulestore().get_parent_locations(locator)
         self.assertEqual(len(parents), 1)
@@ -941,7 +950,7 @@ class SplitModuleItemTests(SplitModuleTest):
         Test the existing get_children method on xdescriptors
         """
         locator = BlockUsageLocator(
-            CourseLocator(org='testx', offering='GreekHero', branch='draft'), 'course', 'head12345'
+            CourseLocator(org='testx', course="GreekHero", run="run", branch='draft'), 'course', 'head12345'
         )
         block = modulestore().get_item(locator)
         children = block.get_children()
@@ -988,7 +997,7 @@ class TestItemCrud(SplitModuleTest):
         create_item(course_or_parent_locator, category, user, definition_locator=None, fields): new_desciptor
         """
         # grab link to course to ensure new versioning works
-        locator = CourseLocator(org='testx', offering='GreekHero', branch='draft')
+        locator = CourseLocator(org='testx', course="GreekHero", run="run", branch='draft')
         premod_course = modulestore().get_course(locator)
         premod_history = modulestore().get_course_history_info(premod_course.location)
         # add minimal one w/o a parent
@@ -998,7 +1007,8 @@ class TestItemCrud(SplitModuleTest):
             fields={'display_name': 'new sequential'}
         )
         # check that course version changed and course's previous is the other one
-        self.assertEqual(new_module.location.offering, "GreekHero")
+        self.assertEqual(new_module.location.course, "GreekHero")
+        self.assertEqual(new_module.location.run, "run")
         self.assertNotEqual(new_module.location.version_guid, premod_course.location.version_guid)
         self.assertIsNone(locator.version_guid, "Version inadvertently filled in")
         current_course = modulestore().get_course(locator)
@@ -1024,13 +1034,13 @@ class TestItemCrud(SplitModuleTest):
         Test create_item w/ specifying the parent of the new item
         """
         locator = BlockUsageLocator(
-            CourseLocator(org='testx', offering='GreekHero', branch='draft'),
+            CourseLocator(org='testx', course="GreekHero", run="run", branch='draft'),
             'chapter', block_id='chapter2'
         )
         original = modulestore().get_item(locator)
 
         locator = BlockUsageLocator(
-            CourseLocator(org='testx', offering='wonderful', branch='draft'), 'course', 'head23456'
+            CourseLocator(org='testx', course="wonderful", run="run", branch='draft'), 'course', 'head23456'
         )
         premod_course = modulestore().get_course(locator.course_key)
         category = 'chapter'
@@ -1053,13 +1063,13 @@ class TestItemCrud(SplitModuleTest):
         Actually, this tries to test all create_item features not tested above.
         """
         locator = BlockUsageLocator(
-            CourseLocator(org='testx', offering='GreekHero', branch='draft'),
+            CourseLocator(org='testx', course="GreekHero", run="run", branch='draft'),
             'problem', block_id='problem1'
         )
         original = modulestore().get_item(locator)
 
         locator = BlockUsageLocator(
-            CourseLocator(org='guestx', offering='contender', branch='draft'), 'course', 'head345679'
+            CourseLocator(org='guestx', course="contender", run="run", branch='draft'), 'course', 'head345679'
         )
         category = 'problem'
         new_payload = "<problem>empty</problem>"
@@ -1092,7 +1102,7 @@ class TestItemCrud(SplitModuleTest):
         """
         Check that using odd characters in block id don't break ability to add and retrieve block.
         """
-        course_key = CourseLocator(org='guestx', offering='contender', branch='draft')
+        course_key = CourseLocator(org='guestx', course="contender", run="run", branch='draft')
         parent_locator = BlockUsageLocator(course_key, 'course', block_id="head345679")
         chapter_locator = BlockUsageLocator(course_key, 'chapter', block_id="foo.bar_-~:0")
         modulestore().create_item(
@@ -1201,7 +1211,7 @@ class TestItemCrud(SplitModuleTest):
         test updating an items metadata ensuring the definition doesn't version but the course does if it should
         """
         locator = BlockUsageLocator(
-            CourseLocator(org="testx", offering="GreekHero", branch='draft'),
+            CourseLocator(org="testx", course="GreekHero", run="run", branch='draft'),
             'problem', block_id="problem3_2"
         )
         problem = modulestore().get_item(locator)
@@ -1235,7 +1245,7 @@ class TestItemCrud(SplitModuleTest):
         test updating an item's children ensuring the definition doesn't version but the course does if it should
         """
         locator = BlockUsageLocator(
-            CourseLocator(org='testx', offering='GreekHero', branch='draft'), 'chapter', 'chapter3'
+            CourseLocator(org='testx', course="GreekHero", run="run", branch='draft'), 'chapter', 'chapter3'
         )
         block = modulestore().get_item(locator)
         pre_def_id = block.definition_locator.definition_id
@@ -1262,7 +1272,7 @@ class TestItemCrud(SplitModuleTest):
         test updating an item's definition: ensure it gets versioned as well as the course getting versioned
         """
         locator = BlockUsageLocator(
-            CourseLocator(org='testx', offering='GreekHero', branch='draft'), 'course', 'head12345'
+            CourseLocator(org='testx', course="GreekHero", run="run", branch='draft'), 'course', 'head12345'
         )
         block = modulestore().get_item(locator)
         pre_def_id = block.definition_locator.definition_id
@@ -1417,7 +1427,7 @@ class TestCourseCreation(SplitModuleTest):
         """
         Test making a course which points to an existing draft and published but not making any changes to either.
         """
-        original_locator = CourseLocator(org='testx', offering='wonderful', branch='draft')
+        original_locator = CourseLocator(org='testx', course="wonderful", run="run", branch='draft')
         original_index = modulestore().get_course_index_info(original_locator)
         new_draft = modulestore().create_course(
             'best', 'leech', 'leech_master',
@@ -1459,7 +1469,7 @@ class TestCourseCreation(SplitModuleTest):
         """
         Create a new course which overrides metadata and course_data
         """
-        original_locator = CourseLocator(org='guestx', offering='contender', branch='draft')
+        original_locator = CourseLocator(org='guestx', course="contender", run="run", branch='draft')
         original = modulestore().get_course(original_locator)
         original_index = modulestore().get_course_index_info(original_locator)
         fields = {}
@@ -1496,11 +1506,11 @@ class TestCourseCreation(SplitModuleTest):
 
     def test_update_course_index(self):
         """
-        Test the versions pointers. NOTE: you can change the org, offering, or other things, but
+        Test the versions pointers. NOTE: you can change the org, course, run, or other things, but
         it's not clear how you'd find them again or associate them w/ existing student history since
         we use course_key so many places as immutable.
         """
-        locator = CourseLocator(org='testx', offering='GreekHero', branch='draft')
+        locator = CourseLocator(org='testx', course="GreekHero", run="run", branch='draft')
         course_info = modulestore().get_course_index_info(locator)
 
         # an allowed but not necessarily recommended way to revert the draft version
@@ -1545,7 +1555,7 @@ class TestCourseCreation(SplitModuleTest):
         courses = modulestore().get_courses()
         with self.assertRaises(DuplicateCourseError):
             dupe_course_key = courses[0].location.course_key
-            modulestore().create_course(dupe_course_key.org, dupe_course_key.offering, user)
+            modulestore().create_course(dupe_course_key.org, dupe_course_key.course, dupe_course_key.run, user)
 
 
 class TestInheritance(SplitModuleTest):
@@ -1559,13 +1569,13 @@ class TestInheritance(SplitModuleTest):
         # Note, not testing value where defined (course) b/c there's no
         # defined accessor for it on CourseDescriptor.
         locator = BlockUsageLocator(
-            CourseLocator(org='testx', offering='GreekHero', branch='draft'), 'problem', 'problem3_2'
+            CourseLocator(org='testx', course="GreekHero", run="run", branch='draft'), 'problem', 'problem3_2'
         )
         node = modulestore().get_item(locator)
         # inherited
         self.assertEqual(node.graceperiod, datetime.timedelta(hours=2))
         locator = BlockUsageLocator(
-            CourseLocator(org='testx', offering='GreekHero', branch='draft'), 'problem', 'problem1'
+            CourseLocator(org='testx', course="GreekHero", run="run", branch='draft'), 'problem', 'problem1'
         )
         node = modulestore().get_item(locator)
         # overridden
@@ -1587,8 +1597,8 @@ class TestPublish(SplitModuleTest):
         """
         Test the standard patterns: publish to new branch, revise and publish
         """
-        source_course = CourseLocator(org='testx', offering='GreekHero', branch='draft')
-        dest_course = CourseLocator(org='testx', offering='GreekHero', branch="published")
+        source_course = CourseLocator(org='testx', course="GreekHero", run="run", branch='draft')
+        dest_course = CourseLocator(org='testx', course="GreekHero", run="run", branch="published")
         head = source_course.make_usage_key('course', "head12345")
         chapter1 = source_course.make_usage_key('chapter', 'chapter1')
         chapter2 = source_course.make_usage_key('chapter', 'chapter2')
@@ -1633,16 +1643,16 @@ class TestPublish(SplitModuleTest):
         """
         Test the exceptions which preclude successful publication
         """
-        source_course = CourseLocator(org='testx', offering='GreekHero', branch='draft')
+        source_course = CourseLocator(org='testx', course="GreekHero", run="run", branch='draft')
         # destination does not exist
-        destination_course = CourseLocator(org='fake', offering='Unknown', branch="published")
+        destination_course = CourseLocator(org='fake', course="Unknown", run="run", branch="published")
         head = source_course.make_usage_key('course', "head12345")
         chapter3 = source_course.make_usage_key('chapter', 'chapter3')
         problem1 = source_course.make_usage_key('problem', 'problem1')
         with self.assertRaises(ItemNotFoundError):
             modulestore().xblock_publish(self.user, source_course, destination_course, [chapter3], None)
         # publishing into a new branch w/o publishing the root
-        destination_course = CourseLocator(org='testx', offering='GreekHero', branch="published")
+        destination_course = CourseLocator(org='testx', course="GreekHero", run="run", branch="published")
         with self.assertRaises(ItemNotFoundError):
             modulestore().xblock_publish(self.user, source_course, destination_course, [chapter3], None)
         # publishing a subdag w/o the parent already in course
@@ -1654,8 +1664,8 @@ class TestPublish(SplitModuleTest):
         """
         Test publishing moves and deletes.
         """
-        source_course = CourseLocator(org='testx', offering='GreekHero', branch='draft')
-        dest_course = CourseLocator(org='testx', offering='GreekHero', branch="published")
+        source_course = CourseLocator(org='testx', course="GreekHero", run="run", branch='draft')
+        dest_course = CourseLocator(org='testx', course="GreekHero", run="run", branch="published")
         head = source_course.make_usage_key('course', "head12345")
         chapter2 = source_course.make_usage_key('chapter', 'chapter2')
         problem1 = source_course.make_usage_key('problem', 'problem1')

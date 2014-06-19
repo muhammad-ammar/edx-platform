@@ -53,10 +53,10 @@ class LocMapperStore(object):
         self.cache = cache
 
     # location_map functions
-    def create_map_entry(self, course_key, org=None, offering=None, draft_branch='draft', prod_branch='published',
+    def create_map_entry(self, course_key, org=None, course=None, run=None, draft_branch='draft', prod_branch='published',
                          block_map=None):
         """
-        Add a new entry to map this SlashSeparatedCourseKey to the new style CourseLocator.org & offering. If
+        Add a new entry to map this SlashSeparatedCourseKey to the new style CourseLocator.org. If
         org and offering are not provided, it defaults them based on course_key.
 
         WARNING: Exactly 1 CourseLocator key should index a given SlashSeparatedCourseKey.
@@ -173,7 +173,8 @@ class LocMapperStore(object):
 
         prod_course_locator = CourseLocator(
             org=entry['org'],
-            offering=entry['offering'],
+            course=entry['course'],
+            run=entry['run'],
             branch=entry['prod_branch']
         )
         published_usage = BlockUsageLocator(

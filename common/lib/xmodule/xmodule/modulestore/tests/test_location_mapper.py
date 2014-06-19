@@ -61,7 +61,8 @@ class TestLocationMapper(LocMapperSetupSansDjango):
         })
         self.assertIsNotNone(entry, "Didn't find entry")
         self.assertEqual(entry['org'], org)
-        self.assertEqual(entry['offering'], '{}.{}'.format(course1, run))
+        self.assertEqual(entry['course'], course1)
+        self.assertEqual(entry['run'], run)
         self.assertEqual(entry['draft_branch'], 'draft')
         self.assertEqual(entry['prod_branch'], 'published')
         self.assertEqual(entry['block_map'], {})
@@ -81,7 +82,8 @@ class TestLocationMapper(LocMapperSetupSansDjango):
         })
         self.assertIsNotNone(entry, "Didn't find entry")
         self.assertEqual(entry['org'], 'foo_org.geek_dept')
-        self.assertEqual(entry['offering'], '{}.{}'.format(course2, run))
+        self.assertEqual(entry['course'], course2)
+        self.assertEqual(entry['run'], run)
         self.assertEqual(entry['draft_branch'], 'wip')
         self.assertEqual(entry['prod_branch'], 'live')
         self.assertEqual(entry['block_map'], block_map)
@@ -100,7 +102,8 @@ class TestLocationMapper(LocMapperSetupSansDjango):
             '_id': loc_mapper()._construct_course_son(course_location)
         })
         self.assertIsNotNone(entry, 'Entry not found in loc_mapper')
-        self.assertEqual(entry['offering'], u'{1}.{2}'.format(org, course, run))
+        self.assertEqual(entry['course'], course)
+        self.assertEqual(entry['run'], run)
 
         # now delete course location from loc_mapper and cache and test that course location no longer
         # exists in loca_mapper and cache
@@ -117,9 +120,9 @@ class TestLocationMapper(LocMapperSetupSansDjango):
         cached_value = loc_mapper()._get_course_location_from_cache(course_location)
         self.assertIsNone(cached_value, 'Entry found in cache')
 
-    def translate_n_check(self, location, org, offering, block_id, branch, add_entry=False):
+    def translate_n_check(self, location, org, course, run, block_id, branch, add_entry=False):
         """
-        Request translation, check org, offering, block_id, and branch
+        Request translation, check org, course, run, block_id, and branch
         """
         prob_locator = loc_mapper().translate_location(
             location,
@@ -127,7 +130,8 @@ class TestLocationMapper(LocMapperSetupSansDjango):
             add_entry_if_missing=add_entry
         )
         self.assertEqual(prob_locator.org, org)
-        self.assertEqual(prob_locator.offering, offering)
+        self.assertEqual(prob_locator.course, course)
+        self.assertEqual(prob_locator.run, run)
         self.assertEqual(prob_locator.block_id, block_id)
         self.assertEqual(prob_locator.branch, branch)
 
@@ -136,7 +140,8 @@ class TestLocationMapper(LocMapperSetupSansDjango):
             published=(branch == 'published'),
         )
         self.assertEqual(course_locator.org, org)
-        self.assertEqual(course_locator.offering, offering)
+        self.assertEqual(course_locator.course, course)
+        self.assertEqual(course_locator.run, run)
         self.assertEqual(course_locator.branch, branch)
 
     def test_translate_location_read_only(self):

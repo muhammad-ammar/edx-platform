@@ -175,7 +175,7 @@ def import_from_xml(
                 continue
             else:
                 try:
-                    store.create_course(dest_course_id.org, dest_course_id.offering)
+                    store.create_course(dest_course_id.org, dest_course_id.course, dest_course_id.run)
                 except InvalidLocationError:
                     # course w/ same org and course exists and store is old mongo
                     log.debug(
