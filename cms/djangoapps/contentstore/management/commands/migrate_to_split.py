@@ -57,7 +57,7 @@ class Command(BaseCommand):
         except IndexError:
             org = course = run = None
 
-        return course_key, user, org, course run
+        return course_key, user, org, course, run
 
     def handle(self, *args, **options):
         course_key, user, org, course, run = self.parse_args(*args)
