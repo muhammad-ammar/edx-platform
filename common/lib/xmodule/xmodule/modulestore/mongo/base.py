@@ -809,12 +809,12 @@ class MongoModuleStore(ModuleStoreWriteBase):
             name='overview'
         )
         overview_template = AboutDescriptor.get_template('overview.yaml')
-        new_object = self.create_xmodule(
+        self.create_and_save_xmodule(
             about_location,
+            user_id,
             definition_data=overview_template.get('data'),
-            system=course.system
+            runtime=course.system
         )
-        self.update_item(new_object, user_id, allow_not_found=True)
 
         return course
 
