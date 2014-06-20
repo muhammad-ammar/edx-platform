@@ -7,6 +7,7 @@ In this way, courses can be served up both - say - XMLModuleStore or MongoModule
 
 import logging
 from uuid import uuid4
+from contextlib import contextmanager
 from opaque_keys import InvalidKeyError
 
 from . import ModuleStoreWriteBase
@@ -328,7 +329,7 @@ class MixedModuleStore(ModuleStoreWriteBase):
         Delete the given item from persistence. kwargs allow modulestore specific parameters.
         """
         store = self._verify_modulestore_support(location, 'delete_item')
-        return store.delete_item(location, user_id=user_id, **kwargs)
+        store.delete_item(location, user_id=user_id, **kwargs)
 
     def close_all_connections(self):
         """
@@ -434,3 +435,14 @@ class MixedModuleStore(ModuleStoreWriteBase):
             return store
         else:
             raise NotImplementedError(u"Cannot call {} on store {}".format(method, store))
+
+
+@contextmanager
+def store_branch_setting(store, branch_setting):
+    """A context manager for setting a store's branch value"""
+    try:
+        previous_branch_setting = store.branch_setting
+        store.branch_setting = branch_setting
+        yield
+    finally:
+        store.branch_setting = previous_branch_setting

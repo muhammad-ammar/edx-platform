@@ -27,7 +27,7 @@ from xmodule.contentstore.content import StaticContent
 from xmodule.contentstore.django import contentstore, _CONTENTSTORE
 from xmodule.contentstore.utils import restore_asset_from_trashcan, empty_asset_trashcan
 from xmodule.exceptions import NotFoundError, InvalidVersionError
-from xmodule.modulestore import mongo, MONGO_MODULESTORE_TYPE
+from xmodule.modulestore import mongo, MONGO_MODULESTORE_TYPE, PublishState
 from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.exceptions import ItemNotFoundError
 from xmodule.modulestore.inheritance import own_metadata
@@ -819,7 +819,7 @@ class ContentStoreToyCourseTest(ContentStoreTestCase):
             self.assertTrue(filesystem.exists(item.location.name + filename_suffix))
 
     @mock.patch('xmodule.course_module.requests.get')
-    def test_export_course_round_trip(self, mock_get):
+    def test_export_course_roundtrip(self, mock_get):
         mock_get.return_value.text = dedent("""
             <?xml version="1.0"?><table_of_contents>
             <entry page="5" page_label="ii" name="Table of Contents"/>
@@ -844,25 +844,33 @@ class ContentStoreToyCourseTest(ContentStoreTestCase):
         # get the original vertical (and components in it) to put into 'draft'
         vertical = module_store.get_item(course_id.make_usage_key('vertical', 'vertical_test'), depth=1)
         self.assertEqual(len(orphan_vertical.children), len(vertical.children))
-        module_store.convert_to_draft(vertical.location, self.user.id)
+        draft_vertical = module_store.convert_to_draft(vertical.location, self.user.id)
+        self.assertEqual(module_store.compute_publish_state(draft_vertical), PublishState.draft)
 
         root_dir = path(mkdtemp_clean())
 
         # now create a new/different private (draft only) vertical
         vertical.location = mongo.draft.as_draft(course_id.make_usage_key('vertical', 'a_private_vertical'))
-        module_store.update_item(vertical, self.user.id, allow_not_found=True)
+        vertical = module_store.create_and_save_xmodule(vertical.location, self.user.id)
+        self.assertEqual(module_store.compute_publish_state(vertical), PublishState.private)
         private_vertical = module_store.get_item(vertical.location)
         vertical = None  # blank out b/c i destructively manipulated its location 2 lines above
 
-        # add the new private to list of children
+        # now create a new/different published (no draft) vertical
+        public_vertical_location = course_id.make_usage_key('vertical', 'a_published_vertical')
+        module_store.create_and_save_xmodule(public_vertical_location, self.user.id)
+        public_vertical = module_store.publish(public_vertical_location, self.user.id)
+        self.assertEqual(module_store.compute_publish_state(public_vertical), PublishState.public)
+
+        # add the new private and new public to list of children
         sequential = module_store.get_item(course_id.make_usage_key('sequential', 'vertical_sequential'))
         private_location_no_draft = private_vertical.location.replace(revision=None)
         sequential.children.append(private_location_no_draft)
+        sequential.children.append(public_vertical_location)
         module_store.update_item(sequential, self.user.id)
 
         # read back the sequential, to make sure we have a pointer to
         sequential = module_store.get_item(course_id.make_usage_key('sequential', 'vertical_sequential'))
-
         self.assertIn(private_location_no_draft, sequential.children)
 
         locked_asset_key = self._lock_an_asset(content_store, course_id)
@@ -930,17 +938,25 @@ class ContentStoreToyCourseTest(ContentStoreTestCase):
         items = module_store.get_items(course_id, category='vertical', revision='published-only')
         self._check_verticals(items)
 
-        # verify that we have the content in the draft store as well
-        vertical = module_store.get_item(
-            course_id.make_usage_key('vertical', 'vertical_test'),
-            depth=1
-        )
-        self.assertTrue(getattr(vertical, 'is_draft', False))
+        def verify_item_publish_state(item, publish_state):
+            if publish_state in (PublishState.private, PublishState.draft):
+                self.assertTrue(getattr(item, 'is_draft', False))
+            else:
+                self.assertFalse(getattr(item, 'is_draft', False))
+            self.assertEqual(module_store.compute_publish_state(item), publish_state)
+
+        def get_and_verify_item_publish_state(item_type, item_name, publish_state):
+            item = module_store.get_item(course_id.make_usage_key(item_type, item_name))
+            verify_item_publish_state(item, publish_state)
+            return item
+
+        # verify that the draft vertical is draft
+        vertical = get_and_verify_item_publish_state('vertical', 'vertical_test', PublishState.draft)
         self.assertNotIn('index_in_children_list', vertical.xml_attributes)
         self.assertNotIn('parent_sequential_url', vertical.xml_attributes)
 
         for child in vertical.get_children():
-            self.assertTrue(getattr(child, 'is_draft', False))
+            verify_item_publish_state(child, PublishState.draft)
             self.assertNotIn('index_in_children_list', child.xml_attributes)
             if hasattr(child, 'data'):
                 self.assertNotIn('index_in_children_list', child.data)
@@ -948,17 +964,14 @@ class ContentStoreToyCourseTest(ContentStoreTestCase):
             if hasattr(child, 'data'):
                 self.assertNotIn('parent_sequential_url', child.data)
 
-        # make sure that we don't have a sequential that is in draft mode
-        sequential = module_store.get_item(
-            course_id.make_usage_key('sequential', 'vertical_sequential')
-        )
-        self.assertFalse(getattr(sequential, 'is_draft', False))
+        # make sure that we don't have a sequential that is not in draft mode
+        get_and_verify_item_publish_state('sequential', 'vertical_sequential', PublishState.public)
 
         # verify that we have the private vertical
-        test_private_vertical = module_store.get_item(
-            course_id.make_usage_key('vertical', 'a_private_vertical')
-        )
-        self.assertTrue(getattr(test_private_vertical, 'is_draft', False))
+        get_and_verify_item_publish_state('vertical', 'a_private_vertical', PublishState.private)
+
+        # verify that we have the public vertical
+        get_and_verify_item_publish_state('vertical', 'a_published_vertical', PublishState.public)
 
         # make sure the textbook survived the export/import
         course = module_store.get_course(course_id)

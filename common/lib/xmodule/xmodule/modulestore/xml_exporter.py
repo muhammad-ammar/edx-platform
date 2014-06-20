@@ -7,12 +7,12 @@ import lxml.etree
 from xblock.fields import Scope
 from xmodule.contentstore.content import StaticContent
 from xmodule.exceptions import NotFoundError
-from opaque_keys.edx.locations import Location
+from xmodule.modulestore import EdxJSONEncoder
 from xmodule.modulestore.inheritance import own_metadata
+from xmodule.modulestore.mixed import store_branch_setting
 from fs.osfs import OSFS
 from json import dumps
 import json
-import datetime
 import os
 from path import path
 import shutil
@@ -23,28 +23,6 @@ EXPORT_VERSION_FILE = "format.json"
 EXPORT_VERSION_KEY = "export_format"
 
 DEFAULT_CONTENT_FIELDS = ['metadata', 'data']
-
-
-class EdxJSONEncoder(json.JSONEncoder):
-    """
-    Custom JSONEncoder that handles `Location` and `datetime.datetime` objects.
-
-    `Location`s are encoded as their url string form, and `datetime`s as
-    ISO date strings
-    """
-    def default(self, obj):
-        if isinstance(obj, Location):
-            return obj.to_deprecated_string()
-        elif isinstance(obj, datetime.datetime):
-            if obj.tzinfo is not None:
-                if obj.utcoffset() is None:
-                    return obj.isoformat() + 'Z'
-                else:
-                    return obj.isoformat()
-            else:
-                return obj.isoformat()
-        else:
-            return super(EdxJSONEncoder, self).default(obj)
 
 
 def export_to_xml(modulestore, contentstore, course_key, root_dir, course_dir):
@@ -65,7 +43,9 @@ def export_to_xml(modulestore, contentstore, course_key, root_dir, course_dir):
 
     root = lxml.etree.Element('unknown')
 
-    course.add_xml_to_node(root)
+    # export only the published content
+    with store_branch_setting(course.runtime.modulestore, 'published'):
+        course.add_xml_to_node(root)
 
     with export_fs.open('course.xml', 'w') as course_xml:
         lxml.etree.ElementTree(root).write(course_xml)

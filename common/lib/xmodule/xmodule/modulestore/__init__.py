@@ -5,6 +5,8 @@ that are stored in a database an accessible using their Location as an identifie
 
 import logging
 import re
+import json
+import datetime
 
 from collections import namedtuple, defaultdict
 import collections
@@ -477,3 +479,24 @@ def prefer_xmodules(identifier, entry_points):
     else:
         return default_select(identifier, entry_points)
 
+
+class EdxJSONEncoder(json.JSONEncoder):
+    """
+    Custom JSONEncoder that handles `Location` and `datetime.datetime` objects.
+
+    `Location`s are encoded as their url string form, and `datetime`s as
+    ISO date strings
+    """
+    def default(self, obj):
+        if isinstance(obj, Location):
+            return obj.to_deprecated_string()
+        elif isinstance(obj, datetime.datetime):
+            if obj.tzinfo is not None:
+                if obj.utcoffset() is None:
+                    return obj.isoformat() + 'Z'
+                else:
+                    return obj.isoformat()
+            else:
+                return obj.isoformat()
+        else:
+            return super(EdxJSONEncoder, self).default(obj)
