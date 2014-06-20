@@ -21,7 +21,6 @@ from xmodule.modulestore.django import editable_modulestore
 
 from external_auth.models import ExternalAuthMap
 from opaque_keys.edx.keys import CourseKey
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
 
 TEST_DATA_MIXED_MODULESTORE = mixed_store_config(settings.COMMON_TEST_DATA_ROOT, {})
 
@@ -325,7 +324,7 @@ class ExternalAuthShibTest(ModuleStoreTestCase):
         """
         Tests the _get_course_enrollment_domain utility function
         """
-        self.assertIsNone(_get_course_enrollment_domain(SlashSeparatedCourseKey("I", "DONT", "EXIST")))
+        self.assertIsNone(_get_course_enrollment_domain(CourseKey.from_string("I/DONT/EXIST")))
         self.assertIsNone(_get_course_enrollment_domain(self.course.id))
         self.assertEqual(self.shib_course.enrollment_domain, _get_course_enrollment_domain(self.shib_course.id))
 

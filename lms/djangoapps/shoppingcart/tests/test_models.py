@@ -14,7 +14,6 @@ from django.contrib.auth.models import AnonymousUser
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory
 from opaque_keys.edx.keys import CourseKey
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from courseware.tests.tests import TEST_DATA_MONGO_MODULESTORE
 from shoppingcart.models import (Order, OrderItem, CertificateItem, InvalidCartItem, PaidCourseRegistration,
                                  OrderItemSubclassPK)
@@ -57,7 +56,7 @@ class OrderTest(ModuleStoreTestCase):
     def test_cart_clear(self):
         cart = Order.get_cart_for_user(user=self.user)
         CertificateItem.add_to_order(cart, self.course_key, self.cost, 'honor')
-        CertificateItem.add_to_order(cart, SlashSeparatedCourseKey('org', 'test', 'Test_Course_1'), self.cost, 'honor')
+        CertificateItem.add_to_order(cart, CourseKey.from_string('org/test/Test_Course_1'), self.cost, 'honor')
         self.assertEquals(cart.orderitem_set.count(), 2)
         self.assertTrue(cart.has_items())
         cart.clear()
@@ -263,7 +262,7 @@ class PaidCourseRegistrationTest(ModuleStoreTestCase):
         self.assertEqual(reg1.user, self.user)
         self.assertEqual(reg1.status, "cart")
         self.assertTrue(PaidCourseRegistration.contained_in_order(self.cart, self.course_key))
-        self.assertFalse(PaidCourseRegistration.contained_in_order(self.cart, SlashSeparatedCourseKey("MITx", "999", "Robot_Super_Course_abcd")))
+        self.assertFalse(PaidCourseRegistration.contained_in_order(self.cart, CourseKey.from_string("MITx/999/Robot_Super_Course_abcd")))
 
         self.assertEqual(self.cart.total_cost, self.cost)
 
@@ -311,13 +310,13 @@ class PaidCourseRegistrationTest(ModuleStoreTestCase):
 
     def test_purchased_callback_exception(self):
         reg1 = PaidCourseRegistration.add_to_order(self.cart, self.course_key)
-        reg1.course_id = SlashSeparatedCourseKey("changed", "forsome", "reason")
+        reg1.course_id = CourseKey.from_string("changed/forsome/reason")
         reg1.save()
         with self.assertRaises(PurchasedCallbackException):
             reg1.purchased_callback()
         self.assertFalse(CourseEnrollment.is_enrolled(self.user, self.course_key))
 
-        reg1.course_id = SlashSeparatedCourseKey("abc", "efg", "hij")
+        reg1.course_id = CourseKey.from_string("abc/efg/hij")
         reg1.save()
         with self.assertRaises(PurchasedCallbackException):
             reg1.purchased_callback()

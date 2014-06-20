@@ -17,8 +17,7 @@ from xmodule.modulestore.django import editable_modulestore
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from opaque_keys import InvalidKeyError
-from opaque_keys.edx.keys import UsageKey
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import UsageKey, CourseKey
 
 from student.tests.factories import CourseEnrollmentFactory, UserFactory
 from courseware.model_data import StudentModule
@@ -33,7 +32,7 @@ from instructor_task.views import instructor_task_status
 TEST_COURSE_ORG = 'edx'
 TEST_COURSE_NAME = 'test_course'
 TEST_COURSE_NUMBER = '1.23x'
-TEST_COURSE_KEY = SlashSeparatedCourseKey(TEST_COURSE_ORG, TEST_COURSE_NUMBER, TEST_COURSE_NAME)
+TEST_COURSE_KEY = CourseKey.from_string("/".join([TEST_COURSE_ORG, TEST_COURSE_NUMBER, TEST_COURSE_NAME]))
 TEST_SECTION_NAME = "Problem"
 
 TEST_FAILURE_MESSAGE = 'task failed horribly'

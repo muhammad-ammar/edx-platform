@@ -18,7 +18,7 @@ from xblock.fields import ScopeIds
 from xmodule import peer_grading_module
 from xmodule.error_module import ErrorDescriptor
 from xmodule.modulestore.django import modulestore
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import CourseKey
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.open_ended_grading_classes import peer_grading_service, controller_query_service
 from xmodule.tests import test_util_open_ended
@@ -114,7 +114,7 @@ class TestStaffGradingService(ModuleStoreTestCase, LoginEnrollmentTestCase):
         self.activate_user(self.student)
         self.activate_user(self.instructor)
 
-        self.course_id = SlashSeparatedCourseKey("edX", "toy", "2012_Fall")
+        self.course_id = CourseKey.from_string("edX/toy/2012_Fall")
         self.location_string = unicode(self.course_id.make_usage_key('html', 'TestLocation'))
         self.toy = modulestore().get_course(self.course_id)
 
@@ -267,7 +267,7 @@ class TestPeerGradingService(ModuleStoreTestCase, LoginEnrollmentTestCase):
         self.activate_user(self.student)
         self.activate_user(self.instructor)
 
-        self.course_id = SlashSeparatedCourseKey("edX", "toy", "2012_Fall")
+        self.course_id = CourseKey.from_string("edX/toy/2012_Fall")
         self.location_string = unicode(self.course_id.make_usage_key('html', 'TestLocation'))
         self.toy = modulestore().get_course(self.course_id)
         location = "i4x://edX/toy/peergrading/init"
@@ -445,7 +445,7 @@ class TestPanel(ModuleStoreTestCase):
 
     def setUp(self):
         # Toy courses should be loaded
-        self.course_key = SlashSeparatedCourseKey('edX', 'open_ended', '2012_Fall')
+        self.course_key = CourseKey.from_string('edX/open_ended/2012_Fall')
         self.course = modulestore().get_course(self.course_key)
         self.user = factories.UserFactory()
 
@@ -483,7 +483,7 @@ class TestPeerGradingFound(ModuleStoreTestCase):
     """
 
     def setUp(self):
-        self.course_key = SlashSeparatedCourseKey('edX', 'open_ended_nopath', '2012_Fall')
+        self.course_key = CourseKey.from_string('edX/open_ended_nopath/2012_Fall')
         self.course = modulestore().get_course(self.course_key)
 
     def test_peer_grading_nopath(self):
@@ -504,7 +504,7 @@ class TestStudentProblemList(ModuleStoreTestCase):
 
     def setUp(self):
         # Load an open ended course with several problems.
-        self.course_key = SlashSeparatedCourseKey('edX', 'open_ended', '2012_Fall')
+        self.course_key = CourseKey.from_string('edX/open_ended/2012_Fall')
         self.course = modulestore().get_course(self.course_key)
         self.user = factories.UserFactory()
         # Enroll our user in our course and make them an instructor.

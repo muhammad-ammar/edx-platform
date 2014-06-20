@@ -12,7 +12,6 @@ from student.roles import (
     OrgStaffRole, OrgInstructorRole, RoleCache, CourseBetaTesterRole
 )
 from opaque_keys.edx.keys import CourseKey
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
 
 
 class RolesTestCase(TestCase):
@@ -21,7 +20,7 @@ class RolesTestCase(TestCase):
     """
 
     def setUp(self):
-        self.course_key = SlashSeparatedCourseKey('edX', 'toy', '2012_Fall')
+        self.course_key = CourseKey.from_string('edX/toy/2012_Fall')
         self.course_loc = self.course_key.make_usage_key('course', '2012_Fall')
         self.anonymous_user = AnonymousUserFactory()
         self.student = UserFactory()
@@ -160,8 +159,8 @@ class RolesTestCase(TestCase):
 @ddt.ddt
 class RoleCacheTestCase(TestCase):
 
-    IN_KEY = SlashSeparatedCourseKey('edX', 'toy', '2012_Fall')
-    NOT_IN_KEY = SlashSeparatedCourseKey('edX', 'toy', '2013_Fall')
+    IN_KEY = CourseKey.from_string('edX/toy/2012_Fall')
+    NOT_IN_KEY = CourseKey.from_string('edX/toy/2013_Fall')
 
     ROLES = (
         (CourseStaffRole(IN_KEY), ('staff', IN_KEY, 'edX')),

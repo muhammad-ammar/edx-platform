@@ -2,7 +2,7 @@
 from datetime import timedelta, datetime
 import json
 from xmodule.modulestore.tests.factories import CourseFactory
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import CourseKey
 from nose.tools import assert_is_none, assert_equals, assert_raises, assert_true, assert_false
 from mock import patch
 import pytz
@@ -219,7 +219,7 @@ class TestPhotoVerification(TestCase):
         old_key = orig_attempt.photo_id_key
 
         window = MidcourseReverificationWindowFactory(
-            course_id=SlashSeparatedCourseKey("pony", "rainbow", "dash"),
+            course_id=CourseKey.from_string("pony/rainbow/dash"),
             start_date=datetime.now(pytz.utc) - timedelta(days=5),
             end_date=datetime.now(pytz.utc) + timedelta(days=5)
         )

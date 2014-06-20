@@ -13,7 +13,7 @@ from xblock.field_data import DictFieldData
 from xmodule.video_module import create_youtube_string
 from xmodule.tests import get_test_descriptor_system
 from xmodule.video_module import VideoDescriptor
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import CourseKey
 
 from . import BaseTestXmodule
 from .test_video_xml import SOURCE_XML
@@ -500,7 +500,7 @@ class VideoDescriptorTest(unittest.TestCase):
 
     def setUp(self):
         system = get_test_descriptor_system()
-        course_key = SlashSeparatedCourseKey('org', 'course', 'run')
+        course_key = CourseKey.from_string('org/course/run')
         usage_key = course_key.make_usage_key('video', 'name')
         self.descriptor = system.construct_xblock_from_class(
             VideoDescriptor,

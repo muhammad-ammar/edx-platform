@@ -9,7 +9,7 @@ from .helpers import LoginEnrollmentTestCase
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from courseware.tests.modulestore_config import TEST_DATA_MIXED_MODULESTORE
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import CourseKey
 
 
 @override_settings(MODULESTORE=TEST_DATA_MIXED_MODULESTORE)
@@ -40,7 +40,7 @@ class AboutTestCaseXML(LoginEnrollmentTestCase, ModuleStoreTestCase):
     # The following XML test course (which lives at common/test/data/2014)
     # is closed; we're testing that an about page still appears when
     # the course is already closed
-    xml_course_id = SlashSeparatedCourseKey('edX', 'detached_pages', '2014')
+    xml_course_id = CourseKey.from_string('edx/detached_pages/2014')
 
     # this text appears in that course's about page
     # common/test/data/2014/about/overview.html

@@ -24,7 +24,8 @@ from xmodule.modulestore import MONGO_MODULESTORE_TYPE
 from xmodule.modulestore.mongo import MongoModuleStore, MongoKeyValueStore
 from xmodule.modulestore.draft import DraftModuleStore
 from xmodule.modulestore.mongo.draft import as_draft
-from opaque_keys.edx.locations import SlashSeparatedCourseKey, AssetLocation
+from opaque_keys.edx.locations import AssetLocation
+from opaque_keys.edx.keys import CourseKey
 from xmodule.modulestore.xml_exporter import export_to_xml
 from xmodule.modulestore.xml_importer import import_from_xml, perform_xlint
 from xmodule.contentstore.mongo import MongoContentStore
@@ -149,7 +150,7 @@ class TestMongoModuleStore(unittest.TestCase):
         course_ids = [course.id for course in courses]
         for course_key in [
 
-            SlashSeparatedCourseKey(*fields)
+            CourseKey.from_string("/".join(fields))
             for fields in [
                 ['edX', 'simple', '2012_Fall'], ['edX', 'simple_with_draft', '2012_Fall'],
                 ['edX', 'test_import_course', '2012_Fall'], ['edX', 'test_unicode', '2012_Fall'],
@@ -160,9 +161,9 @@ class TestMongoModuleStore(unittest.TestCase):
             course = self.store.get_course(course_key)
             assert_not_none(course)
             assert_true(self.store.has_course(course_key))
-            mix_cased = SlashSeparatedCourseKey(
+            mix_cased = CourseKey.from_string("/".join([
                 course_key.org.upper(), course_key.course.upper(), course_key.run.lower()
-            )
+            ]))
             assert_false(self.store.has_course(mix_cased))
             assert_true(self.store.has_course(mix_cased, ignore_case=True))
 
@@ -172,7 +173,7 @@ class TestMongoModuleStore(unittest.TestCase):
         """
         for course_key in [
 
-            SlashSeparatedCourseKey(*fields)
+            CourseKey.from_string("/".join(fields))
             for fields in [
                 ['edX', 'simple', 'no_such_course'], ['edX', 'no_such_course', '2012_Fall'],
                 ['NO_SUCH_COURSE', 'Test_iMport_courSe', '2012_Fall'],
@@ -181,9 +182,9 @@ class TestMongoModuleStore(unittest.TestCase):
             course = self.store.get_course(course_key)
             assert_is_none(course)
             assert_false(self.store.has_course(course_key))
-            mix_cased = SlashSeparatedCourseKey(
+            mix_cased = CourseKey.from_string("/".join([
                 course_key.org.lower(), course_key.course.upper(), course_key.run.upper()
-            )
+            ]))
             assert_false(self.store.has_course(mix_cased))
             assert_false(self.store.has_course(mix_cased, ignore_case=True))
 
@@ -259,7 +260,7 @@ class TestMongoModuleStore(unittest.TestCase):
 
             Assumes the information is desired for courses[4] ('toy' course).
             """
-            course = self.store.get_course(SlashSeparatedCourseKey('edX', 'toy', '2012_Fall'))
+            course = self.store.get_course(CourseKey.from_string('edX/toy/2012_Fall'))
             return course.tabs[index]['name']
 
         # There was a bug where model.save was not getting called after the static tab name
@@ -340,7 +341,7 @@ class TestMongoModuleStore(unittest.TestCase):
         assert_equals(len(course_locations), 0)
 
         # set toy course to share the wiki with simple course
-        toy_course = self.store.get_course(SlashSeparatedCourseKey('edX', 'toy', '2012_Fall'))
+        toy_course = self.store.get_course(CourseKey.from_string('edX/toy/2012_Fall'))
         toy_course.wiki_slug = 'simple'
         self.store.update_item(toy_course)
 
@@ -355,7 +356,7 @@ class TestMongoModuleStore(unittest.TestCase):
             assert_in(Location('edX', course_number, '2012_Fall', 'course', '2012_Fall'), course_locations)
 
         # configure simple course to use unique wiki_slug.
-        simple_course = self.store.get_course(SlashSeparatedCourseKey('edX', 'simple', '2012_Fall'))
+        simple_course = self.store.get_course(CourseKey.from_string('edX/simple/2012_Fall'))
         simple_course.wiki_slug = 'edX.simple.2012_Fall'
         self.store.update_item(simple_course)
         # it should be retrievable with its new wiki_slug
@@ -368,7 +369,7 @@ class TestMongoModuleStore(unittest.TestCase):
         """
         Test that references types get deserialized correctly
         """
-        course_key = SlashSeparatedCourseKey('edX', 'toy', '2012_Fall')
+        course_key = CourseKey.from_string('edX/toy/2012_Fall')
 
         def setup_test():
             course = self.store.get_course(course_key)
@@ -430,7 +431,7 @@ class TestMongoModuleStore(unittest.TestCase):
         Test to make sure that we have a course image in the contentstore,
         then export it to ensure it gets copied to both file locations.
         """
-        course_key = SlashSeparatedCourseKey('edX', 'simple', '2012_Fall')
+        course_key = CourseKey.from_string('edX/simple/2012_Fall')
         location = course_key.make_asset_key('asset', 'images_course_image.jpg')
 
         # This will raise if the course image is missing
@@ -449,7 +450,7 @@ class TestMongoModuleStore(unittest.TestCase):
         Make sure that if a non-default image path is specified that we
         don't export it to the static default location
         """
-        course = self.store.get_course(SlashSeparatedCourseKey('edX', 'toy', '2012_Fall'))
+        course = self.store.get_course(CourseKey.from_string('edX/toy/2012_Fall'))
         assert_true(course.course_image, 'just_a_test.jpg')
 
         root_dir = path(mkdtemp())
@@ -465,7 +466,7 @@ class TestMongoModuleStore(unittest.TestCase):
         Make sure we elegantly passover our code when there isn't a static
         image
         """
-        course = self.store.get_course(SlashSeparatedCourseKey('edX', 'simple_with_draft', '2012_Fall'))
+        course = self.store.get_course(CourseKey.from_string('edX/simple_with_draft/2012_Fall'))
         root_dir = path(mkdtemp())
         try:
             export_to_xml(self.store, self.content_store, course.id, root_dir, 'test_export')
@@ -596,7 +597,7 @@ class TestMongoKeyValueStore(object):
 
     def setUp(self):
         self.data = {'foo': 'foo_value'}
-        self.course_id = SlashSeparatedCourseKey('org', 'course', 'run')
+        self.course_id = CourseKey.from_string('org/course/run')
         self.children = [self.course_id.make_usage_key('child', 'a'), self.course_id.make_usage_key('child', 'b')]
         self.metadata = {'meta': 'meta_val'}
         self.kvs = MongoKeyValueStore(self.data, self.children, self.metadata)

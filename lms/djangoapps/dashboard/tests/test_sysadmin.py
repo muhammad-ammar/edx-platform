@@ -27,7 +27,7 @@ from student.tests.factories import UserFactory
 from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.xml import XMLModuleStore
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import CourseKey
 
 
 TEST_MONGODB_LOG = {
@@ -48,7 +48,7 @@ class SysadminBaseTestCase(ModuleStoreTestCase):
 
     TEST_REPO = 'https://github.com/mitocw/edx4edx_lite.git'
     TEST_BRANCH = 'testing_do_not_delete'
-    TEST_BRANCH_COURSE = SlashSeparatedCourseKey('MITx', 'edx4edx_branch', 'edx4edx')
+    TEST_BRANCH_COURSE = CourseKey.from_string('MITx/edx4edx_branch/edx4edx')
 
     def setUp(self):
         """Setup test case by adding primary user."""
@@ -80,7 +80,7 @@ class SysadminBaseTestCase(ModuleStoreTestCase):
             course = def_ms.courses.get(course_path, None)
         except AttributeError:
             # Using mongo store
-            course = def_ms.get_course(SlashSeparatedCourseKey('MITx', 'edx4edx', 'edx4edx'))
+            course = def_ms.get_course(CourseKey.from_string('MITx/edx4edx/edx4edx'))
 
         # Delete git loaded course
         response = self.client.post(
@@ -368,7 +368,7 @@ class TestSysadmin(SysadminBaseTestCase):
         self._add_edx4edx()
 
         def_ms = modulestore()
-        course = def_ms.get_course(SlashSeparatedCourseKey('MITx', 'edx4edx', 'edx4edx'))
+        course = def_ms.get_course(CourseKey.from_string('MITx/edx4edx/edx4edx'))
         CourseStaffRole(course.id).add_users(self.user)
 
         response = self.client.post(reverse('sysadmin_staffing'),
@@ -452,11 +452,11 @@ class TestSysAdminMongoCourseImport(SysadminBaseTestCase):
         self.assertFalse(isinstance(def_ms, XMLModuleStore))
 
         self._add_edx4edx()
-        course = def_ms.get_course(SlashSeparatedCourseKey('MITx', 'edx4edx', 'edx4edx'))
+        course = def_ms.get_course(CourseKey.from_string('MITx/edx4edx/edx4edx'))
         self.assertIsNotNone(course)
 
         self._rm_edx4edx()
-        course = def_ms.get_course(SlashSeparatedCourseKey('MITx', 'edx4edx', 'edx4edx'))
+        course = def_ms.get_course(CourseKey.from_string('MITx/edx4edx/edx4edx'))
         self.assertIsNone(course)
 
     def test_course_info(self):
@@ -541,7 +541,7 @@ class TestSysAdminMongoCourseImport(SysadminBaseTestCase):
 
         # Add user as staff in course team
         def_ms = modulestore()
-        course = def_ms.get_course(SlashSeparatedCourseKey('MITx', 'edx4edx', 'edx4edx'))
+        course = def_ms.get_course(CourseKey.from_string('MITx/edx4edx/edx4edx'))
         CourseStaffRole(course.id).add_users(self.user)
 
         self.assertTrue(CourseStaffRole(course.id).has_user(self.user))

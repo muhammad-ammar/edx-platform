@@ -7,7 +7,8 @@ from webob.multidict import MultiDict
 from xblock.field_data import DictFieldData
 from xblock.fields import ScopeIds
 
-from opaque_keys.edx.locations import Location, SlashSeparatedCourseKey
+from opaque_keys.edx.locations import Location
+from opaque_keys.edx.keys import CourseKey
 from xmodule.tests import get_test_system, get_test_descriptor_system
 from xmodule.tests.test_util_open_ended import DummyModulestore
 from xmodule.open_ended_grading_classes.peer_grading_service import MockPeerGradingService
@@ -22,7 +23,7 @@ class PeerGradingModuleTest(unittest.TestCase, DummyModulestore):
     Test peer grading xmodule at the unit level.  More detailed tests are difficult, as the module relies on an
     external grading service.
     """
-    course_id = SlashSeparatedCourseKey('edX', 'open_ended', '2012_Fall')
+    course_id = CourseKey.from_string('edX/open_ended/2012_Fall')
     problem_location = course_id.make_usage_key("peergrading", "PeerGradingSample")
     coe_location = course_id.make_usage_key("combinedopenended", "SampleQuestion")
     calibrated_dict = {'location': "blah"}
@@ -251,7 +252,7 @@ class PeerGradingModuleScoredTest(unittest.TestCase, DummyModulestore):
     external grading service.
     """
 
-    course_id = SlashSeparatedCourseKey('edX', 'open_ended', '2012_Fall')
+    course_id = CourseKey.from_string('edX/open_ended/2012_Fall')
     problem_location = course_id.make_usage_key("peergrading", "PeerGradingScored")
 
     def get_module_system(self, descriptor):
@@ -292,7 +293,7 @@ class PeerGradingModuleLinkedTest(unittest.TestCase, DummyModulestore):
     """
     Test peer grading that is linked to an open ended module.
     """
-    course_id = SlashSeparatedCourseKey('edX', 'open_ended', '2012_Fall')
+    course_id = CourseKey.from_string('edX/open_ended/2012_Fall')
     problem_location = course_id.make_usage_key("peergrading", "PeerGradingLinked")
     coe_location = course_id.make_usage_key("combinedopenended", "SampleQuestion")
 

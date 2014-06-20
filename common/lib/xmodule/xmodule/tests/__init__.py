@@ -20,7 +20,7 @@ from xblock.fields import ScopeIds
 
 from xmodule.x_module import ModuleSystem, XModuleDescriptor, XModuleMixin
 from xmodule.modulestore.inheritance import InheritanceMixin
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import CourseKey
 from xmodule.mako_module import MakoDescriptorSystem
 from xmodule.error_module import ErrorDescriptor
 
@@ -60,7 +60,7 @@ class TestModuleSystem(ModuleSystem):  # pylint: disable=abstract-method
         )
 
 
-def get_test_system(course_id=SlashSeparatedCourseKey('org', 'course', 'run')):
+def get_test_system(course_id=CourseKey.from_string('org/course/run')):
     """
     Construct a test ModuleSystem instance.
 

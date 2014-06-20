@@ -18,8 +18,8 @@ from xmodule.contentstore.django import contentstore
 from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.xml_importer import import_from_xml
 from django.test.utils import override_settings
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from opaque_keys.edx.keys import AssetKey
+from opaque_keys.edx.keys import CourseKey
 
 
 class AssetsTestCase(CourseTestCase):
@@ -43,7 +43,7 @@ class BasicAssetsTestCase(AssetsTestCase):
 
     def test_static_url_generation(self):
 
-        course_key = SlashSeparatedCourseKey('org', 'class', 'run')
+        course_key = CourseKey.from_string('org/class/run')
         location = course_key.make_asset_key('asset', 'my_file_name.jpg')
         path = StaticContent.get_static_path_from_location(location)
         self.assertEquals(path, '/static/my_file_name.jpg')
@@ -143,7 +143,7 @@ class AssetToJsonTestCase(AssetsTestCase):
     def test_basic(self):
         upload_date = datetime(2013, 6, 1, 10, 30, tzinfo=UTC)
 
-        course_key = SlashSeparatedCourseKey('org', 'class', 'run')
+        course_key = CourseKey.from_string('org/class/run')
         location = course_key.make_asset_key('asset', 'my_file_name.jpg')
         thumbnail_location = course_key.make_asset_key('thumbnail', 'my_file_name_thumb.jpg')
 

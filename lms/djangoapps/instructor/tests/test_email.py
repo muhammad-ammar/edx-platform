@@ -18,7 +18,7 @@ from courseware.tests.modulestore_config import TEST_DATA_MIXED_MODULESTORE
 from mock import patch
 
 from bulk_email.models import CourseAuthorization
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import CourseKey
 
 
 @override_settings(MODULESTORE=TEST_DATA_MONGO_MODULESTORE)
@@ -116,7 +116,7 @@ class TestNewInstructorDashboardEmailViewXMLBacked(ModuleStoreTestCase):
     Check for email view on the new instructor dashboard
     """
     def setUp(self):
-        self.course_key = SlashSeparatedCourseKey('edX', 'toy', '2012_Fall')
+        self.course_key = CourseKey.from_string('edX/toy/2012_Fall')
 
         # Create instructor account
         instructor = AdminFactory.create()

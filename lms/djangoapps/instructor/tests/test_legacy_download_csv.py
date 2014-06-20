@@ -20,7 +20,7 @@ from courseware.tests.modulestore_config import TEST_DATA_MIXED_MODULESTORE
 from student.roles import CourseStaffRole
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.django import modulestore, clear_existing_modulestores
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import CourseKey
 
 
 @override_settings(MODULESTORE=TEST_DATA_MIXED_MODULESTORE)
@@ -31,7 +31,7 @@ class TestInstructorDashboardGradeDownloadCSV(ModuleStoreTestCase, LoginEnrollme
 
     def setUp(self):
         clear_existing_modulestores()
-        self.toy = modulestore().get_course(SlashSeparatedCourseKey("edX", "toy", "2012_Fall"))
+        self.toy = modulestore().get_course(CourseKey("edX/toy/2012_Fall"))
 
         # Create two accounts
         self.student = 'view@test.com'

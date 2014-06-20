@@ -22,7 +22,7 @@ from instructor.enrollment import (
     send_beta_role_email,
     unenroll_email
 )
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import CourseKey
 
 from submissions import api as sub_api
 from student.models import anonymous_id_for_user
@@ -31,7 +31,7 @@ from student.models import anonymous_id_for_user
 class TestSettableEnrollmentState(TestCase):
     """ Test the basis class for enrollment tests. """
     def setUp(self):
-        self.course_key = SlashSeparatedCourseKey('Robot', 'fAKE', 'C-%-se-%-ID')
+        self.course_key = CourseKey.from_string('Robot/fAKE/C-%-se-%-ID')
 
     def test_mes_create(self):
         """
@@ -61,7 +61,7 @@ class TestEnrollmentChangeBase(TestCase):
     __metaclass__ = ABCMeta
 
     def setUp(self):
-        self.course_key = SlashSeparatedCourseKey('Robot', 'fAKE', 'C-%-se-%-ID')
+        self.course_key = CourseKey.from_string('Robot/fAKE/C-%-se-%-ID')
 
     def _run_state_change_test(self, before_ideal, after_ideal, action):
         """
@@ -289,7 +289,7 @@ class TestInstructorUnenrollDB(TestEnrollmentChangeBase):
 class TestInstructorEnrollmentStudentModule(TestCase):
     """ Test student module manipulations. """
     def setUp(self):
-        self.course_key = SlashSeparatedCourseKey('fake', 'course', 'id')
+        self.course_key = CourseKey.from_string('fake/course/id')
 
     def test_reset_student_attempts(self):
         user = UserFactory()

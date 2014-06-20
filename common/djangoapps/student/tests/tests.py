@@ -21,7 +21,7 @@ from unittest.case import SkipTest
 from xmodule.modulestore.tests.factories import CourseFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from courseware.tests.tests import TEST_DATA_MIXED_MODULESTORE
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import CourseKey
 
 from mock import Mock, patch
 
@@ -243,8 +243,8 @@ class EnrollInCourseTest(TestCase):
 
     def test_enrollment(self):
         user = User.objects.create_user("joe", "joe@joe.com", "password")
-        course_id = SlashSeparatedCourseKey("edX", "Test101", "2013")
-        course_id_partial = SlashSeparatedCourseKey("edX", "Test101", None)
+        course_id = CourseKey.from_string("edX/Test101/2013")
+        course_id_partial = CourseKey.from_string("edX/Test101")
 
         # Test basic enrollment
         self.assertFalse(CourseEnrollment.is_enrolled(user, course_id))
@@ -319,7 +319,7 @@ class EnrollInCourseTest(TestCase):
     def test_enrollment_non_existent_user(self):
         # Testing enrollment of newly unsaved user (i.e. no database entry)
         user = User(username="rusty", email="rusty@fake.edx.org")
-        course_id = SlashSeparatedCourseKey("edX", "Test101", "2013")
+        course_id = CourseKey.from_string("edX/Test101/2013")
 
         self.assertFalse(CourseEnrollment.is_enrolled(user, course_id))
 
@@ -335,7 +335,7 @@ class EnrollInCourseTest(TestCase):
 
     def test_enrollment_by_email(self):
         user = User.objects.create(username="jack", email="jack@fake.edx.org")
-        course_id = SlashSeparatedCourseKey("edX", "Test101", "2013")
+        course_id = CourseKey.from_string("edX/Test101/2013")
 
         CourseEnrollment.enroll_by_email("jack@fake.edx.org", course_id)
         self.assertTrue(CourseEnrollment.is_enrolled(user, course_id))
@@ -372,8 +372,8 @@ class EnrollInCourseTest(TestCase):
 
     def test_enrollment_multiple_classes(self):
         user = User(username="rusty", email="rusty@fake.edx.org")
-        course_id1 = SlashSeparatedCourseKey("edX", "Test101", "2013")
-        course_id2 = SlashSeparatedCourseKey("MITx", "6.003z", "2012")
+        course_id1 = CourseKey.from_string("edX/Test101/2013")
+        course_id2 = CourseKey.from_string("MITx/6.003z/2012")
 
         CourseEnrollment.enroll(user, course_id1)
         self.assert_enrollment_event_was_emitted(user, course_id1)
@@ -394,7 +394,7 @@ class EnrollInCourseTest(TestCase):
 
     def test_activation(self):
         user = User.objects.create(username="jack", email="jack@fake.edx.org")
-        course_id = SlashSeparatedCourseKey("edX", "Test101", "2013")
+        course_id = CourseKey.from_string("edX/Test101/2013")
         self.assertFalse(CourseEnrollment.is_enrolled(user, course_id))
 
         # Creating an enrollment doesn't actually enroll a student

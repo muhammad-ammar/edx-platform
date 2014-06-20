@@ -5,8 +5,7 @@ import json
 
 from contentstore.tests.test_course_settings import CourseTestCase
 from contentstore.utils import reverse_course_url, reverse_usage_url
-from opaque_keys.edx.keys import UsageKey
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import UsageKey, CourseKey
 from xmodule.modulestore.django import modulestore
 
 
@@ -230,7 +229,7 @@ class CourseUpdateTest(CourseTestCase):
         """
         Test that a user can successfully post on course updates and handouts of a course
         """
-        course_key = SlashSeparatedCourseKey('Org1', 'Course_1', 'Run_1')
+        course_key = CourseKey.from_string('Org1/Course_1/Run_1')
         course_update_url = self.create_update_url(course_key=course_key)
 
         # create a course via the view handler

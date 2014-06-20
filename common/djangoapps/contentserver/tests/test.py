@@ -16,7 +16,7 @@ from student.models import CourseEnrollment
 
 from xmodule.contentstore.django import contentstore, _CONTENTSTORE
 from xmodule.modulestore.django import modulestore
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import CourseKey
 from xmodule.modulestore.tests.django_utils import (studio_store_config,
     ModuleStoreTestCase)
 from xmodule.modulestore.xml_importer import import_from_xml
@@ -46,7 +46,7 @@ class ContentStoreToyCourseTest(ModuleStoreTestCase):
         self.client = Client()
         self.contentstore = contentstore()
 
-        self.course_key = SlashSeparatedCourseKey('edX', 'toy', '2012_Fall')
+        self.course_key = CourseKey.from_string('edX/toy/2012_Fall')
 
         import_from_xml(modulestore('direct'), 'common/test/data/', ['toy'],
                 static_content_store=self.contentstore, verbose=True)

@@ -17,7 +17,7 @@ from mock import patch
 
 from bulk_email.models import CourseAuthorization
 from bulk_email.forms import CourseAuthorizationAdminForm
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import CourseKey
 
 
 @override_settings(MODULESTORE=TEST_DATA_MONGO_MODULESTORE)
@@ -78,7 +78,7 @@ class CourseAuthorizationFormTest(ModuleStoreTestCase):
     @patch.dict(settings.FEATURES, {'ENABLE_INSTRUCTOR_EMAIL': True, 'REQUIRE_COURSE_EMAIL_AUTH': True})
     def test_form_typo(self):
         # Munge course id
-        bad_id = SlashSeparatedCourseKey(u'Broken{}'.format(self.course.id.org), '', self.course.id.run + '_typo')
+        bad_id = CourseKey.from_string("/".join([u'Broken{}'.format(self.course.id.org), '', self.course.id.run + '_typo']))
 
         form_data = {'course_id': unicode(bad_id), 'email_enabled': True}
         form = CourseAuthorizationAdminForm(data=form_data)
@@ -130,7 +130,7 @@ class CourseAuthorizationXMLFormTest(ModuleStoreTestCase):
 
     @patch.dict(settings.FEATURES, {'ENABLE_INSTRUCTOR_EMAIL': True, 'REQUIRE_COURSE_EMAIL_AUTH': True})
     def test_xml_course_authorization(self):
-        course_id = SlashSeparatedCourseKey('edX', 'toy', '2012_Fall')
+        course_id = CourseKey.from_string('edX/toy/2012_Fall')
         # Assert this is an XML course
         self.assertEqual(modulestore().get_modulestore_type(course_id), XML_MODULESTORE_TYPE)
 

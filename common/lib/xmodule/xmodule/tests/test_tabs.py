@@ -2,7 +2,7 @@
 from mock import MagicMock
 import xmodule.tabs as tabs
 import unittest
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import CourseKey
 
 
 class TabTestCase(unittest.TestCase):
@@ -10,7 +10,7 @@ class TabTestCase(unittest.TestCase):
     def setUp(self):
 
         self.course = MagicMock()
-        self.course.id = SlashSeparatedCourseKey('edX', 'toy', '2012_Fall')
+        self.course.id = CourseKey.from_string('edX/toy/2012_Fall')
         self.fake_dict_tab = {'fake_key': 'fake_value'}
         self.settings = MagicMock()
         self.settings.FEATURES = {}

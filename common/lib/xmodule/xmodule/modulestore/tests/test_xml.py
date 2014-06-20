@@ -13,6 +13,7 @@ from xmodule.modulestore import XML_MODULESTORE_TYPE
 
 from .test_modulestore import check_path_to_location
 from xmodule.tests import DATA_DIR
+from opaque_keys.edx.keys import CourseKey
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from xmodule.modulestore.tests.test_modulestore import check_has_course_method
 
@@ -60,13 +61,13 @@ class TestXMLModuleStore(unittest.TestCase):
         modulestore = XMLModuleStore(DATA_DIR, course_dirs=['toy'], load_error_modules=False)
 
         # Look up the errors during load. There should be none.
-        errors = modulestore.get_course_errors(SlashSeparatedCourseKey("edX", "toy", "2012_Fall"))
+        errors = modulestore.get_course_errors(CourseKey.from_string("edX/toy/2012_Fall"))
         assert errors == []
 
     @patch("xmodule.modulestore.xml.glob.glob", side_effect=glob_tildes_at_end)
     def test_tilde_files_ignored(self, _fake_glob):
         modulestore = XMLModuleStore(DATA_DIR, course_dirs=['tilde'], load_error_modules=False)
-        about_location = SlashSeparatedCourseKey('edX', 'tilde', '2012_Fall').make_usage_key(
+        about_location = CourseKey.from_string('edX/tilde/2012_Fall').make_usage_key(
             'about', 'index',
         )
         about_module = modulestore.get_item(about_location)
@@ -87,7 +88,7 @@ class TestXMLModuleStore(unittest.TestCase):
         self.assertEqual(len(course_locations), 0)
 
         # now set toy course to share the wiki with simple course
-        toy_course = store.get_course(SlashSeparatedCourseKey('edX', 'toy', '2012_Fall'))
+        toy_course = store.get_course(CourseKey.from_string('edX/toy/2012_Fall'))
         toy_course.wiki_slug = 'simple'
 
         course_locations = store.get_courses_for_wiki('toy')
@@ -104,6 +105,6 @@ class TestXMLModuleStore(unittest.TestCase):
         """
         check_has_course_method(
             XMLModuleStore(DATA_DIR, course_dirs=['toy', 'simple']),
-            SlashSeparatedCourseKey('edX', 'toy', '2012_Fall'),
+            CourseKey.from_string('edX/toy/2012_Fall'),
             locator_key_fields=SlashSeparatedCourseKey.KEY_FIELDS
         )

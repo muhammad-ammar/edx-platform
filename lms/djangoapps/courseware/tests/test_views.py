@@ -25,7 +25,7 @@ from opaque_keys.edx.locations import Location
 from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import CourseKey
 from student.tests.factories import UserFactory
 
 import courseware.views as views
@@ -44,7 +44,7 @@ class TestJumpTo(TestCase):
 
     def setUp(self):
         # Use toy course from XML
-        self.course_key = SlashSeparatedCourseKey('edX', 'toy', '2012_Fall')
+        self.course_key = CourseKey.from_string('edX/toy/2012_Fall')
 
     def test_jumpto_invalid_location(self):
         location = self.course_key.make_usage_key(None, 'NoSuchPlace')
@@ -478,7 +478,7 @@ class StartDateTests(ModuleStoreTestCase):
         "SHORT_DATE_FORMAT": "%Y-%b-%d",
     }))
     def test_format_localized_in_xml_course(self):
-        text = self.get_about_text(SlashSeparatedCourseKey('edX', 'toy', 'TT_2012_Fall'))
+        text = self.get_about_text(CourseKey.from_string('edX/toy/TT_2012_Fall'))
         # The start date is set in common/test/data/two_toys/policies/TT_2012_Fall/policy.json
         self.assertIn("2015-JULY-17", text)
 

@@ -8,7 +8,7 @@ from student.tests.factories import UserFactory
 from student.roles import GlobalStaff
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase, studio_store_config
 from xmodule.modulestore.tests.factories import CourseFactory
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import CourseKey
 from xmodule.modulestore.django import modulestore
 from xmodule.error_module import ErrorDescriptor
 from django.test.client import Client
@@ -63,7 +63,7 @@ class TestCourseListing(ModuleStoreTestCase):
         """
         Test getting courses
         """
-        course_location = SlashSeparatedCourseKey('Org1', 'Course1', 'Run1')
+        course_location = CourseKey.from_string('Org1/Course1/Run1')
         self._create_course_with_access_groups(course_location)
 
         # get dashboard
@@ -80,7 +80,7 @@ class TestCourseListing(ModuleStoreTestCase):
         """
         Test the course list for regular staff when get_course returns an ErrorDescriptor
         """
-        course_key = SlashSeparatedCourseKey('Org1', 'Course1', 'Run1')
+        course_key = CourseKey.from_string('Org1/Course1/Run1')
         self._create_course_with_access_groups(course_key)
 
         with patch('xmodule.modulestore.mongo.base.MongoKeyValueStore', Mock(side_effect=Exception)):
@@ -95,14 +95,14 @@ class TestCourseListing(ModuleStoreTestCase):
         Create good courses, courses that won't load, and deleted courses which still have
         roles. Test course listing.
         """
-        good_location = SlashSeparatedCourseKey('testOrg', 'testCourse', 'RunBabyRun')
+        good_location = CourseKey.from_string('testOrg/testCourse/RunBabyRun')
         self._create_course_with_access_groups(good_location)
 
-        course_location = SlashSeparatedCourseKey('testOrg', 'doomedCourse', 'RunBabyRun')
+        course_location = CourseKey.from_string('testOrg/doomedCourse/RunBabyRun')
         self._create_course_with_access_groups(course_location)
         modulestore('direct').delete_course(course_location)
 
-        course_location = SlashSeparatedCourseKey('testOrg', 'erroredCourse', 'RunBabyRun')
+        course_location = CourseKey.from_string('testOrg/erroredCourse/RunBabyRun')
         course = self._create_course_with_access_groups(course_location)
         course_db_record = modulestore('direct')._find_one(course.location)
         course_db_record.setdefault('metadata', {}).get('tabs', []).append({"type": "wiko", "name": "Wiki" })

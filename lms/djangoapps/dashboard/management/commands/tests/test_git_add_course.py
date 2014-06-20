@@ -18,7 +18,6 @@ from courseware.tests.tests import TEST_DATA_MONGO_MODULESTORE
 from xmodule.contentstore.django import contentstore
 from xmodule.modulestore.django import modulestore
 from opaque_keys.edx.keys import CourseKey
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
 from xmodule.modulestore.store_utilities import delete_course
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 import dashboard.git_import as git_import
@@ -47,7 +46,7 @@ class TestGitAddCourse(ModuleStoreTestCase):
     TEST_REPO = 'https://github.com/mitocw/edx4edx_lite.git'
     TEST_COURSE = 'MITx/edx4edx/edx4edx'
     TEST_BRANCH = 'testing_do_not_delete'
-    TEST_BRANCH_COURSE = SlashSeparatedCourseKey('MITx', 'edx4edx_branch', 'edx4edx')
+    TEST_BRANCH_COURSE = CourseKey.from_string('MITx/edx4edx_branch/edx4edx')
     GIT_REPO_DIR = getattr(settings, 'GIT_REPO_DIR')
 
     def assertCommandFailureRegexp(self, regex, *args):

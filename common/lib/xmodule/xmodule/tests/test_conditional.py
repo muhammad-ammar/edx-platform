@@ -7,8 +7,8 @@ from mock import Mock, patch
 from xblock.field_data import DictFieldData
 from xblock.fields import ScopeIds
 from xmodule.error_module import NonStaffErrorDescriptor
-from opaque_keys.edx.keys import UsageKey
-from opaque_keys.edx.locations import SlashSeparatedCourseKey, Location
+from opaque_keys.edx.keys import UsageKey, CourseKey
+from opaque_keys.edx.locations import Location
 from xmodule.modulestore.xml import ImportSystem, XMLModuleStore, CourseLocationGenerator
 from xmodule.conditional_module import ConditionalDescriptor
 from xmodule.tests import DATA_DIR, get_test_system, get_test_descriptor_system
@@ -27,7 +27,7 @@ class DummySystem(ImportSystem):
 
         super(DummySystem, self).__init__(
             xmlstore=xmlstore,
-            course_id=SlashSeparatedCourseKey(ORG, COURSE, 'test_run'),
+            course_id=CourseKey.from_string("/".join([ORG, COURSE, 'test_run'])),
             course_dir='test_dir',
             error_tracker=Mock(),
             parent_tracker=Mock(),
@@ -60,7 +60,7 @@ class ConditionalFactory(object):
             source_descriptor = NonStaffErrorDescriptor.from_xml(
                 'some random xml data',
                 system,
-                id_generator=CourseLocationGenerator(SlashSeparatedCourseKey('edX', 'conditional_test', 'test_run')),
+                id_generator=CourseLocationGenerator(CourseKey.from_string('edX/conditional_test/test_run')),
                 error_msg='random error message'
             )
         else:

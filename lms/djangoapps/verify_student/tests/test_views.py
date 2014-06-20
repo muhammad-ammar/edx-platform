@@ -25,7 +25,7 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import ObjectDoesNotExist
 
 from xmodule.modulestore.tests.factories import CourseFactory
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import CourseKey
 from courseware.tests.tests import TEST_DATA_MONGO_MODULESTORE
 from student.tests.factories import UserFactory
 from student.models import CourseEnrollment
@@ -64,7 +64,7 @@ class TestVerifyView(TestCase):
     def setUp(self):
         self.user = UserFactory.create(username="rusty", password="test")
         self.client.login(username="rusty", password="test")
-        self.course_key = SlashSeparatedCourseKey('Robot', '999', 'Test_Course')
+        self.course_key = CourseKey.from_string('Robot/999/Test_Course')
         CourseFactory.create(org='Robot', number='999', display_name='Test Course')
         verified_mode = CourseMode(course_id=self.course_key,
                                    mode_slug="verified",
@@ -373,7 +373,7 @@ class TestMidCourseReverifyView(TestCase):
     def setUp(self):
         self.user = UserFactory.create(username="rusty", password="test")
         self.client.login(username="rusty", password="test")
-        self.course_key = SlashSeparatedCourseKey("Robot", "999", "Test_Course")
+        self.course_key = CourseKey.from_string("Robot/999/Test_Course")
         CourseFactory.create(org='Robot', number='999', display_name='Test Course')
 
         patcher = patch('student.models.tracker')

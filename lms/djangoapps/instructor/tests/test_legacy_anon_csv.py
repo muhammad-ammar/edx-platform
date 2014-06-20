@@ -21,7 +21,7 @@ import instructor.views.legacy
 from student.roles import CourseStaffRole
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.django import modulestore, clear_existing_modulestores
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import CourseKey
 
 from mock import Mock, patch
 
@@ -35,7 +35,7 @@ class TestInstructorDashboardAnonCSV(ModuleStoreTestCase, LoginEnrollmentTestCas
     # Note -- I copied this setUp from a similar test
     def setUp(self):
         clear_existing_modulestores()
-        self.toy = modulestore().get_course(SlashSeparatedCourseKey("edX", "toy", "2012_Fall"))
+        self.toy = modulestore().get_course(CourseKey.from_string("edX/toy/2012_Fall"))
 
         # Create two accounts
         self.student = 'view@test.com'
