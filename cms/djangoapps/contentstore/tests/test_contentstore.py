@@ -1915,7 +1915,7 @@ def _course_factory_create_course():
 
 def _get_course_id(course_data):
     """Returns the course ID (org/number/run)."""
-    return CourseKey.from_string("/".join([['org'], course_data['number'], course_data['run']]))
+    return CourseKey.from_string("/".join([course_data['org'], course_data['number'], course_data['run']]))
 
 
 def _test_no_locations(test, resp, status_code=200, html=True):
