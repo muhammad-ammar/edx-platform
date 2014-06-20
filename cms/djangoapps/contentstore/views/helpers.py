@@ -11,7 +11,7 @@ __all__ = ['edge', 'event', 'landing']
 EDITING_TEMPLATES = [
     "basic-modal", "modal-button", "edit-xblock-modal", "editor-mode-button", "upload-dialog", "image-modal",
     "add-xblock-component", "add-xblock-component-button", "add-xblock-component-menu",
-    "add-xblock-component-menu-problem"
+    "add-xblock-component-menu-problem", "xblock-field-editor",
 ]
 
 # points to the temporary course landing page with log in and sign up

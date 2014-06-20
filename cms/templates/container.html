@@ -60,7 +60,7 @@ main_xblock_info = {
 <%block name="content">
 
 
-<div class="wrapper-mast wrapper" data-location="" data-display-name="" data-category="">
+<div class="wrapper-mast wrapper">
     <header class="mast has-actions has-navigation has-subtitle">
         <h1 class="page-header">
             <small class="navigation navigation-parents subtitle">
@@ -76,9 +76,10 @@ main_xblock_info = {
                     <span class="navigation-parent">${ancestor.display_name_with_default | h}</span>
                 % endif
                 % endfor
-                <a href="#" class="navigation-link navigation-current">${xblock.display_name_with_default | h}</a>
             </small>
-            <span class="page-header-title">${xblock.display_name_with_default | h}</span>
+            <div class="wrapper-xblock-field is-editable" data-field="display_name">
+                <div class="page-header-title xblock-field-value">${xblock.display_name_with_default | h}</div>
+            </div>
         </h1>
 
         <nav class="nav-actions">

@@ -3,8 +3,10 @@
  * This page allows the user to understand and manipulate the xblock and its children.
  */
 define(["jquery", "underscore", "gettext", "js/views/baseview", "js/views/container",
-        "js/views/xblock", "js/views/components/add_xblock", "js/views/modals/edit_xblock", "js/models/xblock_info"],
-    function ($, _, gettext, BaseView, ContainerView, XBlockView, AddXBlockComponent, EditXBlockModal, XBlockInfo) {
+        "js/views/xblock", "js/views/components/add_xblock", "js/views/modals/edit_xblock", "js/models/xblock_info",
+        "js/views/xblock_field_editor"],
+    function ($, _, gettext, BaseView, ContainerView, XBlockView, AddXBlockComponent, EditXBlockModal, XBlockInfo,
+                XBlockFieldEditorView) {
         var XBlockContainerPage = BaseView.extend({
             // takes XBlockInfo as a model
 
@@ -12,6 +14,10 @@ define(["jquery", "underscore", "gettext", "js/views/baseview", "js/views/contai
 
             initialize: function() {
                 BaseView.prototype.initialize.call(this);
+                this.nameEditor = new XBlockFieldEditorView({
+                    el: this.$('.wrapper-xblock-field'),
+                    model: this.model
+                });
                 this.xblockView = new ContainerView({
                     el: this.$('.wrapper-xblock'),
                     model: this.model,
@@ -33,6 +39,9 @@ define(["jquery", "underscore", "gettext", "js/views/baseview", "js/views/contai
                     // Do not add the actions on "refresh" though, as the handlers are already registered.
                     self.addButtonActions(this.$el);
                 }
+
+                // Render the name editor
+                this.nameEditor.render();
 
                 // Render the xblock
                 xblockView.render({
