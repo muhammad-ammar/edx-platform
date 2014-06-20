@@ -21,7 +21,7 @@ class SplitMigrator(object):
         self.draft_modulestore = draft_modulestore
         self.loc_mapper = loc_mapper
 
-    def migrate_mongo_course(self, course_key, user, new_org=None, new_offering=None):
+    def migrate_mongo_course(self, course_key, user, new_org=None, new_course=None, new_run=None):
         """
         Create a new course in split_mongo representing the published and draft versions of the course from the
         original mongo store. And return the new CourseLocator
