@@ -355,10 +355,11 @@ class ModuleStoreReadBase(ModuleStoreRead):
         # linear search through list
         assert(isinstance(course_id, CourseKey))
         if ignore_case:
-            return any((
-                c.id.org.lower() == course_id.org.lower() and
-                c.id.course.lower() == course_id.course.lower() and
-                c.id.run.lower() == course_id.run.lower()
+            return any(
+                (
+                    c.id.org.lower() == course_id.org.lower() and
+                    c.id.course.lower() == course_id.course.lower() and
+                    c.id.run.lower() == course_id.run.lower()
                 ) for c in self.get_courses()
             )
         else:
