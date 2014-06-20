@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from student.models import CourseEnrollment
 from xmodule.modulestore.django import modulestore
-from opaque_keys.edx.locations import SlashSeparatedCourseKey
+from opaque_keys.edx.keys import CourseKey
 from xmodule.course_module import CourseDescriptor
 from courseware.courses import get_course_by_id
 from xmodule import seq_module, vertical_module
@@ -119,11 +119,11 @@ def go_into_course(step):
 
 
 def course_id(course_num):
-    return SlashSeparatedCourseKey(
+    return CourseKey.from_string("/".join([
         world.scenario_dict['COURSE'].org,
         course_num,
         world.scenario_dict['COURSE'].url_name
-    )
+    ]))
 
 
 def course_location(course_num):

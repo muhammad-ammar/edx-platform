@@ -324,6 +324,7 @@ def create_new_course(request):
         # Create the course then fetch it from the modulestore
         # Check if role permissions group for a course named like this already exists
         # Important because role groups are case insensitive
+        # # TODO (Mat and Cale) It may be ok to get rid of this. Don might know.
         if CourseRole.course_group_already_exists(course_key):
             raise InvalidLocationError()
 

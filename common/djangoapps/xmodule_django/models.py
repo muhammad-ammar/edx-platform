@@ -47,7 +47,7 @@ class NoneToEmptyQuerySet(models.query.QuerySet):
 
 
 class CourseKeyField(models.CharField):
-    description = "A SlashSeparatedCourseKey object, saved to the DB in the form of a string"
+    description = "A CourseKey object, saved to the DB in the form of a string"
 
     __metaclass__ = models.SubfieldBase
 
