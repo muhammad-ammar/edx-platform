@@ -422,12 +422,30 @@ class XMLModuleStore(ModuleStoreReadBase):
             self.try_load_course(course_dir, course_ids)
 
     def _validate_course_key(self, course_key):
+        """
+        Check that course_key is valid for this ModuleStore.
+
+        Args:
+            course_key (:class:`opaque_keys.edx.keys.CourseKey`): The key to validate.
+
+        Returns:
+            True if the key is valid, False otherwise.
+        """
         if not course_key.deprecated:
-            log.warning("XMLModuleStore only supports deprecated course key formats, not %s", course_id)
+            log.warning("XMLModuleStore only supports deprecated course key formats, not %s", course_key)
             return False
         return True
 
     def _validate_usage_key(self, usage_key):
+        """
+        Check that usage_key is valid for this ModuleStore.
+
+        Args:
+            usage_key (:class:`opaque_keys.edx.keys.UsageKey`): The key to validate.
+
+        Returns:
+            True if the key is valid, False otherwise.
+        """
         if not usage_key.deprecated or not self._validate_course_key(usage_key.course_key):
             log.warning("XMLModuleStore only supports deprecated usage key formats, not %s", usage_key)
             return False
