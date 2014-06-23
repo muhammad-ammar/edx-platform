@@ -12,6 +12,7 @@ define(["jquery", "underscore", "underscore.string", "js/spec_helpers/create_sin
 
             beforeEach(function () {
                 edit_helpers.installEditTemplates();
+                edit_helpers.installTemplate('xblock-string-field-editor');
                 appendSetFixtures(mockContainerPage);
 
                 model = new XBlockInfo({
@@ -55,9 +56,8 @@ define(["jquery", "underscore", "underscore.string", "js/spec_helpers/create_sin
             describe("Initial display", function() {
                 it('can render itself', function() {
                     renderContainerPage(mockContainerXBlockHtml, this);
-                    expect(containerPage.$el.select('.xblock-header')).toBeTruthy();
-                    expect(containerPage.$('.wrapper-xblock')).not.toHaveClass('is-hidden');
-                    expect(containerPage.$('.no-container-content')).toHaveClass('is-hidden');
+                    expect(containerPage.$('.xblock-header').length).toBe(9);
+                    expect(containerPage.$('.wrapper-xblock .level-nesting')).not.toHaveClass('is-hidden');
                 });
 
                 it('shows a loading indicator', function() {
@@ -118,9 +118,8 @@ define(["jquery", "underscore", "underscore.string", "js/spec_helpers/create_sin
                         resources: []
                     });
 
-                    // Expect the title and breadcrumb to be updated
+                    // Expect the title to have been updated
                     expect(containerPage.$('.page-header-title').text().trim()).toBe(updatedTitle);
-                    expect(containerPage.$('.page-header .subtitle a').last().text().trim()).toBe(updatedTitle);
                 });
             });
 
@@ -190,6 +189,7 @@ define(["jquery", "underscore", "underscore.string", "js/spec_helpers/create_sin
                     });
 
                     modal = $('.edit-xblock-modal');
+                    expect(modal.length).toBe(1);
                     // Click on the settings tab
                     modal.find('.settings-button').click();
                     // Change the display name's text
