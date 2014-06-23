@@ -54,6 +54,14 @@ define(["jquery", "underscore", "underscore.string", "js/spec_helpers/create_sin
             };
 
             describe("Initial display", function() {
+                beforeEach(function () {
+                    edit_helpers.installMockXBlock();
+                });
+
+                afterEach(function() {
+                    edit_helpers.uninstallMockXBlock();
+                });
+
                 it('can render itself', function() {
                     renderContainerPage(mockContainerXBlockHtml, this);
                     expect(containerPage.$('.xblock-header').length).toBe(9);
