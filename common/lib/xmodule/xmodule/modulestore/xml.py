@@ -67,6 +67,7 @@ class ImportSystem(XMLParsingSystem, MakoDescriptorSystem):
         # cdodge: adding the course_id as passed in for later reference rather than having to recomine the org/course/url_name
         self.course_id = course_id
         self.load_error_modules = load_error_modules
+        self.modulestore = xmlstore
 
         def process_xml(xml):
             """Takes an xml string, and returns a XBlock created from
@@ -408,6 +409,9 @@ class XMLModuleStore(ModuleStoreReadBase):
         self.field_data = inheriting_field_data(kvs=DictKeyValueStore())
 
         self.i18n_service = i18n_service
+
+        # The XML Module Store is a read-only store and only handles published content
+        self.branch_setting = 'published'
 
         # If we are specifically asked for missing courses, that should
         # be an error.  If we are asked for "all" courses, find the ones
