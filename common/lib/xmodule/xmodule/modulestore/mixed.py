@@ -461,8 +461,8 @@ class MixedModuleStore(ModuleStoreWriteBase):
 def store_branch_setting(store, branch_setting):
     """A context manager for setting a store's branch value"""
     try:
-        previous_branch_setting = store.branch_setting
-        store.branch_setting = branch_setting
+        previous_branch_setting_func = store.branch_setting_func
+        store.branch_setting_func = lambda: branch_setting
         yield
     finally:
-        store.branch_setting = previous_branch_setting
+        store.branch_setting_func = previous_branch_setting_func

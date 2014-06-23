@@ -397,6 +397,6 @@ def create_modulestore_instance(engine, doc_store_config, options, i18n_service=
 
     return class_(
         doc_store_config=doc_store_config,
-        branch_setting='draft',
+        branch_setting_func=lambda: 'draft',
         **options
     )

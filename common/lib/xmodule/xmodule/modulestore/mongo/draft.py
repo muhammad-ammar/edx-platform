@@ -42,12 +42,11 @@ class DraftModuleStore(MongoModuleStore):
 
     def __init__(self, *args, **kwargs):
         """
-            :param branch_setting: the default branch setting for this store
+            :param branch_setting_func: a function that returns the branch setting to use for this store's operations
         """
-        # default to the published branch
-        branch_setting = kwargs.pop('branch_setting', PUBLISHED)
         super(DraftModuleStore, self).__init__(*args, **kwargs)
-        self.branch_setting = branch_setting
+
+        self.branch_setting_func = kwargs.pop('branch_setting_func', PUBLISHED)
 
     def get_item(self, usage_key, depth=0, revision=None):
         """
@@ -75,7 +74,7 @@ class DraftModuleStore(MongoModuleStore):
             xmodule.modulestore.exceptions.ItemNotFoundError if no object
             is found at that usage_key
         """
-        if (self.branch_setting == DRAFT and revision != PUBLISHED_ONLY) and (usage_key.category not in DIRECT_ONLY_CATEGORIES):
+        if (self.branch_setting_func() == DRAFT and revision != PUBLISHED_ONLY) and (usage_key.category not in DIRECT_ONLY_CATEGORIES):
             try:
                 return wrap_draft(super(DraftModuleStore, self).get_item(as_draft(usage_key), depth=depth))
             except ItemNotFoundError:
@@ -99,7 +98,7 @@ class DraftModuleStore(MongoModuleStore):
                 if PUBLISHED_ONLY, checks only for the published item
         """
         exists = False
-        if self.branch_setting == DRAFT and revision != PUBLISHED_ONLY:
+        if self.branch_setting_func() == DRAFT and revision != PUBLISHED_ONLY:
             exists = super(DraftModuleStore, self).has_item(as_draft(usage_key))
         if revision == DRAFT_ONLY:
             return exists
@@ -115,7 +114,7 @@ class DraftModuleStore(MongoModuleStore):
         Returns w/ revision set. If a block has both a draft and non-draft parents, it returns both
         unless revision is set to PUBLISHED_ONLY or the branch is set to 'published'.
         '''
-        if self.branch_setting == PUBLISHED:
+        if self.branch_setting_func() == PUBLISHED:
             revision = PUBLISHED
         return super(DraftModuleStore, self).get_parent_locations(location, revision, **kwargs)
 
@@ -130,7 +129,7 @@ class DraftModuleStore(MongoModuleStore):
         :param runtime: if you already have an xmodule from the course, the xmodule.runtime value
         :param fields: a dictionary of field names and values for the new xmodule
         """
-        assert self.branch_setting == DRAFT
+        assert self.branch_setting_func() == DRAFT
 
         if location.category not in DIRECT_ONLY_CATEGORIES:
             location = as_draft(location)
@@ -166,7 +165,7 @@ class DraftModuleStore(MongoModuleStore):
                 ``name`` is another commonly provided key (Location based stores)
         """
         draft_items = []
-        if self.branch_setting == DRAFT and revision != PUBLISHED_ONLY:
+        if self.branch_setting_func() == DRAFT and revision != PUBLISHED_ONLY:
             draft_items = [
                 wrap_draft(item) for item in
                 super(DraftModuleStore, self).get_items(course_key, revision=DRAFT, **kwargs)
@@ -196,7 +195,7 @@ class DraftModuleStore(MongoModuleStore):
             ItemNotFoundError: if the source does not exist
             DuplicateItemError: if the source or any of its descendants already has a draft copy
         """
-        assert self.branch_setting == DRAFT
+        assert self.branch_setting_func() == DRAFT
 
         if location.category in DIRECT_ONLY_CATEGORIES:
             raise InvalidVersionError(location)
@@ -239,7 +238,7 @@ class DraftModuleStore(MongoModuleStore):
         In addition to the superclass's behavior, this method converts the unit to draft if it's not
         already draft.
         """
-        assert self.branch_setting == DRAFT
+        assert self.branch_setting_func() == DRAFT
 
         if xblock.location.category in DIRECT_ONLY_CATEGORIES:
             return super(DraftModuleStore, self).update_item(xblock, user_id, allow_not_found)
@@ -278,7 +277,7 @@ class DraftModuleStore(MongoModuleStore):
                 if PUBLISHED_ONLY, removes only Published versions
                 if 'all', removes both Draft and Published parents
         """
-        assert self.branch_setting == DRAFT
+        assert self.branch_setting_func() == DRAFT
 
         direct_only_root = location.category in DIRECT_ONLY_CATEGORIES
         if direct_only_root or revision == PUBLISHED_ONLY:
@@ -372,7 +371,7 @@ class DraftModuleStore(MongoModuleStore):
         Raises:
             ItemNotFoundError: if any of the draft subtree nodes aren't found
         """
-        assert self.branch_setting == DRAFT
+        assert self.branch_setting_func() == DRAFT
 
         def _internal_depth_first(root_location):
             """
@@ -419,7 +418,7 @@ class DraftModuleStore(MongoModuleStore):
         NOTE: unlike publish, this gives an error if called above the draftable level as it's intended
         to remove things from the published version
         """
-        assert self.branch_setting == DRAFT
+        assert self.branch_setting_func() == DRAFT
         return self.convert_to_draft(location, user_id, delete_published=True)
 
     def _query_children_for_cache_children(self, course_key, items):
@@ -430,7 +429,7 @@ class DraftModuleStore(MongoModuleStore):
         for non_draft in to_process_non_drafts:
             to_process_dict[Location._from_deprecated_son(non_draft["_id"], course_key.run)] = non_draft
 
-        if self.branch_setting == DRAFT:
+        if self.branch_setting_func() == DRAFT:
             # now query all draft content in another round-trip
             query = []
             for item in items:

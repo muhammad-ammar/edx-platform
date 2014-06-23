@@ -28,6 +28,7 @@ from xmodule.contentstore.django import contentstore, _CONTENTSTORE
 from xmodule.contentstore.utils import restore_asset_from_trashcan, empty_asset_trashcan
 from xmodule.exceptions import NotFoundError, InvalidVersionError
 from xmodule.modulestore import mongo, MONGO_MODULESTORE_TYPE, PublishState
+from xmodule.modulestore.mixed import store_branch_setting
 from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.exceptions import ItemNotFoundError
 from xmodule.modulestore.inheritance import own_metadata
@@ -1130,24 +1131,23 @@ class ContentStoreToyCourseTest(ContentStoreTestCase):
         print mongo_store.request_cache
 
         # set the branch to 'publish' in order to prevent extra lookups of draft versions
-        mongo_store.branch_setting = 'publish'
-        course = mongo_store.get_course(course_id, depth=2)
+        with store_branch_setting(mongo_store, 'published'):
+            course = mongo_store.get_course(course_id, depth=2)
 
-        # make sure we haven't done too many round trips to DB
-        # note we say 3 round trips here for 1) the course, and 2 & 3) for the chapters and sequentials
-        # Because we're querying from the top of the tree, we cache information needed for inheritance,
-        # so we don't need to make an extra query to compute it.
-        self.assertEqual(wrapper.counter, 3)
+            # make sure we haven't done too many round trips to DB
+            # note we say 3 round trips here for 1) the course, and 2 & 3) for the chapters and sequentials
+            # Because we're querying from the top of the tree, we cache information needed for inheritance,
+            # so we don't need to make an extra query to compute it.
+            self.assertEqual(wrapper.counter, 3)
 
-        # make sure we pre-fetched a known sequential which should be at depth=2
-        self.assertTrue(course_id.make_usage_key('sequential', 'vertical_sequential') in course.system.module_data)
+            # make sure we pre-fetched a known sequential which should be at depth=2
+            self.assertTrue(course_id.make_usage_key('sequential', 'vertical_sequential') in course.system.module_data)
 
-        # make sure we don't have a specific vertical which should be at depth=3
-        self.assertFalse(course_id.make_usage_key('vertical', 'vertical_test') in course.system.module_data)
+            # make sure we don't have a specific vertical which should be at depth=3
+            self.assertFalse(course_id.make_usage_key('vertical', 'vertical_test') in course.system.module_data)
 
         # Now, test with the branch set to draft.  We should have one extra round trip call to check for
         # the existence of the draft versions
-        mongo_store.branch_setting = 'draft'
         wrapper.counter = 0
         mongo_store.get_course(course_id, depth=2)
         self.assertEqual(wrapper.counter, 4)

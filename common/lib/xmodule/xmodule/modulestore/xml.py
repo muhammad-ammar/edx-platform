@@ -411,7 +411,7 @@ class XMLModuleStore(ModuleStoreReadBase):
         self.i18n_service = i18n_service
 
         # The XML Module Store is a read-only store and only handles published content
-        self.branch_setting = 'published'
+        self.branch_setting_func = lambda: 'published'
 
         # If we are specifically asked for missing courses, that should
         # be an error.  If we are asked for "all" courses, find the ones

@@ -101,7 +101,7 @@ class TestMongoModuleStore(unittest.TestCase):
         # Also test draft store imports
         #
         draft_store = DraftModuleStore(
-            doc_store_config, FS_ROOT, RENDER_TEMPLATE, default_class=DEFAULT_CLASS, branch_setting='draft'
+            doc_store_config, FS_ROOT, RENDER_TEMPLATE, default_class=DEFAULT_CLASS, branch_setting_func=lambda: 'draft'
         )
         import_from_xml(
             draft_store,
