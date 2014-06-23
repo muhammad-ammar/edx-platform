@@ -53,15 +53,20 @@ class DraftModuleStore(MongoModuleStore):
         """
         Returns an XModuleDescriptor instance for the item at usage_key.
 
-        if branch_setting is draft, returns either draft or published item, preferring draft,
-        else returns only the published item
+        Args:
+            usage_key: A :class:`.UsageKey` instance
 
-        usage_key: A :class:`.UsageKey` instance
+            depth (int): An argument that some module stores may use to prefetch
+                descendents of the queried modules for more efficient results later
+                in the request. The depth is counted in the number of calls to
+                get_children() to cache. None indicates to cache all descendents
 
-        depth (int): An argument that some module stores may use to prefetch
-            descendents of the queried modules for more efficient results later
-            in the request. The depth is counted in the number of calls to
-            get_children() to cache. None indicates to cache all descendents
+            revision:
+                if None, uses the branch setting as follows:
+                    if the branch setting is PUBLISHED, returns only the published item.
+                    if the branch setting is DRAFT, returns either draft or published item, preferring draft.
+                if DRAFT_ONLY, returns only the draft item.
+                if PUBLISHED_ONLY, returns only the published item.
 
         Raises:
             xmodule.modulestore.exceptions.InsufficientSpecificationError
@@ -70,13 +75,16 @@ class DraftModuleStore(MongoModuleStore):
             xmodule.modulestore.exceptions.ItemNotFoundError if no object
             is found at that usage_key
         """
-        if (self.branch_setting == DRAFT) and (usage_key.category not in DIRECT_ONLY_CATEGORIES):
+        if (self.branch_setting == DRAFT and revision != PUBLISHED_ONLY) and (usage_key.category not in DIRECT_ONLY_CATEGORIES):
             try:
                 return wrap_draft(super(DraftModuleStore, self).get_item(as_draft(usage_key), depth=depth))
             except ItemNotFoundError:
-                return wrap_draft(super(DraftModuleStore, self).get_item(usage_key, depth=depth))
+                if revision == DRAFT_ONLY:
+                    raise ItemNotFoundError
+                else:
+                    return wrap_draft(super(DraftModuleStore, self).get_item(usage_key, depth=depth))
         else:
-            return super(DraftModuleStore, self).get_item(usage_key, depth=depth)
+            return wrap_draft(super(DraftModuleStore, self).get_item(usage_key, depth=depth))
 
     def has_item(self, usage_key, revision=None):
         """
@@ -85,7 +93,7 @@ class DraftModuleStore(MongoModuleStore):
         Args:
             revision:
                 if None, uses the branch setting, as follows:
-                    if the branch setting is 'published', checks only for the published item
+                    if the branch setting is PUBLISHED, checks only for the published item
                     if the branch setting is DRAFT, checks whether draft or published item exists
                 if DRAFT_ONLY, checks only for the draft item
                 if PUBLISHED_ONLY, checks only for the published item
