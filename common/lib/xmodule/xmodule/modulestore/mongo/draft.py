@@ -109,7 +109,7 @@ class DraftModuleStore(MongoModuleStore):
             revision = PUBLISHED
         return super(DraftModuleStore, self).get_parent_locations(location, revision, **kwargs)
 
-    def create_xmodule(self, location, definition_data=None, metadata=None, system=None, fields={}):
+    def create_xmodule(self, location, definition_data=None, metadata=None, runtime=None, fields={}):
         """
         Create the new xmodule but don't save it. Returns the new module with a draft locator if
         the category allows drafts. If the category does not allow drafts, just creates a published module.
@@ -117,17 +117,19 @@ class DraftModuleStore(MongoModuleStore):
         :param location: a Location--must have a category
         :param definition_data: can be empty. The initial definition_data for the kvs
         :param metadata: can be empty, the initial metadata for the kvs
-        :param system: if you already have an xmodule from the course, the xmodule.system value
+        :param runtime: if you already have an xmodule from the course, the xmodule.runtime value
         :param fields: a dictionary of field names and values for the new xmodule
         """
         assert self.branch_setting == DRAFT
 
         if location.category not in DIRECT_ONLY_CATEGORIES:
             location = as_draft(location)
-        return super(DraftModuleStore, self).create_xmodule(location, definition_data, metadata, system, fields)
+        return super(DraftModuleStore, self).create_xmodule(location, definition_data, metadata, runtime, fields)
 
     def get_items(self, course_key, settings=None, content=None, revision=None, **kwargs):
         """
+        Performance Note: This is generally a costly operation for wildcard searches.
+
         Returns:
             list of XModuleDescriptor instances for the matching items within the course with
             the given course_key

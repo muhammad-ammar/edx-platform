@@ -125,6 +125,7 @@ class AnnotatableSteps(object):
                     )
                 )
             )
+        publish(world.scenario_dict['ANNOTATION_VERTICAL'].location)
 
     def click_reply(self, step, problem):
         r"""I click "Reply to annotation" on passage (?P<problem>\d+)$"""

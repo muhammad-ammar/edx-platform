@@ -361,18 +361,18 @@ class MixedModuleStore(ModuleStoreWriteBase):
             elif hasattr(mstore, 'db'):
                 mstore.db.connection.close()
 
-    def create_xmodule(self, location, definition_data=None, metadata=None, system=None, fields={}):
+    def create_xmodule(self, location, definition_data=None, metadata=None, runtime=None, fields={}):
         """
         Create the new xmodule but don't save it. Returns the new module.
 
         :param location: a Location--must have a category
         :param definition_data: can be empty. The initial definition_data for the kvs
         :param metadata: can be empty, the initial metadata for the kvs
-        :param system: if you already have an xblock from the course, the xblock.runtime value
+        :param runtime: if you already have an xblock from the course, the xblock.runtime value
         :param fields: a dictionary of field names and values for the new xmodule
         """
         store = self._verify_modulestore_support(location, 'create_xmodule')
-        return store.create_xmodule(location, definition_data, metadata, system, fields)
+        return store.create_xmodule(location, definition_data, metadata, runtime, fields)
 
     def get_courses_for_wiki(self, wiki_slug):
         """

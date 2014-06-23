@@ -827,14 +827,14 @@ class MongoModuleStore(ModuleStoreWriteBase):
         course_query = self._course_key_to_son(course_key)
         self.collection.remove(course_query, multi=True)
 
-    def create_xmodule(self, location, definition_data=None, metadata=None, system=None, fields={}):
+    def create_xmodule(self, location, definition_data=None, metadata=None, runtime=None, fields={}):
         """
         Create the new xmodule but don't save it. Returns the new module.
 
         :param location: a Location--must have a category
         :param definition_data: can be empty. The initial definition_data for the kvs
         :param metadata: can be empty, the initial metadata for the kvs
-        :param system: if you already have an xblock from the course, the xblock.runtime value
+        :param runtime: if you already have an xblock from the course, the xblock.runtime value
         :param fields: a dictionary of field names and values for the new xmodule
         """
         # differs from split mongo in that I believe most of this logic should be above the persistence
@@ -845,12 +845,12 @@ class MongoModuleStore(ModuleStoreWriteBase):
         if definition_data is None:
             definition_data = {}
 
-        if system is None:
+        if runtime is None:
             services = {}
             if self.i18n_service:
                 services["i18n"] = self.i18n_service
 
-            system = CachingDescriptorSystem(
+            runtime = CachingDescriptorSystem(
                 modulestore=self,
                 module_data={},
                 course_key=location.course_key,
@@ -863,9 +863,9 @@ class MongoModuleStore(ModuleStoreWriteBase):
                 select=self.xblock_select,
                 services=services,
             )
-        xblock_class = system.load_block_type(location.category)
+        xblock_class = runtime.load_block_type(location.category)
         dbmodel = self._create_new_field_data(location.category, location, definition_data, metadata)
-        xmodule = system.construct_xblock_from_class(
+        xmodule = runtime.construct_xblock_from_class(
             xblock_class,
             # We're loading a descriptor, so student_id is meaningless
             # We also don't have separate notions of definition and usage ids yet,
@@ -981,7 +981,11 @@ class MongoModuleStore(ModuleStoreWriteBase):
                 get the published version's parent and the draft version's parent as 2 separate values.
                 None means all parents.
         '''
+        # NAATODO - have an internal method that takes in the internal-only parameters
+        # NAATODO - the external method can ASSERT that the location.revision is not specified
+
         if revision is None and location.revision is None:
+            # NAATODO - Use another variable here instead of overloading revision with 'all'
             revision = 'all'
         elif revision != DRAFT and location.revision != DRAFT:
             revision = None
@@ -990,6 +994,7 @@ class MongoModuleStore(ModuleStoreWriteBase):
             location = as_published(location)
         query = self._course_key_to_son(location.course_key)
         query['definition.children'] = location.to_deprecated_string()
+        # NAATODO - Why are we favoring Published here for the revision?
         items = self.collection.find(query, {'_id': True}, sort=[('revision', pymongo.ASCENDING)])
         return [
             Location._from_deprecated_son(i['_id'], location.course_key.run)
