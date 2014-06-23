@@ -14,6 +14,7 @@ class StudioEditableModuleTestCase(BaseVerticalModuleTest):
         reorderable_items = set()
         context = {
             'container_view': True,
+            'is_unit_page': True,
             'reorderable_items': reorderable_items,
             'read_only': False,
             'root_xblock': self.vertical,

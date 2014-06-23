@@ -68,6 +68,7 @@ class VerticalModuleTestCase(BaseVerticalModuleTest):
         reorderable_items = set()
         context = {
             'runtime_type': 'studio',
+            'container_view': True,
             'is_unit_page': False,
             'reorderable_items': reorderable_items,
         }

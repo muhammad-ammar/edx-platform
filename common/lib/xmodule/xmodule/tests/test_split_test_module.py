@@ -171,6 +171,7 @@ class SplitTestModuleStudioTest(SplitTestModuleTest):
             """
             return {
                 'container_view': True,
+                'is_unit_page': False,
                 'reorderable_items': set(),
                 'root_xblock': root_xblock,
             }

@@ -72,7 +72,7 @@ class VerticalModule(VerticalFields, XModule, StudioEditableModule):
         fragment = Fragment()
         # For the container page we want the full drag-and-drop, but for unit pages we want
         # a more concise version that appears alongside the "View =>" link.
-        if context.get('container_view'):
+        if not context.get('is_unit_page'):
             self.render_children(context, fragment, can_reorder=True, can_add=True)
         return fragment
 

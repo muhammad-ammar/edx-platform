@@ -38,9 +38,13 @@ class ContainerPageTestCase(StudioPageTestCase):
                 'data-locator="{0}" data-course-key="{0.course_key}">'.format(self.child_container.location)
             ),
             expected_breadcrumbs=(
-                r'<a href="/container/{}" class="navigation-link navigation-parent">\s*Unit\s*</a>\s*'
-                r'<a href="#" class="navigation-link navigation-current">\s*Split Test\s*</a>'
-            ).format(re.escape(unicode(self.vertical.location)))
+                r'<a href="/course/{course}" class="navigation-link navigation-parent">\s*Week 1\s*</a>\s*'
+                r'<span class="navigation-parent">\s*Lesson 1\s*</span>\s*'
+                r'<a href="/container/{unit}" class="navigation-link navigation-parent">\s*Unit\s*</a>'
+            ).format(
+                course=re.escape(unicode(self.course.id)),
+                unit=re.escape(unicode(self.vertical.location)),
+            ),
         )
 
     def test_container_on_container_html(self):
@@ -65,13 +69,15 @@ class ContainerPageTestCase(StudioPageTestCase):
                     'data-locator="{0}" data-course-key="{0.course_key}">'.format(published_container.location)
                 ),
                 expected_breadcrumbs=(
+                    r'<a href="/course/{course}" class="navigation-link navigation-parent">\s*Week 1\s*</a>\s*'
+                    r'<span class="navigation-parent">\s*Lesson 1\s*</span>\s*'
                     r'<a href="/container/{unit}" class="navigation-link navigation-parent">\s*Unit\s*</a>\s*'
-                    r'<a href="/container/{split_test}" class="navigation-link navigation-parent">\s*Split Test\s*</a>\s*'
-                    r'<a href="#" class="navigation-link navigation-current">\s*Wrapper\s*</a>'
+                    r'<a href="/container/{split_test}" class="navigation-link navigation-parent">\s*Split Test\s*</a>'
                 ).format(
+                    course=re.escape(unicode(self.course.id)),
                     unit=re.escape(unicode(self.vertical.location)),
                     split_test=re.escape(unicode(self.child_container.location))
-                )
+                ),
             )
 
         # Test the published version of the container
@@ -89,19 +95,8 @@ class ContainerPageTestCase(StudioPageTestCase):
         and the breadcrumbs trail is correct.
         """
         html = self.get_page_html(xblock)
-        publish_state = compute_publish_state(xblock)
         self.assertIn(expected_section_tag, html)
-        # Verify the navigation link at the top of the page is correct.
         self.assertRegexpMatches(html, expected_breadcrumbs)
-
-        # Verify the link that allows users to change publish status.
-        expected_message = None
-        if publish_state == PublishState.public:
-            expected_message = 'you need to edit unit <a href="/container/{}">Unit</a> as a draft.'
-        else:
-            expected_message = 'your changes will be published with unit <a href="/container/{}">Unit</a>.'
-        expected_unit_link = expected_message.format(self.vertical.location)
-        self.assertIn(expected_unit_link, html)
 
     def test_public_container_preview_html(self):
         """
