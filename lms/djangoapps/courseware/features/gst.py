@@ -41,8 +41,6 @@ class GraphicalSliderToolSteps(object):
             display_name="Test GST",
             data=DEFAULT_DATA
         )
-        publish(world.scenario_dict['GST'].location)
-
 
     def view_gst(self, step):
         r'I view the Graphical Slider Tool$'
