@@ -3,7 +3,6 @@ Test the publish code (mostly testing that publishing doesn't result in orphans)
 """
 from xmodule.modulestore.exceptions import ItemNotFoundError
 from xmodule.modulestore.tests.test_split_w_old_mongo import SplitWMongoCourseBoostrapper
-from xmodule.modulestore.mongo.draft import DRAFT
 
 
 class TestPublish(SplitWMongoCourseBoostrapper):
@@ -91,7 +90,7 @@ class TestPublish(SplitWMongoCourseBoostrapper):
         self.draft_mongo.publish(draft_vert.location, self.userid)
         item = self.old_mongo.get_item(draft_vert.location, 0)
         self.assertNotIn(location, item.children)
-        self.assertEqual(self.draft_mongo.get_parent_locations(location), [])
+        self.assertIsNone(self.draft_mongo.get_parent_location(location))
         with self.assertRaises(ItemNotFoundError):
             self.draft_mongo.get_item(location)
         self.assertNotIn(other_child_loc, item.children)

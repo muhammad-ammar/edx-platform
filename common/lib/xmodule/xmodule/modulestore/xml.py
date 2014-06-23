@@ -333,7 +333,7 @@ class ParentTracker(object):
         """
         Init
         """
-        # location -> set(parents).  Not using defaultdict because we care about the empty case.
+        # location -> parent.  Not using defaultdict because we care about the empty case.
         self._parents = dict()
 
     def add_parent(self, child, parent):
@@ -342,8 +342,7 @@ class ParentTracker(object):
 
         child and parent must be :class:`.Location` instances.
         """
-        setp = self._parents.setdefault(child, set())
-        setp.add(parent)
+        self._parents[child] = parent
 
     def is_known(self, child):
         """
@@ -354,13 +353,13 @@ class ParentTracker(object):
     def make_known(self, location):
         """Tell the parent tracker about an object, without registering any
         parents for it.  Used for the top level course descriptor locations."""
-        self._parents.setdefault(location, set())
+        self._parents.setdefault(location, None)
 
-    def parents(self, child):
+    def parent(self, child):
         """
-        Return a list of the parents of this child.  If not is_known(child), will throw a KeyError
+        Return the parent of this child.  If not is_known(child), will throw a KeyError
         """
-        return list(self._parents[child])
+        return self._parents[child]
 
 
 class XMLModuleStore(ModuleStoreReadBase):
@@ -789,17 +788,14 @@ class XMLModuleStore(ModuleStoreReadBase):
         # here just to quell the abstractmethod. someone could write the impl if needed
         raise NotImplementedError
 
-    def get_parent_locations(self, location, **kwargs):
-        '''Find all locations that are the parents of this location in this
+    def get_parent_location(self, location, **kwargs):
+        '''Find the location that is the parent of this location in this
         course.  Needed for path_to_location().
-
-        returns an iterable of things that can be passed to Location.  This may
-        be empty if there are no parents.
         '''
         if not self.parent_trackers[location.course_key].is_known(location):
             raise ItemNotFoundError("{0} not in {1}".format(location, location.course_key))
 
-        return self.parent_trackers[location.course_key].parents(location)
+        return self.parent_trackers[location.course_key].parent(location)
 
     def get_modulestore_type(self, course_key=None):
         """

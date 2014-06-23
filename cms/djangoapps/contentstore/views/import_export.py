@@ -334,10 +334,10 @@ def export_handler(request, course_key_string):
             parent = None
             try:
                 failed_item = modulestore().get_item(exc.location)
-                parent_locs = modulestore().get_parent_locations(failed_item.location)
+                parent_loc = modulestore().get_parent_location(failed_item.location)
 
-                if len(parent_locs) > 0:
-                    parent = modulestore().get_item(parent_locs[0])
+                if parent_loc is not None:
+                    parent = modulestore().get_item(parent_loc)
                     if parent.location.category == 'vertical':
                         unit = parent
             except:  # pylint: disable=bare-except

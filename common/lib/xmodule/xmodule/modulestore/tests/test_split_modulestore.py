@@ -917,24 +917,23 @@ class SplitModuleItemTests(SplitModuleTest):
 
     def test_get_parents(self):
         '''
-        get_parent_locations(locator): [BlockUsageLocator]
+        get_parent_location(locator): BlockUsageLocator
         '''
         locator = BlockUsageLocator(
             CourseLocator(org='testx', offering='GreekHero', branch='draft'),
             'chapter', block_id='chapter1'
         )
-        parents = modulestore().get_parent_locations(locator)
-        self.assertEqual(len(parents), 1)
-        self.assertEqual(parents[0].block_id, 'head12345')
-        self.assertEqual(parents[0].org, "testx")
-        self.assertEqual(parents[0].offering, "GreekHero")
+        parent = modulestore().get_parent_location(locator)
+        self.assertIsNotNone(parent)
+        self.assertEqual(parent.block_id, 'head12345')
+        self.assertEqual(parent.org, "testx")
+        self.assertEqual(parent.offering, "GreekHero")
         locator = locator.course_key.make_usage_key('Chapter', 'chapter2')
-        parents = modulestore().get_parent_locations(locator)
-        self.assertEqual(len(parents), 1)
-        self.assertEqual(parents[0].block_id, 'head12345')
+        parent = modulestore().get_parent_location(locator)
+        self.assertEqual(parent.block_id, 'head12345')
         locator = locator.course_key.make_usage_key('garbage', 'nosuchblock')
-        parents = modulestore().get_parent_locations(locator)
-        self.assertEqual(len(parents), 0)
+        parent = modulestore().get_parent_location(locator)
+        self.assertIsNone(parent)
 
     def test_get_children(self):
         """
@@ -1614,7 +1613,7 @@ class TestPublish(SplitModuleTest):
         # check that it is in the published course and that its parent is the chapter
         pub_module = modulestore().get_item(new_module.location.map_into_course(dest_course))
         self.assertEqual(
-            modulestore().get_parent_locations(pub_module.location)[0].block_id, chapter1.block_id
+            modulestore().get_parent_location(pub_module.location).block_id, chapter1.block_id
         )
         # ensure intentionally orphaned blocks work (e.g., course_info)
         new_module = modulestore().create_item(

@@ -323,13 +323,11 @@ class TestMixedModuleStore(LocMapperSetupSansDjango):
     @ddt.data('draft', 'split')
     def test_get_parent_locations(self, default_ms):
         self.initdb(default_ms)
-        parents = self.store.get_parent_locations(self.writable_chapter_location)
-        self.assertEqual(len(parents), 1)
-        self.assertEqual(parents[0], self.course_locations[self.MONGO_COURSEID])
+        parent = self.store.get_parent_location(self.writable_chapter_location)
+        self.assertEqual(parent, self.course_locations[self.MONGO_COURSEID])
 
-        parents = self.store.get_parent_locations(self.xml_chapter_location)
-        self.assertEqual(len(parents), 1)
-        self.assertEqual(parents[0], self.course_locations[self.XML_COURSEID1])
+        parent = self.store.get_parent_location(self.xml_chapter_location)
+        self.assertEqual(parent, self.course_locations[self.XML_COURSEID1])
 
     @ddt.data('draft', 'split')
     def test_get_orphans(self, default_ms):

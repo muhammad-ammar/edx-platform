@@ -16,6 +16,7 @@ import json
 import os
 from path import path
 import shutil
+from xmodule.modulestore.mongo.base import DIRECT_ONLY_CATEGORIES
 
 DRAFT_DIR = "drafts"
 PUBLISHED_DIR = "published"
@@ -108,14 +109,15 @@ def export_to_xml(modulestore, contentstore, course_key, root_dir, course_dir):
     if len(draft_verticals) > 0:
         draft_course_dir = export_fs.makeopendir(DRAFT_DIR)
         for draft_vertical in draft_verticals:
-            parent_locs = modulestore.get_parent_locations(draft_vertical.location, revision='draft')
+            parent_loc = modulestore.get_parent_location(draft_vertical.location, revision='draft')
             # Don't try to export orphaned items.
-            if len(parent_locs) > 0:
-                logging.debug('parent_locs = {0}'.format(parent_locs))
-                draft_vertical.xml_attributes['parent_sequential_url'] = parent_locs[0].to_deprecated_string()
-                sequential = modulestore.get_item(parent_locs[0])
-                index = sequential.children.index(draft_vertical.location)
-                draft_vertical.xml_attributes['index_in_children_list'] = str(index)
+            if parent_loc is not None:
+                logging.debug('parent_loc = {0}'.format(parent_loc))
+                if parent_loc.category in DIRECT_ONLY_CATEGORIES:
+                    draft_vertical.xml_attributes['parent_sequential_url'] = parent_loc.to_deprecated_string()
+                    sequential = modulestore.get_item(parent_loc)
+                    index = sequential.children.index(draft_vertical.location)
+                    draft_vertical.xml_attributes['index_in_children_list'] = str(index)
                 draft_vertical.runtime.export_fs = draft_course_dir
                 node = lxml.etree.Element('unknown')
                 draft_vertical.add_xml_to_node(node)

@@ -27,6 +27,15 @@ class NoPathToItem(Exception):
     pass
 
 
+class ReferentialIntegrityError(Exception):
+    """
+    An incorrect pointer to an object exists. For example, 2 parents point to the same child, an
+    xblock points to a nonexistent child (which probably raises ItemNotFoundError instead depending
+    on context).
+    """
+    pass
+
+
 class DuplicateItemError(Exception):
     """
     Attempted to create an item which already exists.

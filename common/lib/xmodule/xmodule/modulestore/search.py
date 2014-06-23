@@ -53,8 +53,8 @@ def path_to_location(modulestore, usage_key):
         while len(queue) > 0:
             (next_usage, path) = queue.pop()  # Takes from the end
 
-            # get_parent_locations raises ItemNotFoundError if location isn't found
-            parents = modulestore.get_parent_locations(next_usage)
+            # get_parent_location raises ItemNotFoundError if location isn't found
+            parent = modulestore.get_parent_location(next_usage)
 
             # print 'Processing loc={0}, path={1}'.format(next_usage, path)
             if next_usage.definition_key.block_type == "course":
@@ -64,7 +64,7 @@ def path_to_location(modulestore, usage_key):
 
             # otherwise, add parent locations at the end
             newpath = (next_usage, path)
-            queue.extend(zip(parents, repeat(newpath)))
+            queue.append((parent, newpath))
 
         # If we're here, there is no path
         return None

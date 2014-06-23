@@ -106,17 +106,48 @@ class DraftModuleStore(MongoModuleStore):
             exists = super(DraftModuleStore, self).has_item(usage_key)
         return exists
 
-    def get_parent_locations(self, location, revision=None, **kwargs):
+    def get_raw_parent_locations(self, location, revision):
+        """
+        Get the parents but don't unset the revision in their locations.
+
+        Intended for internal use but not restricted.
+
+        Args:
+            location (CourseKey): assumes the revision is None; so, uses revision keyword solely
+            revision ('draft', 'published', 'all'): if 'draft', only get the draft's parents. etc.
+        """
+        query = self._course_key_to_son(location.course_key)
+        query['definition.children'] = location.to_deprecated_string()
+
+        items = self.collection.find(query, {'_id': True}, sort=[('revision', pymongo.ASCENDING)])
+        return [
+            Location._from_deprecated_son(i['_id'], location.course_key.run)
+            for i in items
+            if (
+                i['_id']['category'] in DIRECT_ONLY_CATEGORIES
+                or revision == 'all'
+                or i['_id']['revision'] == revision
+            )
+        ]
+
+    def get_parent_location(self, location, revision=None, **kwargs):
         '''
         Find all locations that are the parents of this location in this
         course.  Needed for path_to_location().
 
-        Returns w/ revision set. If a block has both a draft and non-draft parents, it returns both
-        unless revision is set to PUBLISHED_ONLY or the branch is set to 'published'.
+        Returns: version agnostic locations (revision always None) as per the rest of mongo.
+
+        Args:
+            revision (None or 'draft'): whether to limit to only parents of the draft.
+                If set and if the draft has a different parent than the published, it only returns
+                the draft's parent. Because parent's don't record their children's revisions, this
+                is actually a potentially fragile deduction based on parent type. If the parent type
+                is not DIRECT_ONLY, then the parent revision must be 'draft'.
+                Only xml_exporter currently uses this argument. Others should avoid it.
         '''
-        if self.branch_setting_func() == PUBLISHED:
-            revision = PUBLISHED
-        return super(DraftModuleStore, self).get_parent_locations(location, revision, **kwargs)
+        if revision is None:
+            revision = self.branch_setting_func()
+        return super(DraftModuleStore, self).get_parent_location(location, revision, **kwargs)
 
     def create_xmodule(self, location, definition_data=None, metadata=None, runtime=None, fields={}):
         """
@@ -273,6 +304,7 @@ class DraftModuleStore(MongoModuleStore):
             location: UsageKey of the item to be deleted
             user_id: id of the user deleting the item
             revision:
+                only provided by contentstore.views.item.orphan_handler
                 if None, deletes the item and its subtree, and updates the parents per description above
                 if PUBLISHED_ONLY, removes only Published versions
                 if 'all', removes both Draft and Published parents
@@ -283,14 +315,15 @@ class DraftModuleStore(MongoModuleStore):
         if direct_only_root or revision == PUBLISHED_ONLY:
             parent_revision = PUBLISHED
         elif revision == 'all':
-            parent_revision = None
+            parent_revision = 'all'
         else:
             parent_revision = DRAFT
 
         # remove subtree from its parent
-        parents = self.get_parent_locations(location, revision=parent_revision)
-        # 2 parents iff root has draft which was moved
+        parents = self.get_raw_parent_locations(location, revision=parent_revision)
+        # 2 parents iff root has draft which was moved or revision=='all' and parent is draft & pub'd
         for parent in parents:
+            # don't remove from direct_only parent if other version of this still exists
             if not direct_only_root and parent.category in DIRECT_ONLY_CATEGORIES:
                 # see if other version of root exists
                 alt_location = location.replace(revision=DRAFT if location.revision != DRAFT else None)
@@ -400,10 +433,10 @@ class DraftModuleStore(MongoModuleStore):
                     for child in original_published.children:
                         if child not in draft.children:
                             # did child move?
-                            rents = self.get_parent_locations(child)
-                            if (len(rents) == 1 and as_published(rents[0]) == root_location):
+                            parent = self.get_parent_location(child)
+                            if parent == root_location:
                                 # deleted from draft; so, delete published now that we're publishing
-                                self.delete_item(child, user_id, revision='all')
+                                self._delete_subtree(location, [as_published])
 
             super(DraftModuleStore, self).update_item(draft, user_id, isPublish=True)
             self.collection.remove({'_id': as_draft(root_location).to_deprecated_son()})

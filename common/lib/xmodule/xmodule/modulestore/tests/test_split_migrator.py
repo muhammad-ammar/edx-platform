@@ -7,7 +7,6 @@ import random
 import mock
 from xmodule.modulestore.loc_mapper_store import LocMapperStore
 from xmodule.modulestore.split_migrator import SplitMigrator
-from xmodule.modulestore.mongo import draft
 from xmodule.modulestore.tests import test_location_mapper
 from xmodule.modulestore.tests.test_split_w_old_mongo import SplitWMongoCourseBoostrapper
 from xblock.fields import Reference, ReferenceList, ReferenceValueDict

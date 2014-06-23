@@ -239,12 +239,12 @@ class MixedModuleStore(ModuleStoreWriteBase):
         else:
             raise NotImplementedError(u"Cannot delete a course on store {}".format(store))
 
-    def get_parent_locations(self, location, **kwargs):
+    def get_parent_location(self, location, **kwargs):
         """
         returns the parent locations for a given location
         """
         store = self._get_modulestore_for_courseid(location.course_key)
-        return store.get_parent_locations(location, **kwargs)
+        return store.get_parent_location(location, **kwargs)
 
     def get_modulestore_type(self, course_id):
         """

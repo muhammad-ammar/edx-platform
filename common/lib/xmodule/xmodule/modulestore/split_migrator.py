@@ -129,27 +129,27 @@ class SplitMigrator(object):
                     )
                     awaiting_adoption[module.location] = new_locator
         for draft_location, new_locator in awaiting_adoption.iteritems():
-            for parent_loc in self.draft_modulestore.get_parent_locations(draft_location):
-                old_parent = self.draft_modulestore.get_item(parent_loc)
-                new_parent = self.split_modulestore.get_item(
-                    self.loc_mapper.translate_location(old_parent.location, False)
-                )
-                # this only occurs if the parent was also awaiting adoption
-                if any(new_locator == child.version_agnostic() for child in new_parent.children):
+            parent_loc = self.draft_modulestore.get_parent_location(draft_location)
+            old_parent = self.draft_modulestore.get_item(parent_loc)
+            new_parent = self.split_modulestore.get_item(
+                self.loc_mapper.translate_location(old_parent.location, False)
+            )
+            # this only occurs if the parent was also awaiting adoption
+            if any(new_locator == child.version_agnostic() for child in new_parent.children):
+                break
+            # find index for module: new_parent may be missing quite a few of old_parent's children
+            new_parent_cursor = 0
+            for old_child_loc in old_parent.children:
+                if old_child_loc == draft_location:
                     break
-                # find index for module: new_parent may be missing quite a few of old_parent's children
-                new_parent_cursor = 0
-                for old_child_loc in old_parent.children:
-                    if old_child_loc == draft_location:
+                sibling_loc = self.loc_mapper.translate_location(old_child_loc, False)
+                # sibling may move cursor
+                for idx in range(new_parent_cursor, len(new_parent.children)):
+                    if new_parent.children[idx].version_agnostic() == sibling_loc:
+                        new_parent_cursor = idx + 1
                         break
-                    sibling_loc = self.loc_mapper.translate_location(old_child_loc, False)
-                    # sibling may move cursor
-                    for idx in range(new_parent_cursor, len(new_parent.children)):
-                        if new_parent.children[idx].version_agnostic() == sibling_loc:
-                            new_parent_cursor = idx + 1
-                            break
-                new_parent.children.insert(new_parent_cursor, new_locator)
-                new_parent = self.split_modulestore.update_item(new_parent, user.id)
+            new_parent.children.insert(new_parent_cursor, new_locator)
+            new_parent = self.split_modulestore.update_item(new_parent, user.id)
 
     def _get_json_fields_translate_references(self, xblock, old_course_id, published):
         """

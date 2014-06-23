@@ -44,13 +44,11 @@ def get_parent_xblock(xblock):
     Returns the xblock that is the parent of the specified xblock, or None if it has no parent.
     """
     locator = xblock.location
-    parent_locations = modulestore().get_parent_locations(locator)
+    parent_location = modulestore().get_parent_location(locator)
 
-    if len(parent_locations) == 0:
+    if parent_location is None:
         return None
-    elif len(parent_locations) > 1:
-        logging.error('Multiple parents have been found for %s', unicode(locator))
-    return modulestore().get_item(parent_locations[0])
+    return modulestore().get_item(parent_location)
 
 
 def is_unit(xblock):

@@ -35,7 +35,7 @@ from xblock.fields import Scope, ScopeIds, Reference, ReferenceList, ReferenceVa
 
 from xmodule.modulestore import ModuleStoreWriteBase, MONGO_MODULESTORE_TYPE
 from opaque_keys.edx.locations import Location
-from xmodule.modulestore.exceptions import ItemNotFoundError, InvalidLocationError
+from xmodule.modulestore.exceptions import ItemNotFoundError, InvalidLocationError, ReferentialIntegrityError
 from xmodule.modulestore.inheritance import own_metadata, InheritanceMixin, inherit_metadata, InheritanceKeyValueStore
 from xblock.core import XBlock
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
@@ -980,46 +980,46 @@ class MongoModuleStore(ModuleStoreWriteBase):
                         value[key] = subvalue.to_deprecated_string()
         return jsonfields
 
-    def get_parent_locations(self, location, revision=None, **kwargs):
+    def get_parent_location(self, location, revision=PUBLISHED, **kwargs):
         '''
-        Find all locations that are the parents of this location in this
+        Find the location that is the parent of this location in this
         course.  Needed for path_to_location().
 
-        Returns w/ revision set. If a block has both a draft a non-draft parent, it returns both
-        unless you pass revision.
+        Returns: version agnostic location (revision always None) as per the rest of mongo.
 
         Args:
-            revision: DRAFT, PUBLISHED, or None.
-                whether to only look for draft or published branch. If you don't
-                set revision, you can get more than one parent. For
-                example, if in draft, you've moved the child from one parent to another, then you'll
-                get the published version's parent and the draft version's parent as 2 separate values.
-                None means all parents.
-        '''
-        # NAATODO - have an internal method that takes in the internal-only parameters
-        # NAATODO - the external method can ASSERT that the location.revision is not specified
+            revision: DRAFT, PUBLISHED.
+                whether to limit to only parents of the draft or published. lms uses this arg via
+                draft.py (which is just set to branch_setting).
 
-        if revision is None and location.revision is None:
-            # NAATODO - Use another variable here instead of overloading revision with 'all'
-            revision = 'all'
-        elif revision != DRAFT and location.revision != DRAFT:
-            revision = None
-        elif location.revision == DRAFT:  # if revision already draft, no need to set it again
-            revision = DRAFT
-            location = as_published(location)
+                If set and if the draft has a different parent than the published, it only returns
+                the parent of that revision.
+        '''
+        assert location.revision is None
+
         query = self._course_key_to_son(location.course_key)
         query['definition.children'] = location.to_deprecated_string()
-        # NAATODO - Why are we favoring Published here for the revision?
-        items = self.collection.find(query, {'_id': True}, sort=[('revision', pymongo.ASCENDING)])
-        return [
-            Location._from_deprecated_son(i['_id'], location.course_key.run)
-            for i in items
-            if (
-                i['_id']['category'] in DIRECT_ONLY_CATEGORIES
-                or revision == 'all'
-                or i['_id']['revision'] == revision
-            )
-        ]
+        if revision == PUBLISHED:
+            query['_id.revision'] = None
+
+        items = self.collection.find(query, {'_id': True}, sort=[('revision', pymongo.DESCENDING)])
+        if items.count() == 0:
+            return None
+
+        if revision == PUBLISHED:
+            if items.count() > 1:
+                raise ReferentialIntegrityError(
+                    u"{} parents claim {}".format(items.count(), location)
+                )
+            else:
+                return Location._from_deprecated_son(items[0]['_id'], location.course_key.run)
+
+        # could be 2 different parents if draft was moved or same parent w/ both draft and none revision
+        # Due to the sort, the 0'th will be the one we want
+        found_id = items[0]['_id']
+        # don't disclose revision outside modulestore
+        found_id['revision'] = None
+        return Location._from_deprecated_son(found_id, location.course_key.run)
 
     def get_modulestore_type(self, course_key=None):
         """

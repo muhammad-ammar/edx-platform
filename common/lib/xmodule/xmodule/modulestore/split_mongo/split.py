@@ -467,24 +467,23 @@ class SplitMongoModuleStore(ModuleStoreWriteBase):
         else:
             return []
 
-    def get_parent_locations(self, locator, **kwargs):
+    def get_parent_location(self, locator, **kwargs):
         '''
-        Return the locations (Locators w/ block_ids) for the parents of this location in this
+        Return the location (Locators w/ block_ids) for the parent of this location in this
         course. Could use get_items(location, {'children': block_id}) but this is slightly faster.
         NOTE: the locator must contain the block_id, and this code does not actually ensure block_id exists
 
         :param locator: BlockUsageLocator restricting search scope
         '''
         course = self._lookup_course(locator)
-        items = self._get_parents_from_structure(locator.block_id, course['structure'])
-        return [
-            BlockUsageLocator.make_relative(
+        parent_id = self._get_parent_from_structure(locator.block_id, course['structure'])
+        if parent_id is None:
+            return None
+        return BlockUsageLocator.make_relative(
                 locator,
                 block_type=course['structure']['blocks'][parent_id].get('category'),
                 block_id=LocMapperStore.decode_key_from_mongo(parent_id),
-            )
-            for parent_id in items
-        ]
+        )
 
     def get_orphans(self, course_key):
         """
@@ -1265,17 +1264,18 @@ class SplitMongoModuleStore(ModuleStoreWriteBase):
         orphans = set()
         destination_blocks = destination_structure['blocks']
         for subtree_root in subtree_list:
-            # find the parents and put root in the right sequence
-            parents = self._get_parents_from_structure(subtree_root.block_id, source_structure)
-            if not all(parent in destination_blocks for parent in parents):
-                raise ItemNotFoundError(parents)
-            for parent_loc in parents:
-                orphans.update(
-                    self._sync_children(
-                        source_structure['blocks'][parent_loc],
-                        destination_blocks[parent_loc],
-                        subtree_root.block_id
-                ))
+            if subtree_root.block_id != source_structure['root']:
+                # find the parents and put root in the right sequence
+                parent = self._get_parent_from_structure(subtree_root.block_id, source_structure)
+                if parent is not None:  # may be a detached category xblock
+                    if not parent in destination_blocks:
+                        raise ItemNotFoundError(parent)
+                    orphans.update(
+                        self._sync_children(
+                            source_structure['blocks'][parent],
+                            destination_blocks[parent],
+                            subtree_root.block_id
+                    ))
             # update/create the subtree and its children in destination (skipping blacklist)
             orphans.update(
                 self._publish_subdag(
@@ -1328,15 +1328,13 @@ class SplitMongoModuleStore(ModuleStoreWriteBase):
         new_structure = self._version_structure(original_structure, user_id)
         new_blocks = new_structure['blocks']
         new_id = new_structure['_id']
-        parents = self.get_parent_locations(usage_locator)
-        for parent in parents:
-            encoded_block_id = LocMapperStore.encode_key_for_mongo(parent.block_id)
-            parent_block = new_blocks[encoded_block_id]
-            parent_block['fields']['children'].remove(usage_locator.block_id)
-            parent_block['edit_info']['edited_on'] = datetime.datetime.now(UTC)
-            parent_block['edit_info']['edited_by'] = user_id
-            parent_block['edit_info']['previous_version'] = parent_block['edit_info']['update_version']
-            parent_block['edit_info']['update_version'] = new_id
+        encoded_block_id = self._get_parent_from_structure(usage_locator.block_id, original_structure)
+        parent_block = new_blocks[encoded_block_id]
+        parent_block['fields']['children'].remove(usage_locator.block_id)
+        parent_block['edit_info']['edited_on'] = datetime.datetime.now(UTC)
+        parent_block['edit_info']['edited_by'] = user_id
+        parent_block['edit_info']['previous_version'] = parent_block['edit_info']['update_version']
+        parent_block['edit_info']['update_version'] = new_id
 
         def remove_subtree(block_id):
             """
@@ -1654,18 +1652,16 @@ class SplitMongoModuleStore(ModuleStoreWriteBase):
             'schema_version': self.SCHEMA_VERSION,
         }
 
-    def _get_parents_from_structure(self, block_id, structure):
+    def _get_parent_from_structure(self, block_id, structure):
         """
-        Given a structure, find all of block_id's parents in that structure. Note returns
+        Given a structure, find block_id's parent in that structure. Note returns
         the encoded format for parent
         """
-        items = []
         for parent_id, value in structure['blocks'].iteritems():
             for child_id in value['fields'].get('children', []):
                 if block_id == child_id:
-                    items.append(parent_id)
-
-        return items
+                    return parent_id
+        return None
 
     def _sync_children(self, source_parent, destination_parent, new_child):
         """
@@ -1737,7 +1733,7 @@ class SplitMongoModuleStore(ModuleStoreWriteBase):
         """
         Delete the orphan and any of its descendants which no longer have parents.
         """
-        if not self._get_parents_from_structure(orphan, structure):
+        if self._get_parent_from_structure(orphan, structure) is None:
             encoded_block_id = LocMapperStore.encode_key_for_mongo(orphan)
             for child in structure['blocks'][encoded_block_id]['fields'].get('children', []):
                 self._delete_if_true_orphan(child, structure)

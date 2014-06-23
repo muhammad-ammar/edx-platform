@@ -196,11 +196,9 @@ class ModuleStoreRead(object):
         pass
 
     @abstractmethod
-    def get_parent_locations(self, location):
-        '''Find all locations that are the parents of this location in this
+    def get_parent_location(self, location, **kwargs):
+        '''Find the location that is the parent of this location in this
         course.  Needed for path_to_location().
-
-        returns an iterable of things that can be passed to Location.
         '''
         pass
 
