@@ -23,7 +23,7 @@ import xmodule
 from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.exceptions import ItemNotFoundError, InvalidLocationError, DuplicateItemError
 from xmodule.modulestore.inheritance import own_metadata
-from xmodule.x_module import PREVIEW_VIEWS, STUDIO_VIEW
+from xmodule.x_module import PREVIEW_VIEWS, STUDIO_VIEW, STUDENT_VIEW
 
 from util.json_request import expect_json, JsonResponse
 from util.string_utils import str_to_bool
@@ -182,7 +182,6 @@ def xblock_view_handler(request, usage_key_string, view_name):
         xblock = store.get_item(usage_key)
         is_read_only = _is_xblock_read_only(xblock)
         container_views = ['container_preview', 'reorderable_container_child_preview']
-        unit_views = PREVIEW_VIEWS
 
         # wrap the generated fragment in the xmodule_editor div so that the javascript
         # can bind to it correctly
@@ -200,8 +199,8 @@ def xblock_view_handler(request, usage_key_string, view_name):
 
             # change not authored by requestor but by xblocks.
             store.update_item(xblock, None)
-        elif view_name in (unit_views + container_views):
-            is_container_view = (view_name in container_views)
+        elif view_name in (PREVIEW_VIEWS + container_views):
+            is_pages_view = view_name == STUDENT_VIEW   # Only the "Pages" view uses student view in Studio
 
             # Determine the items to be shown as reorderable. Note that the view
             # 'reorderable_container_child_preview' is only rendered for xblocks that
@@ -215,24 +214,20 @@ def xblock_view_handler(request, usage_key_string, view_name):
             # Note: this special case logic can be removed once the unit page is replaced
             # with the new container view.
             context = {
-                'container_view': is_container_view,
-                'is_unit_page': is_unit(xblock) or (view_name in unit_views),  # view_name in unit_views needed for old unit page to keep working
+                'is_pages_view': is_pages_view,
+                'is_unit_page': is_unit(xblock),
                 'read_only': is_read_only,
                 'root_xblock': xblock if (view_name == 'container_preview') else None,
                 'reorderable_items': reorderable_items
             }
 
             fragment = get_preview_fragment(request, xblock, context)
-            # For old-style pages (such as unit and static pages), wrap the preview with
-            # the component div. Note that the container view recursively adds headers
-            # into the preview fragment, so we don't want to add another header here.
-            if not is_container_view:
-                # For non-leaf xblocks, show the special rendering which links to the new container page.
-                if xblock_has_own_studio_page(xblock):
-                    template = 'container_xblock_component.html'
-                else:
-                    template = 'component.html'
-                fragment.content = render_to_string(template, {
+
+            # Note that the container view recursively adds headers into the preview fragment,
+            # so only the "Pages" view requires that this extra wrapper be included.
+            # TODO: remove this when the "Pages" view no longer renders xblocks
+            if is_pages_view:
+                fragment.content = render_to_string('component.html', {
                     'xblock_context': context,
                     'xblock': xblock,
                     'locator': usage_key,
