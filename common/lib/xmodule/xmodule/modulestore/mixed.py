@@ -173,7 +173,10 @@ class MixedModuleStore(ModuleStoreWriteBase):
         courses = {}  # a dictionary of course keys to course objects
         # first populate with the ones in mappings as the mapping override discovery
         for course_id, store in self.mappings.iteritems():
-            courses[course_id] = store.get_course(course_id)
+            course = store.get_course(course_id)
+            # check if the course is not None - possible if the mappings file is outdated
+            if course is not None:
+                courses[course_id] = store.get_course(course_id)
 
         has_locators = any(issubclass(CourseLocator, store.reference_type) for store in self.modulestores)
         for store in self.modulestores:
