@@ -11,7 +11,6 @@ from django.conf import settings
 from xmodule.modulestore.exceptions import ItemNotFoundError
 from edxmako.shortcuts import render_to_response
 
-from util.date_utils import get_default_time_display
 from xmodule.modulestore.django import modulestore
 
 from xblock.core import XBlock
@@ -177,12 +176,10 @@ def container_handler(request, usage_key_string):
         parent = get_parent_xblock(xblock)
 
         is_unit_page = is_unit(xblock)
-        unit = None
-        if is_unit_page:
-            unit = xblock
+        unit = xblock if is_unit_page else None
 
         while parent and parent.category != 'course':
-            if is_unit(parent):
+            if unit is None and is_unit(parent):
                 unit = parent
             ancestor_xblocks.append(parent)
             parent = get_parent_xblock(parent)
