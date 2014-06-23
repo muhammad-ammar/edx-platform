@@ -39,7 +39,7 @@ __all__ = ['OPEN_ENDED_COMPONENT_TYPES',
 
 log = logging.getLogger(__name__)
 
-# NOTE: unit_handler assumes this list is disjoint from ADVANCED_COMPONENT_TYPES
+# NOTE: it is assumed that this list is disjoint from ADVANCED_COMPONENT_TYPES
 COMPONENT_TYPES = ['discussion', 'html', 'problem', 'video']
 
 OPEN_ENDED_COMPONENT_TYPES = ["combinedopenended", "peergrading"]
