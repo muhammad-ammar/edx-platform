@@ -6,9 +6,7 @@ returns the i4x://org/course/cat/name@draft object if that exists,
 and otherwise returns i4x://org/course/cat/name).
 """
 
-from datetime import datetime
 import pymongo
-from pytz import UTC
 
 from xmodule.exceptions import InvalidVersionError
 from xmodule.modulestore import PublishState
@@ -107,7 +105,7 @@ class DraftModuleStore(MongoModuleStore):
         Returns w/ revision set. If a block has both a draft and non-draft parents, it returns both
         unless revision is set to 'published-only' or the branch is set to 'published'.
         '''
-        if self.branch_setting == PUBLISHED or revision == 'published-only':
+        if self.branch_setting == PUBLISHED:
             revision = PUBLISHED
         return super(DraftModuleStore, self).get_parent_locations(location, revision, **kwargs)
 

@@ -72,6 +72,19 @@ class MixedModuleStore(ModuleStoreWriteBase):
                     self.mappings[course_key] = store
             self.modulestores.append(store)
 
+    def _clean_course_id_for_mapping(self, course_id):
+        """
+        In order for mapping to work, the course_id must be minimal--no version, no branch--
+        as we never store one version or one branch in one ms and another in another ms.
+
+        :param course_id: the CourseKey
+        """
+        if hasattr(course_id, 'version_agnostic'):
+            course_id = course_id.version_agnostic()
+        if hasattr(course_id, 'branch_agnostic'):
+            course_id = course_id.branch_agnostic()
+        return course_id
+
     def _get_modulestore_for_courseid(self, course_id=None):
         """
         For a given course_id, look in the mapping table and see if it has been pinned
@@ -80,6 +93,7 @@ class MixedModuleStore(ModuleStoreWriteBase):
         If course_id is None, returns the first (ordered) store as the default
         """
         if course_id is not None:
+            course_id = self._clean_course_id_for_mapping(course_id)
             mapping = self.mappings.get(course_id, None)
             if mapping is not None:
                 return mapping
@@ -157,22 +171,28 @@ class MixedModuleStore(ModuleStoreWriteBase):
         in this modulestore.
         '''
         courses = {}  # a dictionary of course keys to course objects
+        # first populate with the ones in mappings as the mapping override discovery
+        for course_id, store in self.mappings.iteritems():
+            courses[course_id] = store.get_course(course_id)
+
         has_locators = any(issubclass(CourseLocator, store.reference_type) for store in self.modulestores)
         for store in self.modulestores:
             store_courses = store.get_courses()
             # filter out ones which were fetched from earlier stores but locations may not be ==
             for course in store_courses:
-                if course.id not in courses:
-                    if has_locators and isinstance(course.id, SlashSeparatedCourseKey):
+                course_id = self._clean_course_id_for_mapping(course.id)
+                if course_id not in courses:
+                    if has_locators and isinstance(course_id, SlashSeparatedCourseKey):
                         # see if a locator version of course is in the result
                         try:
-                            course_locator = loc_mapper().translate_location_to_course_locator(course.id)
+                            course_locator = loc_mapper().translate_location_to_course_locator(course_id)
                             if course_locator in courses:
                                 continue
                         except ItemNotFoundError:
                             # if there's no existing mapping, then the course can't have been in split
                             pass
-                    courses[course.id] = course
+                    # course is indeed unique. save it in result
+                    courses[course_id] = course
 
         return courses.values()
 

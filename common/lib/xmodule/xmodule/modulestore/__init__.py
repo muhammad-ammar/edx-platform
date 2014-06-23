@@ -448,8 +448,7 @@ class ModuleStoreWriteBase(ModuleStoreReadBase, ModuleStoreWrite):
 
     def create_and_save_xmodule(self, location, user_id, definition_data=None, metadata=None, runtime=None, fields={}):
         """
-        Create the new xmodule and save it. Does not return the new module because if the caller
-        will insert it as a child, its inherited metadata will completely change.
+        Create the new xmodule and save it.
 
         :param location: a Location--must have a category
         :param user_id: ID of the user creating and saving the xmodule
