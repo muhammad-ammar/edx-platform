@@ -48,17 +48,15 @@ class ContainerBase(UniqueCourseTest):
     def setup_fixtures(self):
         pass
 
-    def go_to_container_page(self, make_draft=False):
+    def go_to_container_page(self):
         """
         Go to the test container page.
-
-        If make_draft is true, the unit page (accessed on way to container page) will be put into draft mode.
         """
-        unit = self.go_to_unit_page(make_draft)
-        container = unit.components[0].go_to_container()
+        unit = self.go_to_unit_page()
+        container = unit.xblocks[0].go_to_container()
         return container
 
-    def go_to_unit_page(self, make_draft=False):
+    def go_to_unit_page(self):
         """
         Go to the test unit page.
 
@@ -66,10 +64,7 @@ class ContainerBase(UniqueCourseTest):
         """
         self.outline.visit()
         subsection = self.outline.section('Test Section').subsection('Test Subsection')
-        unit = subsection.toggle_expand().unit('Test Unit').go_to()
-        if make_draft:
-            unit.edit_draft()
-        return unit
+        return subsection.toggle_expand().unit('Test Unit').go_to()
 
     def verify_ordering(self, container, expected_orderings):
         """
@@ -97,7 +92,7 @@ class ContainerBase(UniqueCourseTest):
         """
         Perform the supplied action and then verify the resulting ordering.
         """
-        container = self.go_to_container_page(make_draft=True)
+        container = self.go_to_container_page()
         action(container)
 
         self.verify_ordering(container, expected_ordering)
@@ -378,13 +373,13 @@ class EditContainerTest(NestedVerticalTest):
         """
         Test the "edit" button on a container appearing on the unit page.
         """
-        unit = self.go_to_unit_page(make_draft=True)
-        component = unit.components[0]
+        unit = self.go_to_unit_page()
+        component = unit.xblocks[0]
         self.modify_display_name_and_verify(component)
 
     def test_edit_container_on_container_page(self):
         """
         Test the "edit" button on a container appearing on the container page.
         """
-        container = self.go_to_container_page(make_draft=True)
+        container = self.go_to_container_page()
         self.modify_display_name_and_verify(container)

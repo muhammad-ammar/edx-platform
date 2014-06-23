@@ -147,10 +147,18 @@ define(["jquery", "underscore", "gettext", "js/views/modals/base_modal",
             },
 
             save: function(event) {
+                var self = this,
+                    xblockInfo = this.xblockInfo,
+                    data = this.getXModuleData();
                 event.preventDefault();
-                this.editorView.save({
-                    success: _.bind(this.onSave, this)
-                });
+                if (data) {
+                    this.runOperationShowingMessage(gettext('Saving&hellip;'),
+                        function() {
+                            return xblockInfo.save(data);
+                        }).done(function() {
+                            self.onSave();
+                        });
+                }
             },
 
             onSave: function() {

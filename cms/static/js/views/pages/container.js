@@ -4,9 +4,9 @@
  */
 define(["jquery", "underscore", "gettext", "js/views/baseview", "js/views/container",
         "js/views/xblock", "js/views/components/add_xblock", "js/views/modals/edit_xblock", "js/models/xblock_info",
-        "js/views/xblock_field_editor"],
+        "js/views/xblock_string_field_editor"],
     function ($, _, gettext, BaseView, ContainerView, XBlockView, AddXBlockComponent, EditXBlockModal, XBlockInfo,
-                XBlockFieldEditorView) {
+                XBlockStringFieldEditor) {
         var XBlockContainerPage = BaseView.extend({
             // takes XBlockInfo as a model
 
@@ -14,7 +14,7 @@ define(["jquery", "underscore", "gettext", "js/views/baseview", "js/views/contai
 
             initialize: function() {
                 BaseView.prototype.initialize.call(this);
-                this.nameEditor = new XBlockFieldEditorView({
+                this.nameEditor = new XBlockStringFieldEditor({
                     el: this.$('.wrapper-xblock-field'),
                     model: this.model
                 });
@@ -45,7 +45,7 @@ define(["jquery", "underscore", "gettext", "js/views/baseview", "js/views/contai
 
                 // Render the xblock
                 xblockView.render({
-                    success: function(xblock) {
+                    success: function() {
                         xblockView.xblock.runtime.notify("page-shown", self);
                         xblockView.$el.removeClass('is-hidden');
                         self.renderAddXBlockComponents();

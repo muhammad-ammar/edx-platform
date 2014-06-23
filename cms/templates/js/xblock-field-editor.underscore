@@ -1,3 +1,0 @@
-<div class="xblock-field-editor">
-    <input type="text" value="<%= value %>" class="xblock-field-editor-input is-hidden" data-metadata-name="<%= fieldName %>">
-</div>

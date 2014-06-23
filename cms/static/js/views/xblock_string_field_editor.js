@@ -1,15 +1,19 @@
 /**
- * FieldEditorView is a view that allows a single value of an xblock to be edited.
+ * XBlockStringFieldEditor is a view that allows the user to inline edit an XBlock string field.
+ * Clicking on the field value will hide the text and replace it with an input to allow the user
+ * to change the value. Once the user leaves the field, a request will be sent to update the
+ * XBlock field's value if it has been changed. If the user presses Escape, then any changes will
+ * be removed and the input hidden again.
  */
 define(["jquery", "gettext", "js/views/baseview"],
     function ($, gettext, BaseView) {
 
-        var XBlockFieldEditor = BaseView.extend({
+        var XBlockStringFieldEditor = BaseView.extend({
             events: {
                 'click .xblock-field-value': 'showInput',
-                'change .xblock-field-editor-input': 'updateField',
-                'focusout .xblock-field-editor-input': 'onInputFocusLost',
-                'keyup .xblock-field-editor-input': 'handleKeyUp'
+                'change .xblock-field-input': 'updateField',
+                'focusout .xblock-field-input': 'onInputFocusLost',
+                'keyup .xblock-field-input': 'handleKeyUp'
             },
 
             // takes XBlockInfo as a model
@@ -17,7 +21,7 @@ define(["jquery", "gettext", "js/views/baseview"],
             initialize: function() {
                 BaseView.prototype.initialize.call(this);
                 this.fieldName = this.$el.data('field');
-                this.template = this.loadTemplate('xblock-field-editor');
+                this.template = this.loadTemplate('xblock-string-field-editor');
                 this.model.on('change:' + this.fieldName, this.onChangeField, this);
             },
 
@@ -29,9 +33,12 @@ define(["jquery", "gettext", "js/views/baseview"],
                 return this;
             },
 
-            getInputValue: function() {
-                // TODO: how should we coerce the value for non-string fields?
-                return this.$('.xblock-field-editor-input').val();
+            getLabel: function() {
+                return this.$('.xblock-field-value');
+            },
+
+            getInput: function () {
+                return this.$('.xblock-field-input');
             },
 
             onInputFocusLost: function() {
@@ -42,39 +49,33 @@ define(["jquery", "gettext", "js/views/baseview"],
             },
 
             onChangeField: function() {
-                var value = this.model.get(this.fieldName),
-                    label = this.$('.xblock-field-value'),
-                    input = this.$('.xblock-field-editor-input');
-                label.text(value);
-                input.val(value);
+                var value = this.model.get(this.fieldName);
+                this.getLabel().text(value);
+                this.getInput().val(value);
                 this.hideInput();
             },
 
             showInput: function(event) {
-                var label = this.$('.xblock-field-value'),
-                    input = this.$('.xblock-field-editor-input');
+                var input = this.getInput();
                 event.preventDefault();
-                label.addClass('is-hidden');
+                this.getLabel().addClass('is-hidden');
                 input.removeClass('is-hidden');
                 input.focus();
             },
 
             hideInput: function() {
-                var label = this.$('.xblock-field-value'),
-                    input = this.$('.xblock-field-editor-input');
-                label.removeClass('is-hidden');
-                input.addClass('is-hidden');
+                this.getLabel().removeClass('is-hidden');
+                this.getInput().addClass('is-hidden');
             },
 
             updateField: function() {
                 var xblockInfo = this.model,
-                    newValue = this.getInputValue(),
+                    newValue = this.getInput().val(),
                     requestData = this.createUpdateRequestData(newValue),
-                    url = xblockInfo.urlRoot + '/' + xblockInfo.id,
                     fieldName = this.fieldName;
                 this.runOperationShowingMessage(gettext('Saving&hellip;'),
                     function() {
-                        return $.postJSON(url, requestData);
+                        return xblockInfo.save(requestData);
                     }).done(function() {
                         xblockInfo.set(fieldName, newValue);
                     });
@@ -89,14 +90,12 @@ define(["jquery", "gettext", "js/views/baseview"],
             },
 
             handleKeyUp: function(event) {
-                var keyCode = event.keyCode,
-                    input = this.$('.xblock-field-editor-input');
-                if (keyCode === 27) {   // Revert the changes if the user hits escape
-                    input.val(this.model.get(this.fieldName));
+                if (event.keyCode === 27) {   // Revert the changes if the user hits escape
+                    this.getInput().val(this.model.get(this.fieldName));
                     this.hideInput();
                 }
             }
         });
 
-        return XBlockFieldEditor;
+        return XBlockStringFieldEditor;
     }); // end define();

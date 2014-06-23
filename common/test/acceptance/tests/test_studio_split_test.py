@@ -92,7 +92,7 @@ class SplitTest(ContainerBase):
 
         Returns the container page.
         """
-        unit = self.go_to_unit_page(make_draft=True)
+        unit = self.go_to_unit_page()
         add_advanced_component(unit, 0, 'split_test')
         container = self.go_to_container_page()
         container.edit()
@@ -114,7 +114,7 @@ class SplitTest(ContainerBase):
         Tests creating a split test instance on the unit page, and then
         assigning the group configuration.
         """
-        unit = self.go_to_unit_page(make_draft=True)
+        unit = self.go_to_unit_page()
         add_advanced_component(unit, 0, 'split_test')
         container = self.go_to_container_page()
         container.edit()

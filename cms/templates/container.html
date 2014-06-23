@@ -32,9 +32,9 @@ from django.utils.translation import ugettext as _
 <%block name="jsextra">
 <%
 main_xblock_info = {
-'id': str(xblock_locator),
-'display_name': xblock.display_name_with_default,
-'category': xblock.category,
+    'id': str(xblock_locator),
+    'display_name': xblock.display_name_with_default,
+    'category': xblock.category,
 };
 %>
 <script type='text/javascript'>

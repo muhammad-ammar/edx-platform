@@ -140,8 +140,8 @@ class XBlockWrapper(PageObject):
     A PageObject representing a wrapper around an XBlock child shown on the Studio container page.
     """
     url = None
-    BODY_SELECTOR = '.studio-xblock-wrapper'
-    NAME_SELECTOR = '.header-details'
+    BODY_SELECTOR = '.studio-xblock-wrapper.level-element'
+    NAME_SELECTOR = '.xblock-display-name'
 
     def __init__(self, browser, locator):
         super(XBlockWrapper, self).__init__(browser)
@@ -187,3 +187,22 @@ class XBlockWrapper(PageObject):
     @property
     def preview_selector(self):
         return self._bounded_selector('.xblock-student_view,.xblock-author_view')
+
+    def go_to_container(self):
+        """
+        Open the container page linked to by this xblock, and return
+        an initialized :class:`.ContainerPage` for that xblock.
+        """
+        return ContainerPage(self.browser, self.locator).visit()
+
+    def edit(self):
+        """
+        Clicks the "edit" button for this xblock.
+        """
+        self.q(css=self._bounded_selector('.edit-button')).first.click()
+        EmptyPromise(
+            lambda: self.q(css='.xblock-studio_view').present,
+            'Wait for the Studio editor to be present'
+        ).fulfill()
+
+        return self

@@ -210,11 +210,9 @@ def xblock_view_handler(request, usage_key_string, view_name):
             if view_name == 'reorderable_container_child_preview':
                 reorderable_items.add(xblock.location)
 
-            # Only show the new style HTML for the container view, i.e. for non-verticals
-            # Note: this special case logic can be removed once the unit page is replaced
-            # with the new container view.
+            # Set up the context to be passed to each XBlock's render method.
             context = {
-                'is_pages_view': is_pages_view,
+                'is_pages_view': is_pages_view,     # This setting disables the recursive wrapping of xblocks
                 'is_unit_page': is_unit(xblock),
                 'read_only': is_read_only,
                 'root_xblock': xblock if (view_name == 'container_preview') else None,
