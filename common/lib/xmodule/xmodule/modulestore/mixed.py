@@ -120,20 +120,20 @@ class MixedModuleStore(ModuleStoreWriteBase):
                 return store
         return None
 
-    def has_item(self, usage_key):
+    def has_item(self, usage_key, **kwargs):
         """
         Does the course include the xblock who's id is reference?
         """
         store = self._get_modulestore_for_courseid(usage_key.course_key)
-        return store.has_item(usage_key)
+        return store.has_item(usage_key, **kwargs)
 
-    def get_item(self, usage_key, depth=0):
+    def get_item(self, usage_key, depth=0, **kwargs):
         """
         This method is explicitly not implemented as we need a course_id to disambiguate
         We should be able to fix this when the data-model rearchitecting is done
         """
         store = self._get_modulestore_for_courseid(usage_key.course_key)
-        return store.get_item(usage_key, depth)
+        return store.get_item(usage_key, depth, **kwargs)
 
     def get_items(self, course_key, settings=None, content=None, **kwargs):
         """

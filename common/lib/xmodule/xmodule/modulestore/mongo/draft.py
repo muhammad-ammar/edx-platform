@@ -1,6 +1,6 @@
 """
-A ModuleStore that knows about a special version 'draft'. Modules
-marked as 'draft' are read in preference to modules without the 'draft'
+A ModuleStore that knows about a special version DRAFT. Modules
+marked as DRAFT are read in preference to modules without the DRAFT
 version by this ModuleStore (so, access to i4x://org/course/cat/name
 returns the i4x://org/course/cat/name@draft object if that exists,
 and otherwise returns i4x://org/course/cat/name).
@@ -11,8 +11,10 @@ import pymongo
 from xmodule.exceptions import InvalidVersionError
 from xmodule.modulestore import PublishState
 from xmodule.modulestore.exceptions import ItemNotFoundError, DuplicateItemError
-from xmodule.modulestore.mongo.base import MongoModuleStore, DIRECT_ONLY_CATEGORIES, DRAFT, PUBLISHED, as_draft, \
-    as_published
+from xmodule.modulestore.mongo.base import (
+    MongoModuleStore, as_draft, as_published,
+    DIRECT_ONLY_CATEGORIES, DRAFT, PUBLISHED, DRAFT_ONLY, PUBLISHED_ONLY, ALL_REVISIONS,
+)
 from opaque_keys.edx.locations import Location
 
 
@@ -47,7 +49,7 @@ class DraftModuleStore(MongoModuleStore):
         super(DraftModuleStore, self).__init__(*args, **kwargs)
         self.branch_setting = branch_setting
 
-    def get_item(self, usage_key, depth=0):
+    def get_item(self, usage_key, depth=0, revision=None):
         """
         Returns an XModuleDescriptor instance for the item at usage_key.
 
@@ -84,14 +86,14 @@ class DraftModuleStore(MongoModuleStore):
             revision:
                 if None, uses the branch setting, as follows:
                     if the branch setting is 'published', checks only for the published item
-                    if the branch setting is 'draft', checks whether draft or published item exists
-                if 'draft-only', checks only for the draft item
-                if 'published-only', checks only for the published item
+                    if the branch setting is DRAFT, checks whether draft or published item exists
+                if DRAFT_ONLY, checks only for the draft item
+                if PUBLISHED_ONLY, checks only for the published item
         """
         exists = False
-        if self.branch_setting == DRAFT and revision != 'published-only':
+        if self.branch_setting == DRAFT and revision != PUBLISHED_ONLY:
             exists = super(DraftModuleStore, self).has_item(as_draft(usage_key))
-        if revision == 'draft-only':
+        if revision == DRAFT_ONLY:
             return exists
         if not exists:
             exists = super(DraftModuleStore, self).has_item(usage_key)
@@ -103,7 +105,7 @@ class DraftModuleStore(MongoModuleStore):
         course.  Needed for path_to_location().
 
         Returns w/ revision set. If a block has both a draft and non-draft parents, it returns both
-        unless revision is set to 'published-only' or the branch is set to 'published'.
+        unless revision is set to PUBLISHED_ONLY or the branch is set to 'published'.
         '''
         if self.branch_setting == PUBLISHED:
             revision = PUBLISHED
@@ -146,9 +148,9 @@ class DraftModuleStore(MongoModuleStore):
             revision:
                 if None, uses the branch setting, as follows:
                     if the branch setting is 'published', returns only Published items
-                    if the branch setting is 'draft', returns both Draft and Published, but preferring Draft items.
-                if 'draft-only', returns only Draft items
-                if 'published-only', returns only Published items
+                    if the branch setting is DRAFT, returns both Draft and Published, but preferring Draft items.
+                if DRAFT_ONLY, returns only Draft items
+                if PUBLISHED_ONLY, returns only Published items
             kwargs (key=value): what to look for within the course.
                 Common qualifiers are ``category`` or any field name. if the target field is a list,
                 then it searches for the given value in the list not list equivalence.
@@ -156,12 +158,12 @@ class DraftModuleStore(MongoModuleStore):
                 ``name`` is another commonly provided key (Location based stores)
         """
         draft_items = []
-        if self.branch_setting == DRAFT and revision != 'published-only':
+        if self.branch_setting == DRAFT and revision != PUBLISHED_ONLY:
             draft_items = [
                 wrap_draft(item) for item in
-                super(DraftModuleStore, self).get_items(course_key, revision='draft', **kwargs)
+                super(DraftModuleStore, self).get_items(course_key, revision=DRAFT, **kwargs)
             ]
-        if revision == 'draft-only':
+        if revision == DRAFT_ONLY:
             return draft_items
         draft_items_locations = {item.location for item in draft_items}
         non_draft_items = [
@@ -265,13 +267,13 @@ class DraftModuleStore(MongoModuleStore):
             user_id: id of the user deleting the item
             revision:
                 if None, deletes the item and its subtree, and updates the parents per description above
-                if 'published-only', removes only Published versions
+                if PUBLISHED_ONLY, removes only Published versions
                 if 'all', removes both Draft and Published parents
         """
         assert self.branch_setting == DRAFT
 
         direct_only_root = location.category in DIRECT_ONLY_CATEGORIES
-        if direct_only_root or revision == 'published-only':
+        if direct_only_root or revision == PUBLISHED_ONLY:
             parent_revision = PUBLISHED
         elif revision == 'all':
             parent_revision = None
@@ -292,9 +294,9 @@ class DraftModuleStore(MongoModuleStore):
             parent_block.location = parent  # if the revision is supposed to be draft, ensure it is
             self.update_item(parent_block, user_id)
 
-        if direct_only_root or revision == 'all':
+        if direct_only_root or revision == ALL_REVISIONS:
             as_functions = [as_draft, as_published]
-        elif revision == 'published-only':
+        elif revision == PUBLISHED_ONLY:
             as_functions = [as_published]
         else:
             as_functions = [as_draft]

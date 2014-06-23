@@ -284,9 +284,24 @@ def location_to_query(location, wildcard=True, tag='i4x'):
 
 # Things w/ these categories should never be marked as version='draft'
 DIRECT_ONLY_CATEGORIES = ['course', 'chapter', 'sequential', 'about', 'static_tab', 'course_info']
+
+# Revision constants
+
+# this is equivalent to 'draft-preferred' since both DRAFT and PUBLISHED
+# versions are returned, with precedence to DRAFT versions
 DRAFT = 'draft'
+
+# this is equivalent to 'published-only' since only PUBLISHED versions are returned
 PUBLISHED = 'published'
 
+# only DRAFT versions are returned and no PUBLISHED versions
+DRAFT_ONLY = 'draft-only'
+
+# only PUBLISHED versions are returned and no DRAFT versions
+PUBLISHED_ONLY = 'published-only'
+
+# all revisions are treated
+ALL_REVISIONS = 'all'
 
 def as_draft(location):
     """
@@ -731,9 +746,9 @@ class MongoModuleStore(ModuleStoreWriteBase):
                 and rules as kwargs below
             content (dict): fields to look for which have content scope. Follows same syntax and
                 rules as kwargs below.
-            revision (str): the revision of the items you're looking for. (only 'draft' makes sense for
+            revision (str): the revision of the items you're looking for. (only DRAFT makes sense for
                 this modulestore. If you don't provide a revision, it won't retrieve any drafts. If you
-                say 'draft', it will only return drafts. If you want one of each matching xblock but
+                say DRAFT, it will only return drafts. If you want one of each matching xblock but
                 preferring draft to published, call this same method on the draft modulestore w/o a
                 revision qualifier.)
             kwargs (key=value): what to look for within the course.
@@ -974,7 +989,7 @@ class MongoModuleStore(ModuleStoreWriteBase):
         unless you pass revision.
 
         Args:
-            revision: 'draft', 'published', or None.
+            revision: DRAFT, PUBLISHED, or None.
                 whether to only look for draft or published branch. If you don't
                 set revision, you can get more than one parent. For
                 example, if in draft, you've moved the child from one parent to another, then you'll
