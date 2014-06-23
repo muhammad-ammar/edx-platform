@@ -1004,7 +1004,7 @@ class MongoModuleStore(ModuleStoreWriteBase):
             revision = 'all'
         elif revision != DRAFT and location.revision != DRAFT:
             revision = None
-        elif location.revision == DRAFT:
+        elif location.revision == DRAFT:  # if revision already draft, no need to set it again
             revision = DRAFT
             location = as_published(location)
         query = self._course_key_to_son(location.course_key)

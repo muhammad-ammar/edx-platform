@@ -53,8 +53,7 @@ def path_to_location(modulestore, usage_key):
         while len(queue) > 0:
             (next_usage, path) = queue.pop()  # Takes from the end
 
-            # get_parent_locations should raise ItemNotFoundError if location
-            # isn't found so we don't have to do it explicitly.
+            # get_parent_locations raises ItemNotFoundError if location isn't found
             parents = modulestore.get_parent_locations(next_usage)
 
             # print 'Processing loc={0}, path={1}'.format(next_usage, path)
