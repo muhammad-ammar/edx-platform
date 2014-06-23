@@ -79,7 +79,7 @@ def see_a_problem_component(step, category):
     assert_true(world.is_css_present(component_css),
                 'No problem was added to the unit.')
 
-    problem_css = 'li.component div.xblock-student_view'
+    problem_css = 'li.studio-xblock-wrapper div.xblock-student_view'
     actual_text = world.css_text(problem_css)
     assert_in(category.upper(), actual_text)
 
@@ -93,7 +93,7 @@ def add_component_category(step, component, category):
 
 @step(u'I delete all components$')
 def delete_all_components(step):
-    count = len(world.css_find('ol.components li.component'))
+    count = len(world.css_find('ol.components li.studio-xblock-wrapper'))
     step.given('I delete "' + str(count) + '" component')
 
 
@@ -124,7 +124,7 @@ def delete_components(step, number):
 
 @step(u'I see no components')
 def see_no_components(steps):
-    assert world.is_css_not_present('li.component')
+    assert world.is_css_not_present('li.studio-xblock-wrapper')
 
 
 @step(u'I delete a component')
