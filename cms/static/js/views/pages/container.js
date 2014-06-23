@@ -50,7 +50,7 @@ define(["jquery", "underscore", "gettext", "js/views/baseview", "js/views/contai
                         xblockView.$el.removeClass('is-hidden');
                         self.renderAddXBlockComponents();
                         self.onXBlockRefresh(xblockView);
-                        self.refreshTitle();
+                        self.refreshDisplayName();
                         loadingElement.addClass('is-hidden');
                         self.delegateEvents();
                     }
@@ -65,10 +65,9 @@ define(["jquery", "underscore", "gettext", "js/views/baseview", "js/views/contai
                 return this.xblockView.model.urlRoot;
             },
 
-            refreshTitle: function() {
-                var title = this.$('.xblock-header .header-details .xblock-display-name').first().text().trim();
-                this.$('.page-header-title').text(title);
-                this.$('.page-header .subtitle a').last().text(title);
+            refreshDisplayName: function() {
+                var displayName = this.$('.xblock-header .header-details .xblock-display-name').first().text().trim();
+                this.model.set('display_name', displayName);
             },
 
             onXBlockRefresh: function(xblockView) {
