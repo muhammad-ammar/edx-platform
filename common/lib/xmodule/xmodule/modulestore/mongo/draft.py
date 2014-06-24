@@ -314,7 +314,6 @@ class DraftModuleStore(MongoModuleStore):
 
         # verify input conditions
         self._verify_branch_setting(DRAFT)
-        assert location.revision is None
 
         # ensure we are not creating a DRAFT of an item that is direct-only
         if location.category in DIRECT_ONLY_CATEGORIES:
