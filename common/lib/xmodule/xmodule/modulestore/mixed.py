@@ -175,6 +175,7 @@ class MixedModuleStore(ModuleStoreWriteBase):
         for course_id, store in self.mappings.iteritems():
             course = store.get_course(course_id)
             # check if the course is not None - possible if the mappings file is outdated
+            # TODO - log an error if the course is None, but move it to an initialization method to keep it less noisy
             if course is not None:
                 courses[course_id] = store.get_course(course_id)
 

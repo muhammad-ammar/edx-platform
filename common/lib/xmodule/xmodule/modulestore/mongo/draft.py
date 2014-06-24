@@ -14,6 +14,7 @@ from xmodule.modulestore.exceptions import ItemNotFoundError, DuplicateItemError
 from xmodule.modulestore.mongo.base import (
     MongoModuleStore, as_draft, as_published,
     DIRECT_ONLY_CATEGORIES, DRAFT, PUBLISHED, DRAFT_ONLY, PUBLISHED_ONLY, ALL_REVISIONS,
+    SORT_REVISION_FAVOR_DRAFT
 )
 from opaque_keys.edx.locations import Location
 
@@ -32,20 +33,20 @@ def wrap_draft(item):
 class DraftModuleStore(MongoModuleStore):
     """
     This mixin modifies a modulestore to give it draft semantics.
-    That is, edits made to units are stored to locations that have the revision DRAFT,
-    and when reads are made, they first read with revision DRAFT, and then fall back
+    Edits made to units are stored to locations that have the revision DRAFT.
+    Reads are first read with revision DRAFT, and then fall back
     to the baseline revision only if DRAFT doesn't exist.
 
-    This module also includes functionality to promote DRAFT modules (and optionally
-    their children) to published modules.
+    This module also includes functionality to promote DRAFT modules (and their children)
+    to published modules.
     """
 
     def __init__(self, *args, **kwargs):
         """
-            :param branch_setting_func: a function that returns the branch setting to use for this store's operations
+        Args:
+            branch_setting_func: a function that returns the branch setting to use for this store's operations
         """
         super(DraftModuleStore, self).__init__(*args, **kwargs)
-
         self.branch_setting_func = kwargs.pop('branch_setting_func', PUBLISHED)
 
     def get_item(self, usage_key, depth=0, revision=None):
@@ -56,16 +57,19 @@ class DraftModuleStore(MongoModuleStore):
             usage_key: A :class:`.UsageKey` instance
 
             depth (int): An argument that some module stores may use to prefetch
-                descendents of the queried modules for more efficient results later
+                descendants of the queried modules for more efficient results later
                 in the request. The depth is counted in the number of calls to
-                get_children() to cache. None indicates to cache all descendents
+                get_children() to cache.  None indicates to cache all descendants.
 
             revision:
-                if None, uses the branch setting as follows:
+                if PUBLISHED_ONLY, returns only the published item.
+                else if DRAFT_ONLY, returns only the draft item.
+                else if None, uses the branch setting as follows:
                     if the branch setting is PUBLISHED, returns only the published item.
                     if the branch setting is DRAFT, returns either draft or published item, preferring draft.
-                if DRAFT_ONLY, returns only the draft item.
-                if PUBLISHED_ONLY, returns only the published item.
+
+                Note: If the item is in DIRECT_ONLY_CATEGORIES, then returns only the PUBLISHED
+                version regardless of the revision.
 
         Raises:
             xmodule.modulestore.exceptions.InsufficientSpecificationError
@@ -74,16 +78,33 @@ class DraftModuleStore(MongoModuleStore):
             xmodule.modulestore.exceptions.ItemNotFoundError if no object
             is found at that usage_key
         """
-        if (self.branch_setting_func() == DRAFT and revision != PUBLISHED_ONLY) and (usage_key.category not in DIRECT_ONLY_CATEGORIES):
-            try:
-                return wrap_draft(super(DraftModuleStore, self).get_item(as_draft(usage_key), depth=depth))
-            except ItemNotFoundError:
-                if revision == DRAFT_ONLY:
-                    raise ItemNotFoundError
-                else:
-                    return wrap_draft(super(DraftModuleStore, self).get_item(usage_key, depth=depth))
-        else:
+        def get_published():
             return wrap_draft(super(DraftModuleStore, self).get_item(usage_key, depth=depth))
+
+        def get_draft():
+            return wrap_draft(super(DraftModuleStore, self).get_item(as_draft(usage_key), depth=depth))
+
+        # return the published version if PUBLISHED-ONLY is requested
+        if revision == PUBLISHED_ONLY:
+            return get_published()
+
+        # if the item is direct-only, there can only be a published version
+        elif usage_key.category in DIRECT_ONLY_CATEGORIES:
+            return get_published()
+
+        # return the draft version (without any fallback to PUBLISHED) if DRAFT-ONLY is requested
+        elif revision == DRAFT_ONLY:
+            return get_draft()
+
+        elif self.branch_setting_func() == PUBLISHED:
+            return get_published()
+        else:
+            try:
+                # first check for a draft version
+                return get_draft()
+            except ItemNotFoundError:
+                # otherwise, fall back to the published version
+                return get_published()
 
     def has_item(self, usage_key, revision=None):
         """
@@ -91,54 +112,66 @@ class DraftModuleStore(MongoModuleStore):
 
         Args:
             revision:
-                if None, uses the branch setting, as follows:
+                if PUBLISHED_ONLY, checks only for the published item
+                else if DRAFT_ONLY, checks only for the draft item
+                else if None, uses the branch setting, as follows:
                     if the branch setting is PUBLISHED, checks only for the published item
                     if the branch setting is DRAFT, checks whether draft or published item exists
-                if DRAFT_ONLY, checks only for the draft item
-                if PUBLISHED_ONLY, checks only for the published item
         """
-        exists = False
-        if self.branch_setting_func() == DRAFT and revision != PUBLISHED_ONLY:
-            exists = super(DraftModuleStore, self).has_item(as_draft(usage_key))
-        if revision == DRAFT_ONLY:
-            return exists
-        if not exists:
-            exists = super(DraftModuleStore, self).has_item(usage_key)
-        return exists
+        def has_published():
+            return super(DraftModuleStore, self).has_item(usage_key)
 
-    def get_raw_parent_locations(self, location, revision):
+        def has_draft():
+            return super(DraftModuleStore, self).has_item(as_draft(usage_key))
+
+        if revision == PUBLISHED_ONLY:
+            return has_published()
+        elif revision == DRAFT_ONLY:
+            return has_draft()
+        elif self.branch_setting_func() == PUBLISHED:
+            return has_published()
+        else:
+            return has_draft()
+
+    def _get_raw_parent_locations(self, location, revision):
         """
         Get the parents but don't unset the revision in their locations.
 
         Intended for internal use but not restricted.
 
         Args:
-            location (CourseKey): assumes the revision is None; so, uses revision keyword solely
+            location (CourseKey): assumes the location's revision is None; so, uses revision keyword solely
             revision ('draft', 'published', 'all'): if 'draft', only get the draft's parents. etc.
         """
+        assert location.revision is None
+
+        # create a query to find all items in the course that have the given location listed as a child
         query = self._course_key_to_son(location.course_key)
         query['definition.children'] = location.to_deprecated_string()
 
-        items = self.collection.find(query, {'_id': True}, sort=[('revision', pymongo.ASCENDING)])
+        # find all the items that satisfy the query
+        items = self.collection.find(query, {'_id': True}, sort=[('revision', SORT_REVISION_FAVOR_DRAFT)])
+
+        # return only the items that satisfy the request
         return [
-            Location._from_deprecated_son(i['_id'], location.course_key.run)
-            for i in items
+            Location._from_deprecated_son(item['_id'], location.course_key.run)
+            for item in items
             if (
-                i['_id']['category'] in DIRECT_ONLY_CATEGORIES
-                or revision == 'all'
-                or i['_id']['revision'] == revision
+                # return all versions of the item if revision is 'all'
+                revision == 'all' or
+                # return this item only if its revision matches the requested one
+                item['_id']['revision'] == revision
             )
         ]
 
     def get_parent_location(self, location, revision=None, **kwargs):
         '''
-        Find all locations that are the parents of this location in this
-        course.  Needed for path_to_location().
+        Returns the given location's parent location in this course.
 
         Returns: version agnostic locations (revision always None) as per the rest of mongo.
 
         Args:
-            revision (None or 'draft'): whether to limit to only parents of the draft.
+            revision (None or DRAFT): whether to limit to only parents of the draft.
                 If set and if the draft has a different parent than the published, it only returns
                 the draft's parent. Because parent's don't record their children's revisions, this
                 is actually a potentially fragile deduction based on parent type. If the parent type
@@ -168,14 +201,11 @@ class DraftModuleStore(MongoModuleStore):
 
     def get_items(self, course_key, settings=None, content=None, revision=None, **kwargs):
         """
-        Performance Note: This is generally a costly operation for wildcard searches.
+        Performance Note: This is generally a costly operation, but useful for wildcard searches.
 
         Returns:
             list of XModuleDescriptor instances for the matching items within the course with
             the given course_key
-
-            if branch_setting is draft, returns both draft and publish items, preferring the draft ones
-            else, returns only the published items
 
         NOTE: don't use this to look for courses as the course_key is required. Use get_courses instead.
 
@@ -184,33 +214,41 @@ class DraftModuleStore(MongoModuleStore):
             settings: not used
             content: not used
             revision:
-                if None, uses the branch setting, as follows:
-                    if the branch setting is 'published', returns only Published items
-                    if the branch setting is DRAFT, returns both Draft and Published, but preferring Draft items.
-                if DRAFT_ONLY, returns only Draft items
                 if PUBLISHED_ONLY, returns only Published items
+                else if DRAFT_ONLY, returns only Draft items
+                else if None, uses the branch setting, as follows:
+                    if the branch setting is PUBLISHED, returns only Published items
+                    if the branch setting is DRAFT, returns both Draft and Published, but preferring Draft items.
             kwargs (key=value): what to look for within the course.
                 Common qualifiers are ``category`` or any field name. if the target field is a list,
                 then it searches for the given value in the list not list equivalence.
                 Substring matching pass a regex object.
                 ``name`` is another commonly provided key (Location based stores)
         """
-        draft_items = []
-        if self.branch_setting_func() == DRAFT and revision != PUBLISHED_ONLY:
-            draft_items = [
-                wrap_draft(item) for item in
-                super(DraftModuleStore, self).get_items(course_key, revision=DRAFT, **kwargs)
+        def base_get_items(revision):
+            return super(DraftModuleStore, self).get_items(course_key, revision=revision, **kwargs)
+
+        def draft_items():
+            return [wrap_draft(item) for item in base_get_items(revision=DRAFT)]
+
+        def published_items(draft_items):
+            # filters out items that are not already in draft_items
+            draft_items_locations = {item.location for item in draft_items}
+            return [
+                item for item in
+                base_get_items(revision=None)
+                if item.location not in draft_items_locations
             ]
-        if revision == DRAFT_ONLY:
-            return draft_items
-        draft_items_locations = {item.location for item in draft_items}
-        non_draft_items = [
-            item for item in
-            super(DraftModuleStore, self).get_items(course_key, revision=None, **kwargs)
-            # filter out items that are not already in draft
-            if item.location not in draft_items_locations
-        ]
-        return draft_items + non_draft_items
+
+        if revision == PUBLISHED_ONLY:
+            return published_items([])
+        elif revision == DRAFT_ONLY:
+            return draft_items()
+        elif self.branch_setting_func() == PUBLISHED:
+            return published_items([])
+        else:
+            draft_items = draft_items()
+            return draft_items + published_items(draft_items)
 
     def convert_to_draft(self, location, user_id, delete_published=False, ignore_if_draft=False):
         """
@@ -320,7 +358,7 @@ class DraftModuleStore(MongoModuleStore):
             parent_revision = DRAFT
 
         # remove subtree from its parent
-        parents = self.get_raw_parent_locations(location, revision=parent_revision)
+        parents = self._get_raw_parent_locations(location, revision=parent_revision)
         # 2 parents iff root has draft which was moved or revision=='all' and parent is draft & pub'd
         for parent in parents:
             # don't remove from direct_only parent if other version of this still exists
@@ -495,9 +533,9 @@ class DraftModuleStore(MongoModuleStore):
         Returns whether this xblock is 'draft', 'public', or 'private'.
 
         'draft' content is in the process of being edited, but still has a previous
-            version visible in the LMS
-        'public' content is locked and visible in the LMS
-        'private' content is editable and not visible in the LMS
+            version deployed to LMS
+        'public' content is locked and deployed to LMS
+        'private' content is editable and not deployed to LMS
         """
         if getattr(xblock, 'is_draft', False):
             published_xblock_location = as_published(xblock.location)

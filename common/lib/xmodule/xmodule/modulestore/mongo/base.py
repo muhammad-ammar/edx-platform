@@ -303,6 +303,13 @@ PUBLISHED_ONLY = 'published-only'
 # all revisions are treated
 ALL_REVISIONS = 'all'
 
+# sort order that returns DRAFT items first
+SORT_REVISION_FAVOR_DRAFT = pymongo.ASCENDING
+
+# sort order that returns PUBLISHED items first
+SORT_REVISION_FAVOR_PUBLISHED = pymongo.DESCENDING
+
+
 def as_draft(location):
     """
     Returns the Location that is the draft for `location`
@@ -637,7 +644,7 @@ class MongoModuleStore(ModuleStoreWriteBase):
         assert isinstance(location, Location)
         item = self.collection.find_one(
             {'_id': location.to_deprecated_son()},
-            sort=[('revision', pymongo.ASCENDING)],
+            sort=[('revision', SORT_REVISION_FAVOR_DRAFT)],
         )
         if item is None:
             raise ItemNotFoundError(location)
@@ -775,7 +782,7 @@ class MongoModuleStore(ModuleStoreWriteBase):
         query.update(kwargs)
         items = self.collection.find(
             query,
-            sort=[('_id.revision', pymongo.ASCENDING)],
+            sort=[('_id.revision', SORT_REVISION_FAVOR_DRAFT)],
         )
 
         modules = self._load_items(course_id, list(items))
@@ -1002,7 +1009,7 @@ class MongoModuleStore(ModuleStoreWriteBase):
         if revision == PUBLISHED:
             query['_id.revision'] = None
 
-        items = self.collection.find(query, {'_id': True}, sort=[('revision', pymongo.DESCENDING)])
+        items = self.collection.find(query, {'_id': True}, sort=[('revision', SORT_REVISION_FAVOR_PUBLISHED)])
         if items.count() == 0:
             return None
 
