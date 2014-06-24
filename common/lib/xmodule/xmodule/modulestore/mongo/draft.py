@@ -436,7 +436,7 @@ class DraftModuleStore(MongoModuleStore):
                             parent = self.get_parent_location(child)
                             if parent == root_location:
                                 # deleted from draft; so, delete published now that we're publishing
-                                self._delete_subtree(location, [as_published])
+                                self._delete_subtree(root_location, [as_published])
 
             super(DraftModuleStore, self).update_item(draft, user_id, isPublish=True)
             self.collection.remove({'_id': as_draft(root_location).to_deprecated_son()})
