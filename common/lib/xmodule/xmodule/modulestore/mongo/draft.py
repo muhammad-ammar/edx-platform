@@ -132,7 +132,7 @@ class DraftModuleStore(MongoModuleStore):
         elif self.branch_setting_func() == PUBLISHED:
             return has_published()
         else:
-            return has_draft()
+            return has_draft() or has_published()
 
     def _get_raw_parent_locations(self, location, revision):
         """
