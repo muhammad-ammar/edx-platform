@@ -938,6 +938,8 @@ class MongoModuleStore(ModuleStoreWriteBase):
         user_id: who made the change (ignored for now by this modulestore)
         allow_not_found: whether to create a new object if one didn't already exist or give an error
         force: force is meaningless for this modulestore
+        isPublish: an internal parameter that indicates whether this update is due to a Publish operation, and
+          thus whether the item's published information should be updated.
         """
         try:
             definition_data = self._convert_reference_fields_to_strings(xblock, xblock.get_explicitly_set_fields_by_scope())
@@ -965,6 +967,8 @@ class MongoModuleStore(ModuleStoreWriteBase):
         except ItemNotFoundError:
             if not allow_not_found:
                 raise
+
+        return xblock
 
     def _convert_reference_fields_to_strings(self, xblock, jsonfields):
         """

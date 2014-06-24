@@ -55,3 +55,13 @@ class HeartbeatFailure(Exception):
         """
         self.service = service
         return super(HeartbeatFailure, self).__init__(msg)
+
+
+class InvalidBranchSetting(Exception):
+    """
+    Raised when the process' branch setting did not match the required setting for the attempted operation on a store.
+    """
+    def __init__(self, expected_setting, actual_setting):
+        super(InvalidBranchSetting, self).__init__()
+        self.expected_setting = expected_setting
+        self.actual_setting = actual_setting
