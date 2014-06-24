@@ -98,9 +98,12 @@ class VideoModule(VideoFields, VideoStudentViewHandlers, XModule):
         # If the user comes from China use China CDN for html5 videos.
         # 'CN' is China ISO 3166-1 country code.
         # Video caching is disabled for Studio. User_location is always None in Studio.
-        if getattr(self, 'video_speed_optimizations', True) and self.system.user_location == 'CN':
+
+        cdn_url = getattr(settings, 'VIDEO_CDN_URL', {}).get(self.system.user_location, None)
+
+        if getattr(self, 'video_speed_optimizations', True) and cdn_url:
             for index, source_url in enumerate(sources):
-                new_url = get_video_from_cdn(getattr(settings, 'VIDEO_CDN_URL', None), source_url)
+                new_url = get_video_from_cdn(cdn_url, source_url)
                 if new_url:
                     sources[index] = new_url
 

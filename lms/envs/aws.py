@@ -282,7 +282,9 @@ if FEATURES.get('AUTH_USE_CAS'):
 
 HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS = ENV_TOKENS.get('HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS',{})
 
-VIDEO_CDN_URL = ENV_TOKENS.get('VIDEO_CDN_URL', None)
+# Video Caching. Pairing country codes with CDN URLs.
+# Example: {'CN': 'http://api.xuetangx.com/edx/video?s3_url='}
+VIDEO_CDN_URL = ENV_TOKENS.get('VIDEO_CDN_URL', {})
 
 ############################## SECURE AUTH ITEMS ###############
 # Secret things: passwords, access keys, etc.
