@@ -1606,5 +1606,3 @@ THIRD_PARTY_AUTH = {}
 ### ADVANCED_SECURITY_CONFIG
 # Empty by default
 ADVANCED_SECURITY_CONFIG = {}
-
-VIDEO_CDN_URL = 'http://api.xuetangx.com/edx/video?s3_url='

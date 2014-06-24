@@ -282,6 +282,8 @@ if FEATURES.get('AUTH_USE_CAS'):
 
 HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS = ENV_TOKENS.get('HOSTNAME_MODULESTORE_DEFAULT_MAPPINGS',{})
 
+VIDEO_CDN_URL = ENV_TOKENS.get('VIDEO_CDN_URL', None)
+
 ############################## SECURE AUTH ITEMS ###############
 # Secret things: passwords, access keys, etc.
 

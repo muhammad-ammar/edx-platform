@@ -51,6 +51,10 @@ def get_video_from_cdn(cdn_base_url, original_video_url):
     where `s3_url` is requested original video url and `sources` is the list of
     alternative links.
     """
+
+    if request_url is None:
+        return None
+
     request_url = cdn_base_url + urllib.quote(original_video_url)
 
     try:
