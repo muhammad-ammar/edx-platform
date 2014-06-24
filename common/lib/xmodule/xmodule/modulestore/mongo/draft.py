@@ -8,9 +8,9 @@ and otherwise returns i4x://org/course/cat/name).
 
 import pymongo
 
-from xmodule.exceptions import InvalidVersionError, InvalidBranchSetting
+from xmodule.exceptions import InvalidVersionError
 from xmodule.modulestore import PublishState
-from xmodule.modulestore.exceptions import ItemNotFoundError, DuplicateItemError
+from xmodule.modulestore.exceptions import ItemNotFoundError, DuplicateItemError, InvalidBranchSetting
 from xmodule.modulestore.mongo.base import (
     MongoModuleStore, as_draft, as_published,
     DIRECT_ONLY_CATEGORIES, DRAFT, PUBLISHED, DRAFT_ONLY, PUBLISHED_ONLY, ALL_REVISIONS,
@@ -201,7 +201,9 @@ class DraftModuleStore(MongoModuleStore):
 
         if location.category not in DIRECT_ONLY_CATEGORIES:
             location = as_draft(location)
-        return super(DraftModuleStore, self).create_xmodule(location, definition_data, metadata, runtime, fields)
+        return wrap_draft(
+            super(DraftModuleStore, self).create_xmodule(location, definition_data, metadata, runtime, fields)
+        )
 
     def get_items(self, course_key, settings=None, content=None, revision=None, **kwargs):
         """
@@ -267,7 +269,7 @@ class DraftModuleStore(MongoModuleStore):
             ItemNotFoundError: if the source does not exist
             DuplicateItemError: if the source or any of its descendants already has a draft copy
         """
-        return self._convert_to_draft(self, location, user_id)
+        return self._convert_to_draft(location, user_id)
 
     def _convert_to_draft(self, location, user_id, delete_published=False, ignore_if_draft=False):
         """
@@ -288,7 +290,8 @@ class DraftModuleStore(MongoModuleStore):
             """
             Convert the subtree
             """
-            # delete the children first
+            # convert the children first
+            # NAATODO - why not just call get_children here like in the publish method?
             for child in item.get('definition', {}).get('children', []):
                 child_loc = Location.from_deprecated_string(child)
                 child_entry = self.collection.find_one({'_id': child_loc.to_deprecated_son()})
@@ -314,6 +317,7 @@ class DraftModuleStore(MongoModuleStore):
 
         # verify input conditions
         self._verify_branch_setting(DRAFT)
+        assert location.revision is None
 
         # ensure we are not creating a DRAFT of an item that is direct-only
         if location.category in DIRECT_ONLY_CATEGORIES:
@@ -346,13 +350,16 @@ class DraftModuleStore(MongoModuleStore):
             return super(DraftModuleStore, self).update_item(xblock, user_id, allow_not_found)
 
         draft_loc = as_draft(xblock.location)
-        try:
-            if not super(DraftModuleStore, self).has_item(draft_loc):
+        if not super(DraftModuleStore, self).has_item(draft_loc):
+            try:
                 # ignore any descendants which are already draft
                 self._convert_to_draft(xblock.location, user_id, ignore_if_draft=True)
-        except ItemNotFoundError:
-            if not allow_not_found:
-                raise
+            except ItemNotFoundError as exception:
+                # ignore the exception only if allow_not_found is True and
+                # the item that wasn't found is the one that was passed in
+                # we make this extra location check so we do not hide errors when converting any children to draft
+                if not (allow_not_found and exception.args[0] == xblock.location):
+                    raise
 
         xblock.location = draft_loc
         super(DraftModuleStore, self).update_item(xblock, user_id, allow_not_found, isPublish)
@@ -364,7 +371,7 @@ class DraftModuleStore(MongoModuleStore):
         The method determines which revisions to delete. It disconnects and deletes the subtree.
         In general, it assumes deletes only occur on drafts except for direct_only. The only exceptions
         are internal calls like deleting orphans (during publishing as well as from delete_orphan view).
-        To signal such pass the keyword revision='all' which makes it clear that all should go away.
+        To indicate that all versions should be deleted, pass the keyword revision='all'.
 
         * Deleting a DIRECT_ONLY_CATEGORIES block, deletes both draft and published children and removes from parent.
         * Deleting a specific version of block whose parent is of DIRECT_ONLY_CATEGORIES, only removes it from parent if
@@ -378,15 +385,15 @@ class DraftModuleStore(MongoModuleStore):
                 only provided by contentstore.views.item.orphan_handler
                 if None, deletes the item and its subtree, and updates the parents per description above
                 if PUBLISHED_ONLY, removes only Published versions
-                if 'all', removes both Draft and Published parents
+                if ALL_REVISIONS, removes both Draft and Published parents
         """
         self._verify_branch_setting(DRAFT)
 
         direct_only_root = location.category in DIRECT_ONLY_CATEGORIES
         if direct_only_root or revision == PUBLISHED_ONLY:
             parent_revision = PUBLISHED
-        elif revision == 'all':
-            parent_revision = 'all'
+        elif revision == ALL_REVISIONS:
+            parent_revision = ALL_REVISIONS
         else:
             parent_revision = DRAFT
 
@@ -475,42 +482,48 @@ class DraftModuleStore(MongoModuleStore):
         Raises:
             ItemNotFoundError: if any of the draft subtree nodes aren't found
         """
-        self._verify_branch_setting(DRAFT)
-
-        def _internal_depth_first(root_location):
+        def _internal_depth_first(item_location):
             """
-            Depth first publishing from root
+            Depth first publishing from the given location
             """
-            draft = self.get_item(root_location)
+            item = self.get_item(item_location)
 
-            if draft.has_children:
-                for child_loc in draft.children:
+            # publish the children first
+            if item.has_children:
+                for child_loc in item.children:
                     _internal_depth_first(child_loc)
 
-            if root_location.category in DIRECT_ONLY_CATEGORIES or not getattr(draft, 'is_draft', False):
+            if item_location.category in DIRECT_ONLY_CATEGORIES or not getattr(item, 'is_draft', False):
                 # ignore noop attempt to publish something that can't be or isn't currently draft
                 return
 
+            # try to find the originally PUBLISHED version, if it exists
             try:
-                original_published = super(DraftModuleStore, self).get_item(root_location)
+                original_published = super(DraftModuleStore, self).get_item(item_location)
             except ItemNotFoundError:
                 original_published = None
 
-            if draft.has_children:
+            if item.has_children:
                 if original_published is not None:
                     # see if previously published children were deleted. 2 reasons for children lists to differ:
                     #   1) child deleted
                     #   2) child moved
                     for child in original_published.children:
-                        if child not in draft.children:
+                        if child not in item.children:
                             # did child move?
                             parent = self.get_parent_location(child)
-                            if parent == root_location:
+                            if parent == item_location:
                                 # deleted from draft; so, delete published now that we're publishing
-                                self._delete_subtree(root_location, [as_published])
+                                self._delete_subtree(item_location, [as_published])
+            # NAATODO - what about the Else case here where the DRAFT item does not have children, but the
+            # original_published version has children?
 
-            super(DraftModuleStore, self).update_item(draft, user_id, isPublish=True)
-            self.collection.remove({'_id': as_draft(root_location).to_deprecated_son()})
+            super(DraftModuleStore, self).update_item(item, user_id, isPublish=True)
+            self.collection.remove({'_id': as_draft(item_location).to_deprecated_son()})
+
+        # verify input conditions
+        self._verify_branch_setting(DRAFT)
+        assert location.revision is None
 
         _internal_depth_first(location)
         return self.get_item(as_published(location))
@@ -583,6 +596,9 @@ class DraftModuleStore(MongoModuleStore):
             return PublishState.public
 
     def _verify_branch_setting(self, expected_branch_setting):
+        """
+        Raises an exception if the current branch setting does not match the expected branch setting.
+        """
         actual_branch_setting = self.branch_setting_func()
         if actual_branch_setting != expected_branch_setting:
             raise InvalidBranchSetting(

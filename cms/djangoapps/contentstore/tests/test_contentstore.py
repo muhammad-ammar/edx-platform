@@ -836,7 +836,7 @@ class ContentStoreToyCourseTest(ContentStoreTestCase):
         # get a vertical (and components in it) to copy into an orphan sub dag
         vertical = module_store.get_item(course_id.make_usage_key('vertical', 'vertical_test'), depth=1)
         # We had a bug where orphaned draft nodes caused export to fail. This is here to cover that case.
-        vertical.location = mongo.draft.as_draft(vertical.location.replace(name='no_references'))
+        vertical.location = vertical.location.replace(name='no_references')
 
         module_store.update_item(vertical, self.user.id, allow_not_found=True)
         orphan_vertical = module_store.get_item(vertical.location)

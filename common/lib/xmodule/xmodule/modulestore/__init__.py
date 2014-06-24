@@ -455,7 +455,6 @@ class ModuleStoreWriteBase(ModuleStoreReadBase, ModuleStoreWrite):
         :param runtime: if you already have an xblock from the course, the xblock.runtime value
         :param fields: a dictionary of field names and values for the new xmodule
         """
-        # let create_xmodule do the is implemented check
         new_object = self.create_xmodule(location, definition_data, metadata, runtime, fields)
         self.update_item(new_object, user_id, allow_not_found=True)
         return new_object
