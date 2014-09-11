@@ -10,6 +10,7 @@ from . import ModuleStoreEnum
 # Things w/ these categories should never be marked as version=DRAFT
 DIRECT_ONLY_CATEGORIES = ['course', 'chapter', 'sequential', 'about', 'static_tab', 'course_info']
 
+
 class BranchSettingMixin(object):
     """
     A mixin to manage a module store's branch setting.
@@ -96,7 +97,7 @@ class ModuleStoreDraftAndPublished(BranchSettingMixin):
         raise NotImplementedError
 
     @abstractmethod
-    def compute_publish_state(self, xblock):
+    def has_published_version(self, xblock):
         raise NotImplementedError
 
     @abstractmethod

@@ -44,12 +44,6 @@ FEEDBACK_SUBMISSION_EMAIL = "dummy@example.com"
 
 WIKI_ENABLED = True
 
-LOGGING = get_logger_config(ENV_ROOT / "log",
-                            logging_env="dev",
-                            local_loglevel="DEBUG",
-                            dev_env=True,
-                            debug=True)
-
 DJFS = {
     'type': 'osfs',
     'directory_root': 'lms/static/djpyfs',
@@ -221,11 +215,10 @@ CELERY_ALWAYS_EAGER = True
 
 ################################ DEBUG TOOLBAR ################################
 
-INSTALLED_APPS += ('debug_toolbar',)
+INSTALLED_APPS += ('debug_toolbar', 'djpyfs',)
 MIDDLEWARE_CLASSES += (
     'django_comment_client.utils.QueryCountDebugMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-    'djpyfs',
 )
 INTERNAL_IPS = ('127.0.0.1',)
 
