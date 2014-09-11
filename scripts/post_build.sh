@@ -5,7 +5,7 @@ echo $current_path
 
 reports_path=$current_path/reports
 
-tree $reports_path
+ls $reports_path
 
 echo $reports_path
 
