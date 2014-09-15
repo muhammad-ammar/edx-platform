@@ -35,7 +35,7 @@ last = dedent(
         var id = "#" + event.currentTarget.innerHTML.replaceAll('/', '_');
         $('html, body').animate({
             scrollTop: $(id).offset().top
-        }, 2000);
+        }, 0);
 
     });
     </script>
@@ -62,12 +62,6 @@ class ReportMerge(object):
                     self.merge_report(path)
 
     def merge_report(self, path):
-        files = self._files(path)
-        if not files:
-            return
-
-        print 'Merging Report for {}'.format(path)
-
         content = list()
 
         # Extract total coverage percentage and file links table
@@ -76,13 +70,20 @@ class ReportMerge(object):
             soup = BeautifulSoup(index_file)
             total_percentage = soup.find('div', id='header')
             total_percentage.find('img').decompose()
-            index_table = str(soup.find('div', id='index'))
+            index_table = soup.find('div', id='index')
+
+        # Extract file names
+        files = [os.path.join(path, name['href']) for name in index_table.find_all('a')]
+        if not files:
+            return
+
+        print 'Merging Report for {}'.format(path)
 
         # Collect different parts of html report
         content.append(first)
         content.append('<body>')
         content.append(str(total_percentage))
-        content.append(index_table)
+        content.append(str(index_table))
         for html in files:
             content.append(self._html_content(html))
 
@@ -90,7 +91,7 @@ class ReportMerge(object):
 
         # Write everything to single report file
         report_filename = path.split('reports/')[1].split('/cover')[0].replace('/', '_')
-        report_path = os.path.join(DESTINATION, report_filename+'_coverage.html')
+        report_path = os.path.join(self.DESTINATION, report_filename+'_coverage.html')
         with open(report_path, 'w') as report_file:
             report_file.write('\n'.join(content))
 
@@ -123,34 +124,8 @@ class ReportMerge(object):
         return '\n'.join(content)
 
 if __name__ == '__main__':
-    paths = ['cms', 'lms', 'common', 'i18n', 'javascript', 'bok_choy/shard1', 'bok_choy/shard2', 'bok_choy/shard3']
+    paths = ['common', 'cms', 'lms']
     for pth in paths:
         rm = ReportMerge()
         mp = multiprocessing.Process(target=rm.merge, args=([pth],))
         mp.start()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#
-#
-
-
-
-
-
-
