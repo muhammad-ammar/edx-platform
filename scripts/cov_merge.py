@@ -1,11 +1,11 @@
 import os
+import sys
 from textwrap import dedent
 from bs4 import BeautifulSoup
 import multiprocessing
-import shutil
 
 
-first = dedent(
+FIRST = dedent(
     '''<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
     <html>
     <head>
@@ -23,7 +23,7 @@ first = dedent(
     </head>''')
 
 
-last = dedent(
+LAST = dedent(
     '''<script type="text/javascript">
     String.prototype.replaceAll = function (find, replace) {
         var str = this;
@@ -45,6 +45,7 @@ last = dedent(
 
 
 class ReportMerge(object):
+    """Merge multiple html coverage reports"""
 
     DESTINATION = os.path.join(os.environ['HOME'], 'results', os.environ['TDDIUM_SESSION_ID'], 'session')
 
@@ -52,16 +53,34 @@ class ReportMerge(object):
         self.reports_dir = os.path.realpath(__file__).replace("scripts/cov_merge.py", "reports/")
 
     def _files(self, cover_path):
+        """
+        Return list of file paths in `cover_path`. `cover_path` will be something like */reports/cms/cover
+        """
         include = lambda f: f.endswith('.html') and os.path.basename(f) != 'index.html'
         return [os.path.join(cover_path, f) for f in os.listdir(cover_path) if include(f)]
 
-    def merge(self, modules):
-        for module in modules:
-            for (path, dirs, files) in os.walk(os.path.join(self.reports_dir, module)):
-                if os.path.basename(path) == 'cover':
-                    self.merge_report(path)
+    def merge(self, modules, output_file=None):
+        """
+        Merge reports for `modules`
 
-    def merge_report(self, path):
+        Arguments:
+            output_file (str): name of output report file -- only used for bok_choy reports
+
+        """
+        for module in modules:
+            for (path, _, _) in os.walk(os.path.join(self.reports_dir, module)):
+                if os.path.basename(path) == 'cover':
+                    self.merge_report(path, output_file)
+
+    def merge_report(self, path, output_file):
+        """
+        Collect multiple parts of a report and join them to create a single report.
+
+        Arguments:
+            path (str): path where multiple files are located to be merged
+            output_file (str): name of output report file -- only used for bok_choy reports
+
+        """
         content = list()
 
         # Extract total coverage percentage and file links table
@@ -80,25 +99,31 @@ class ReportMerge(object):
         print 'Merging Report for {}'.format(path)
 
         # Collect different parts of html report
-        content.append(first)
+        content.append(FIRST)
         content.append('<body>')
         content.append(str(total_percentage))
         content.append(str(index_table))
         for html in files:
             content.append(self._html_content(html))
 
-        content.append(last)
+        content.append(LAST)
+
+        if output_file:
+            report_path = os.path.join(self.DESTINATION, output_file)
+        else:
+            report_filename = path.split('reports/')[1].split('/cover')[0].replace('/', '_')
+            report_path = os.path.join(self.DESTINATION, report_filename+'_coverage.html')
 
         # Write everything to single report file
-        report_filename = path.split('reports/')[1].split('/cover')[0].replace('/', '_')
-        report_path = os.path.join(self.DESTINATION, report_filename+'_coverage.html')
         with open(report_path, 'w') as report_file:
             report_file.write('\n'.join(content))
 
         print 'Report Merged for {}'.format(path)
 
     def _html_content(self, html):
-
+        """
+        Returns html tags of interest for file specified by `html`
+        """
         # Create id for each link in file links table
         navigate_div_id = os.path.basename(html).split('.')[0].replace('/', '_')
         navigate_div_start = "<div id='{}'>\n".format(navigate_div_id)
@@ -124,8 +149,15 @@ class ReportMerge(object):
         return '\n'.join(content)
 
 if __name__ == '__main__':
-    paths = ['common', 'cms', 'lms']
-    for pth in paths:
+    args = sys.argv
+
+    if args[1] == 'bok_choy':
+        paths = ['bok_choy']
         rm = ReportMerge()
-        mp = multiprocessing.Process(target=rm.merge, args=([pth],))
-        mp.start()
+        rm.merge(paths, output_file=args[2])
+    else:
+        paths = ['common', 'cms', 'lms']
+        for pth in paths:
+            rm = ReportMerge()
+            mp = multiprocessing.Process(target=rm.merge, args=([pth],))
+            mp.start()
