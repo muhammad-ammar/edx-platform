@@ -20,6 +20,11 @@ FIRST = dedent(
     <script type='text/javascript' charset='utf-8'>
         jQuery(document).ready(coverage.index_ready);
     </script>
+    <style>
+        .hide-content {
+            display: none;
+        }
+    </style>
     </head>''')
 
 
@@ -33,10 +38,12 @@ LAST = dedent(
     $('.file a').click(function(event) {
         event.preventDefault();
         var id = "#" + event.currentTarget.innerHTML.replaceAll('/', '_');
-        $('html, body').animate({
-            scrollTop: $(id).offset().top
-        }, 0);
-
+        if (typeof window.last_source_file_id !== 'undefined'){
+            $(window.last_source_file_id).addClass( "hide-content" );
+        }
+        window.last_source_file_id = id;
+        $(id).removeClass( "hide-content" );
+        location.href = id;
     });
     </script>
 
@@ -126,7 +133,7 @@ class ReportMerge(object):
         """
         # Create id for each link in file links table
         navigate_div_id = os.path.basename(html).split('.')[0].replace('/', '_')
-        navigate_div_start = "<div id='{}'>\n".format(navigate_div_id)
+        navigate_div_start = "<div id='{}' class='hide-content'>\n".format(navigate_div_id)
         navigate_div_close = "\n</div>".format(navigate_div_id)
 
         content = list()
@@ -151,13 +158,15 @@ class ReportMerge(object):
 if __name__ == '__main__':
     args = sys.argv
 
-    if args[1] == 'bok_choy':
+    if 'bok_choy' in args[1]:
         paths = ['bok_choy']
         rm = ReportMerge()
         rm.merge(paths, output_file=args[2])
-    else:
+    elif 'unit' in args[1]:
         paths = ['common', 'cms', 'lms']
         for pth in paths:
             rm = ReportMerge()
             mp = multiprocessing.Process(target=rm.merge, args=([pth],))
             mp.start()
+    else:
+        print 'Unsupported Test Suit'
