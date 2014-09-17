@@ -8,4 +8,14 @@ paver coverage
 
 echo 'Coverage Collection Completed'
 
+
+current_path=`pwd`
+reports_path=$current_path/reports
+dest_path=$HOME/results/$TDDIUM_SESSION_ID/session/
+unit_combined_rpt=$reports_path/diff_coverage_combined.html
+
+echo 'Copying '$unit_combined_rpt' to '$dest_path
+
+cp -f $unit_combined_rpt $dest_path
+
 echo '******************************************************'
