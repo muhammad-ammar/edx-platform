@@ -80,22 +80,22 @@ tddium:
 #      - "reports/acceptance/cms.xml"
 #    - :type: junit
 #      :mode: basic
-#      :command: paver test_bokchoy --extra_args="-a shard_1" && python ./scripts/cov_merge.py bok_choy bok_choy_shard1_coverage.html
-#      :invocation: single
-#      :output: exit-status
-#      :report_files:
-#      - "reports/bok_choy/xunit.xml"
-#    - :type: junit
-#      :mode: basic
-#      :command: paver test_bokchoy --extra_args="-a shard_2" && python ./scripts/cov_merge.py bok_choy bok_choy_shard2_coverage.html
-#      :invocation: single
-#      :output: exit-status
-#      :report_files:
-#      - "reports/bok_choy/xunit.xml"
-#    - :type: junit
-#      :mode: basic
-#      :command: paver test_bokchoy --extra_args="-a shard_1=False,shard_2=False" && python ./scripts/cov_merge.py bok_choy bok_choy_shard3_coverage.html
-#      :invocation: single
-#      :output: exit-status
-#      :report_files:
-#      - "reports/bok_choy/xunit.xml"
+      :command: paver test_bokchoy --extra_args="-a shard_1" && paver bokchoy_coverage && python ./scripts/cov_merge.py bok_choy bok_choy_shard1_coverage.html
+      :invocation: single
+      :output: exit-status
+      :report_files:
+      - "reports/bok_choy/xunit.xml"
+    - :type: junit
+      :mode: basic
+      :command: paver test_bokchoy --extra_args="-a shard_2" && paver bokchoy_coverage && python ./scripts/cov_merge.py bok_choy bok_choy_shard2_coverage.html
+      :invocation: single
+      :output: exit-status
+      :report_files:
+      - "reports/bok_choy/xunit.xml"
+    - :type: junit
+      :mode: basic
+      :command: paver test_bokchoy --extra_args="-a shard_1=False,shard_2=False" && paver bokchoy_coverage && python ./scripts/cov_merge.py bok_choy bok_choy_shard3_coverage.html
+      :invocation: single
+      :output: exit-status
+      :report_files:
+      - "reports/bok_choy/xunit.xml"
