@@ -7,7 +7,7 @@ tddium:
       :version: "1.8.5.5"
   :hooks:
     :pre_setup: "virtualenv $HOME/python-env && $HOME/python-env/bin/pip install -r requirements/edx/paver.txt && $HOME/python-env/bin/pip install -r requirements/edx/pre.txt && $HOME/python-env/bin/pip install -r requirements/edx/base.txt && $HOME/python-env/bin/pip install -r requirements/edx/github.txt && $HOME/python-env/bin/pip install -r requirements/edx/local.txt && $HOME/python-env/bin/pip install -r requirements/edx/post.txt"
-    # :post_build: "paver coverage; paver bokchoy_coverage; for i in $(find reports -name cover); do cp -R $i $HOME/results/$TDDIUM_SESSION_ID/session/; done"
+    :post_build: 'bash ./scripts/combine_bokchoy_coverage.sh'
     :post_worker: 'python ./scripts/post_worker.py'
   :cache:
     :key_paths:
@@ -80,21 +80,21 @@ tddium:
       - "reports/acceptance/cms.xml"
     - :type: junit
       :mode: basic
-      :command: paver test_bokchoy --extra_args="-a shard_1" && paver bokchoy_coverage && python ./scripts/cov_merge.py bok_choy bok_choy_shard1_coverage.html
+      :command: paver test_bokchoy --extra_args="-a shard_1" && bash ./scripts/coverage.sh shard1
       :invocation: single
       :output: exit-status
       :report_files:
       - "reports/bok_choy/xunit.xml"
     - :type: junit
       :mode: basic
-      :command: paver test_bokchoy --extra_args="-a shard_2" && paver bokchoy_coverage && python ./scripts/cov_merge.py bok_choy bok_choy_shard2_coverage.html
+      :command: paver test_bokchoy --extra_args="-a shard_2" && bash ./scripts/coverage.sh shard2
       :invocation: single
       :output: exit-status
       :report_files:
       - "reports/bok_choy/xunit.xml"
     - :type: junit
       :mode: basic
-      :command: paver test_bokchoy --extra_args="-a shard_1=False,shard_2=False" && paver bokchoy_coverage && python ./scripts/cov_merge.py bok_choy bok_choy_shard3_coverage.html
+      :command: paver test_bokchoy --extra_args="-a shard_1=False,shard_2=False" && bash ./scripts/coverage.sh shard3
       :invocation: single
       :output: exit-status
       :report_files:
