@@ -15,6 +15,7 @@ case $1 in
 	paver bokchoy_coverage 
 	echo "Merging Coverage into a Single HTML File for Bok-Choy Shard1"
 	python ./scripts/cov_merge.py bok_choy bok_choy_shard1_coverage.html	
+	ls $bok_choy_reports_path
 	cp -f $bok_choy_cov_xml $dest_path/acceptance_coverage1.xml
 	;;
    "shard2")
