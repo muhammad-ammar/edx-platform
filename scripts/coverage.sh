@@ -1,6 +1,5 @@
 #!/bin/bash
  
-$SHARD=$1
 
 current_path=`pwd`
 bok_choy_reports_path=$current_path/reports/bok_choy
@@ -10,7 +9,7 @@ dest_path=$HOME/results/$TDDIUM_SESSION_ID/session/bok_choy
 mkdir -p $dest_path
 
  
-case $SHARD in
+case $1 in
    "shard1")	
 	echo "Collecting Coverage for Bok-Choy Shard1"
 	paver bokchoy_coverage 
