@@ -279,6 +279,11 @@ FEATURES = {
     # when the styles appropriately match the edX.org website.
     'ENABLE_NEW_EDX_HEADER': False,
 
+    # When a logged in user goes to the homepage ('/') should the user be
+    # redirected to the dashboard - this is default Open edX behavior. Set to
+    # False to not redirect the user
+    'ALWAYS_REDIRECT_HOMEPAGE_TO_DASHBOARD_FOR_AUTHENTICATED_USER': True,
+
 }
 
 # Ignore static asset files on import which match this pattern
@@ -837,14 +842,6 @@ JASMINE_TEST_DIRECTORY = PROJECT_ROOT + '/static/coffee'
 # Ignore deprecation warnings (so we don't clutter Jenkins builds/production)
 simplefilter('ignore')
 
-################################# Waffle ###################################
-
-# Name prepended to cookies set by Waffle
-WAFFLE_COOKIE = "waffle_flag_%s"
-
-# Two weeks (in sec)
-WAFFLE_MAX_AGE = 1209600
-
 ################################# Middleware ###################################
 # List of finder classes that know how to find static files in
 # various locations.
@@ -909,9 +906,6 @@ MIDDLEWARE_CLASSES = (
     'ratelimitbackend.middleware.RateLimitMiddleware',
     # needs to run after locale middleware (or anything that modifies the request context)
     'edxmako.middleware.MakoMiddleware',
-
-    # For A/B testing
-    'waffle.middleware.WaffleMiddleware',
 
     # for expiring inactive sessions
     'session_inactivity_timeout.middleware.SessionInactivityTimeout',
@@ -1330,9 +1324,6 @@ INSTALLED_APPS = (
 
     # Foldit integration
     'foldit',
-
-    # For A/B testing
-    'waffle',
 
     # For testing
     'django.contrib.admin',  # only used in DEBUG mode

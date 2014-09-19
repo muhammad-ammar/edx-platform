@@ -1,5 +1,5 @@
 # #-#-#-#-#  django-partial.po (edx-platform)  #-#-#-#-#
-# edX community translations have been downloaded from Korean (Korea) (http://www.transifex.com/projects/p/edx-platform/language/ko_KR/).
+# edX translation file.
 # Copyright (C) 2014 EdX
 # This file is distributed under the GNU AFFERO GENERAL PUBLIC LICENSE.
 # 
@@ -17,7 +17,7 @@
 # mariana1201 <gogo3135@naver.com>, 2014
 # Jong-Dae Park <jdpark7@gmail.com>, 2013
 # #-#-#-#-#  mako.po (edx-platform)  #-#-#-#-#
-# edX community translations have been downloaded from Korean (Korea) (http://www.transifex.com/projects/p/edx-platform/language/ko_KR/)
+# edX translation file
 # Copyright (C) 2014 edX
 # This file is distributed under the GNU AFFERO GENERAL PUBLIC LICENSE.
 # 
@@ -65,7 +65,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: edx-platform\n"
 "Report-Msgid-Bugs-To: openedx-translation@googlegroups.com\n"
-"POT-Creation-Date: 2014-09-08 10:58-0400\n"
+"POT-Creation-Date: 2014-09-16 08:59-0400\n"
 "PO-Revision-Date: 2014-08-25 20:21+0000\n"
 "Last-Translator: bossnm11 <bossnm11@gmail.com>\n"
 "Language-Team: Korean (Korea) (http://www.transifex.com/projects/p/edx-platform/language/ko_KR/)\n"
@@ -407,11 +407,11 @@ msgid "You are missing one or more required fields"
 msgstr ""
 
 #: common/djangoapps/student/views.py
-msgid "Username cannot be more than {0} characters long"
+msgid "Username cannot be more than {num} characters long"
 msgstr ""
 
 #: common/djangoapps/student/views.py
-msgid "Email cannot be more than {0} characters long"
+msgid "Email cannot be more than {num} characters long"
 msgstr ""
 
 #: common/djangoapps/student/views.py
@@ -2785,8 +2785,8 @@ msgstr ""
 
 #: common/lib/xmodule/xmodule/modulestore/inheritance.py
 msgid ""
-"Enter the secret string for annotation storage. The textannotation, "
-"videoannotation, and imageannotation advanced modules require this string."
+"Enter the location of the annotation storage server. The textannotation, "
+"videoannotation, and imageannotation advanced modules require this setting."
 msgstr ""
 
 #: common/lib/xmodule/xmodule/modulestore/inheritance.py
@@ -2795,8 +2795,8 @@ msgstr ""
 
 #: common/lib/xmodule/xmodule/modulestore/inheritance.py
 msgid ""
-"Enter the location of the annotation storage server. The textannotation, "
-"videoannotation, and imageannotation advanced modules require this setting."
+"Enter the secret string for annotation storage. The textannotation, "
+"videoannotation, and imageannotation advanced modules require this string."
 msgstr ""
 
 #: common/lib/xmodule/xmodule/modulestore/inheritance.py
@@ -3935,8 +3935,9 @@ msgstr ""
 
 #: lms/djangoapps/instructor/views/instructor_dashboard.py
 msgid ""
-"To gain insights into student enrollment and participation, "
-"{link_start}visit the new dashboard for course analytics{link_end}."
+"To gain insights into student enrollment and participation {link_start}visit"
+" {analytics_dashboard_name}, our new dashboard for course "
+"analytics{link_end}."
 msgstr ""
 
 #: lms/djangoapps/instructor/views/instructor_dashboard.py
@@ -5145,6 +5146,14 @@ msgstr ""
 
 #: lms/djangoapps/shoppingcart/processors/CyberSource2.py
 msgid ""
+"Sorry! Our payment processor sent us back a message saying that you have "
+"cancelled this transaction. The items in your shopping cart will exist for "
+"future purchase. If you feel that this is in error, please contact us with "
+"payment-specific questions at {email}."
+msgstr ""
+
+#: lms/djangoapps/shoppingcart/processors/CyberSource2.py
+msgid ""
 "Sorry!  Your payment could not be processed because an unexpected exception "
 "occurred.  Please contact us at {email} for assistance."
 msgstr ""
@@ -5580,6 +5589,7 @@ msgstr ""
 #: lms/templates/wiki/edit.html cms/templates/component.html
 #: cms/templates/container.html cms/templates/studio_xblock_wrapper.html
 #: lms/templates/discussion/_underscore_templates.html
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
 #: lms/templates/wiki/includes/article_menu.html
 msgid "Edit"
 msgstr ""
@@ -5977,19 +5987,6 @@ msgstr ""
 msgid "Missing branch on fresh clone"
 msgstr ""
 
-#: cms/djangoapps/contentstore/git_export_utils.py
-msgid "Command was: {0!r}. Working directory was: {1!r}"
-msgstr ""
-
-#: cms/djangoapps/contentstore/git_export_utils.py
-msgid "Command output was: {0!r}"
-msgstr ""
-
-#: cms/djangoapps/contentstore/git_export_utils.py
-msgid ""
-"Directory already exists, doing a git reset and pull instead of git clone."
-msgstr ""
-
 #: lms/templates/notes.html
 msgid "My Notes"
 msgstr "내 노트"
@@ -6321,8 +6318,8 @@ msgstr ""
 msgid "Terms of Service"
 msgstr ""
 
-#: cms/templates/widgets/footer.html lms/templates/edx_footer.html
-#: lms/templates/footer.html lms/templates/original_edx_footer.html
+#: cms/templates/widgets/footer.html lms/templates/footer-edx-new.html
+#: lms/templates/footer-edx.html lms/templates/footer.html
 #: lms/templates/static_templates/privacy.html
 #: lms/templates/static_templates/privacy.html
 msgid "Privacy Policy"
@@ -6376,56 +6373,6 @@ msgid "):"
 msgstr "):"
 
 #: common/templates/course_modes/choose.html
-msgid "Why do I have to pay? What if I want a free honor code certificate?"
-msgstr ""
-
-#: common/templates/course_modes/choose.html
-msgid "Why do I have to pay?"
-msgstr "왜 지불을 해야 하나요?"
-
-#: common/templates/course_modes/choose.html
-msgid ""
-"As a not-for-profit, edX uses your contribution to support our mission to "
-"provide quality education to everyone around the world, and to improve "
-"learning through research. While we have established a minimum fee, we ask "
-"that you contribute as much as you can."
-msgstr ""
-"edX은 비영리단체로 당신의 지원으로 전세계 모든 사람들에게 양질의 교육을 제공하고, 연구를 통한 학습을 개선해나갈 것입니다. 우리는 "
-"최소한의 수수료로 설립되었으며 당신의 최대한의 기부를 부탁드립니다."
-
-#: common/templates/course_modes/choose.html
-msgid ""
-"I'd like to pay more than the minimum.  Is my contribution tax deductible?"
-msgstr "나는 최소금액보다 많이 지불하고 싶습니다. 세금공제가 가능합니까?"
-
-#: common/templates/course_modes/choose.html
-msgid ""
-"Please check with your tax advisor to determine whether your contribution is"
-" tax deductible."
-msgstr "세금공제 결정을 위해 세무사를 확인바랍니다."
-
-#: common/templates/course_modes/choose.html
-msgid "What if I can't afford it or don't have the necessary equipment?"
-msgstr "내가 감당할 수 없거나 필요한의 장비를 구축하지 못한다면 어떻게 합니까?"
-
-#: common/templates/course_modes/choose.html
-msgid ""
-"If you can't afford the minimum fee or don't meet the requirements, you can "
-"audit the course or elect to pursue an honor code certificate at no cost."
-msgstr ""
-
-#: common/templates/course_modes/choose.html
-msgid ""
-"If you would like to pursue the honor code certificate, please check the "
-"honor code certificate box and then click the 'Select Certificate' button to"
-" complete your registration."
-msgstr ""
-
-#: common/templates/course_modes/choose.html
-msgid "Select Honor Code Certificate"
-msgstr "명예 코드 인증서 선택"
-
-#: common/templates/course_modes/choose.html
 #: common/templates/course_modes/choose.html
 msgid "Upgrade Your Registration"
 msgstr ""
@@ -6467,8 +6414,13 @@ msgid "Audit This Course"
 msgstr "이 강좌 청강"
 
 #: common/templates/course_modes/choose.html
-msgid "Sign up to audit this course for free and track your own progress."
-msgstr "무상으로 이 강좌를 감사하기 위해 등록하면 당신의 진행상황을 추적합니다."
+#: common/templates/course_modes/choose.html
+msgid ""
+"Audit this course for free and have complete access to all the course "
+"material, activities, tests, and forums. If your work is satisfactory and "
+"you abide by the Honor Code, you'll receive a personalized Honor Code "
+"Certificate to showcase your achievement."
+msgstr ""
 
 #: common/templates/course_modes/choose.html
 msgid "Select Audit"
@@ -6496,13 +6448,6 @@ msgid ""
 "Plan to use your completed coursework for job applications, career "
 "advancement, or school applications? Then work toward a Verified Certificate"
 " of Achievement to document your accomplishment. A minimum fee applies."
-msgstr ""
-
-#: common/templates/course_modes/choose.html
-msgid ""
-"You can audit this course and still have complete access to the course "
-"material. If you complete and pass the course you will automatically earn an"
-" Honor Code Certificate free of charge."
 msgstr ""
 
 #: common/templates/course_modes/choose.html
@@ -6545,12 +6490,12 @@ msgstr "비젼"
 msgid "Faq"
 msgstr "자주하는 질문"
 
-#: lms/templates/contact.html lms/templates/original_edx_footer.html
+#: lms/templates/contact.html lms/templates/footer-edx.html
 msgid "Press"
 msgstr "누름"
 
-#: lms/templates/contact.html lms/templates/edx_footer.html
-#: lms/templates/footer.html lms/templates/original_edx_footer.html
+#: lms/templates/contact.html lms/templates/footer-edx-new.html
+#: lms/templates/footer-edx.html lms/templates/footer.html
 #: lms/templates/static_templates/contact.html
 #: lms/templates/static_templates/contact.html
 msgid "Contact"
@@ -6811,83 +6756,6 @@ msgstr "등록 해지"
 msgid "View Unit in Studio"
 msgstr ""
 
-#: lms/templates/edx_footer.html
-msgid ""
-"{EdX} offers interactive online classes and MOOCs from the world's best "
-"universities. Online courses from {MITx}, {HarvardX}, {BerkeleyX}, {UTx} and"
-" many other universities. Topics include biology, business, chemistry, "
-"computer science, economics, finance, electronics, engineering, food and "
-"nutrition, history, humanities, law, literature, math, medicine, music, "
-"philosophy, physics, science, statistics and more. {EdX} is a non-profit "
-"online initiative created by founding partners {Harvard} and {MIT}."
-msgstr ""
-
-#. Translators: The © symbol appears directly before this line.
-#: lms/templates/edx_footer.html
-msgid "2014 edX, except where noted, all rights reserved."
-msgstr ""
-
-#: lms/templates/edx_footer.html lms/templates/footer.html
-#: lms/templates/original_edx_footer.html
-msgid "Terms of Service and Honor Code"
-msgstr "서비스 조항 및 명예 신조"
-
-#: lms/templates/edx_footer.html
-msgid "About & Company Info"
-msgstr ""
-
-#: lms/templates/edx_footer.html lms/templates/footer.html
-#: lms/templates/original_edx_footer.html
-msgid "About"
-msgstr "소개"
-
-#: lms/templates/edx_footer.html lms/templates/footer.html
-msgid "News"
-msgstr ""
-
-#: lms/templates/edx_footer.html lms/templates/footer.html
-#: lms/templates/original_edx_footer.html
-#: lms/templates/static_templates/faq.html
-#: lms/templates/static_templates/faq.html
-msgid "FAQ"
-msgstr "자주하는 질문"
-
-#: lms/templates/edx_footer.html
-msgid "edX Blog"
-msgstr ""
-
-#: lms/templates/edx_footer.html
-msgid "Donate to edX"
-msgstr ""
-
-#: lms/templates/edx_footer.html
-msgid "Jobs at edX"
-msgstr ""
-
-#: lms/templates/edx_footer.html
-msgid "Follow Us"
-msgstr ""
-
-#: lms/templates/edx_footer.html
-msgid "Twitter"
-msgstr ""
-
-#: lms/templates/edx_footer.html
-msgid "Facebook"
-msgstr ""
-
-#: lms/templates/edx_footer.html
-msgid "Meetup"
-msgstr ""
-
-#: lms/templates/edx_footer.html
-msgid "LinkedIn"
-msgstr ""
-
-#: lms/templates/edx_footer.html
-msgid "Google+"
-msgstr ""
-
 #: lms/templates/email_change_failed.html lms/templates/email_exists.html
 msgid "E-mail change failed"
 msgstr "이메일 변경 실패"
@@ -6984,11 +6852,107 @@ msgstr "퍼즐 순위표"
 msgid "User"
 msgstr "사용자"
 
-#: lms/templates/footer.html lms/templates/original_edx_footer.html
+#: lms/templates/footer-edx-new.html
+msgid "About edX"
+msgstr ""
+
+#: lms/templates/footer-edx-new.html
+msgid ""
+"{EdX} offers interactive online classes and MOOCs from the world's best "
+"universities. Online courses from {MITx}, {HarvardX}, {BerkeleyX}, {UTx} and"
+" many other universities. Topics include biology, business, chemistry, "
+"computer science, economics, finance, electronics, engineering, food and "
+"nutrition, history, humanities, law, literature, math, medicine, music, "
+"philosophy, physics, science, statistics and more. {EdX} is a non-profit "
+"online initiative created by founding partners {Harvard} and {MIT}."
+msgstr ""
+
+#: lms/templates/footer-edx-new.html lms/templates/footer-edx.html
+msgid "&copy; 2014 edX, some rights reserved."
+msgstr ""
+
+#: lms/templates/footer-edx-new.html lms/templates/footer-edx.html
+#: lms/templates/footer.html
+msgid "Terms of Service and Honor Code"
+msgstr "서비스 조항 및 명예 신조"
+
+#: lms/templates/footer-edx-new.html
+msgid "(Revised 4/16/2014)"
+msgstr ""
+
+#: lms/templates/footer-edx-new.html
+msgid "About & Company Info"
+msgstr ""
+
+#: lms/templates/footer-edx-new.html lms/templates/footer-edx.html
+#: lms/templates/footer.html
+msgid "About"
+msgstr "소개"
+
+#: lms/templates/footer-edx-new.html lms/templates/footer.html
+msgid "News"
+msgstr ""
+
+#: lms/templates/footer-edx-new.html lms/templates/footer-edx.html
+#: lms/templates/footer.html lms/templates/static_templates/faq.html
+#: lms/templates/static_templates/faq.html
+msgid "FAQ"
+msgstr "자주하는 질문"
+
+#: lms/templates/footer-edx-new.html
+msgid "edX Blog"
+msgstr ""
+
+#: lms/templates/footer-edx-new.html
+msgid "Donate to edX"
+msgstr ""
+
+#: lms/templates/footer-edx-new.html
+msgid "Jobs at edX"
+msgstr ""
+
+#: lms/templates/footer-edx-new.html
+msgid "Follow Us"
+msgstr ""
+
+#: lms/templates/footer-edx-new.html
+msgid "Twitter"
+msgstr ""
+
+#: lms/templates/footer-edx-new.html
+msgid "Facebook"
+msgstr ""
+
+#: lms/templates/footer-edx-new.html
+msgid "Meetup"
+msgstr ""
+
+#: lms/templates/footer-edx-new.html
+msgid "LinkedIn"
+msgstr ""
+
+#: lms/templates/footer-edx-new.html
+msgid "Google+"
+msgstr ""
+
+#: lms/templates/footer-edx.html lms/templates/footer.html
 #: lms/templates/static_templates/jobs.html
 #: lms/templates/static_templates/jobs.html
 msgid "Jobs"
 msgstr "직업"
+
+#: lms/templates/footer-edx.html
+msgid "edX Logo"
+msgstr ""
+
+#: lms/templates/footer-edx.html
+msgid ""
+"{EdX} is a non-profit created by founding partners {Harvard} and {MIT} whose"
+" mission is to bring the best of higher education to students of all ages "
+"anywhere in the world, wherever there is Internet access. {EdX}'s free "
+"online MOOCs are interactive and subjects include computer science, public "
+"health, and artificial intelligence."
+msgstr ""
 
 #: lms/templates/footer.html
 msgid "&copy; 2014 {platform_name}, some rights reserved"
@@ -7475,23 +7439,6 @@ msgstr ""
 #: lms/templates/videoannotation.html
 msgid "You do not have any notes."
 msgstr "노트가 없습니다."
-
-#: lms/templates/original_edx_footer.html
-msgid "edX Logo"
-msgstr ""
-
-#: lms/templates/original_edx_footer.html
-msgid ""
-"{EdX} is a non-profit created by founding partners {Harvard} and {MIT} whose"
-" mission is to bring the best of higher education to students of all ages "
-"anywhere in the world, wherever there is Internet access. {EdX}'s free "
-"online MOOCs are interactive and subjects include computer science, public "
-"health, and artificial intelligence."
-msgstr ""
-
-#: lms/templates/original_edx_footer.html
-msgid "&copy; 2014 edX, some rights reserved."
-msgstr ""
 
 #: lms/templates/original_navigation.html
 #: lms/templates/sysadmin_dashboard.html
@@ -9338,10 +9285,6 @@ msgid "Course Starts - {start_date}"
 msgstr "강좌 시작 - {start_date}"
 
 #: lms/templates/dashboard/_dashboard_course_listing.html
-msgid "Document your accomplishment!"
-msgstr ""
-
-#: lms/templates/dashboard/_dashboard_course_listing.html
 msgid "Challenge Yourself!"
 msgstr ""
 
@@ -10446,6 +10389,7 @@ msgstr "건너뛰기"
 
 #: lms/templates/instructor/instructor_dashboard_2/add_coupon_modal.html
 #: lms/templates/instructor/instructor_dashboard_2/add_coupon_modal.html
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
 msgid "Add Coupon"
 msgstr ""
 
@@ -10630,11 +10574,37 @@ msgid ""
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+msgid "Registration Codes"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+msgid "Click to generate Registration Codes"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+#: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
+#: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
+msgid "Generate Registration Codes"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+msgid "Click to generate a CSV file of all Course Registrations Codes:"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
 msgid "Download Registration Codes"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+msgid "Click to generate a CSV file of all Active Course Registrations Codes:"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
 msgid "Active Registration Codes"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+msgid "Click to generate a CSV file of all Spent Course Registrations Codes:"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
@@ -10648,6 +10618,11 @@ msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
 msgid "Course Price: "
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+#: lms/templates/instructor/instructor_dashboard_2/set_course_mode_price_modal.html
+msgid "Set Price"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
@@ -10712,15 +10687,23 @@ msgid "Coupons Information"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
-msgid "+ Add Coupon"
-msgstr ""
-
-#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
 msgid "Discount (%)"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
 msgid "Count"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+msgid "{code}"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+msgid "{description}"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
+msgid "{discount}"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/e-commerce.html
@@ -10766,6 +10749,10 @@ msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/edit_coupon_modal.html
 msgid "Update Coupon Information"
+msgstr ""
+
+#: lms/templates/instructor/instructor_dashboard_2/edit_coupon_modal.html
+msgid "example: A123DS"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/extensions.html
@@ -10851,11 +10838,6 @@ msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
 msgid "Generate Registration Code Modal"
-msgstr ""
-
-#: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
-#: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
-msgid "Generate Registration Codes"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/generate_registarion_codes_modal.html
@@ -11310,10 +11292,6 @@ msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/set_course_mode_price_modal.html
 msgid "Please enter Course Mode detail below"
-msgstr ""
-
-#: lms/templates/instructor/instructor_dashboard_2/set_course_mode_price_modal.html
-msgid "Set Price"
 msgstr ""
 
 #: lms/templates/instructor/instructor_dashboard_2/student_admin.html
@@ -13075,43 +13053,52 @@ msgid "Loading&hellip;"
 msgstr ""
 
 #: cms/templates/asset_index.html
-msgid "What files are listed here?"
+msgid "Adding Files for Your Course"
 msgstr ""
 
 #: cms/templates/asset_index.html
 msgid ""
-"In addition to the files you upload on this page, any files that you add to "
-"the course appear in this list. These files include your course image, "
-"textbook chapters, and files that appear on your Course Handouts sidebar."
-msgstr ""
-
-#: cms/templates/asset_index.html
-msgid "File URLs"
+"To add files to use in your course, click {em_start}Upload New File{em_end}."
+" Then follow the prompts to upload a file from your computer."
 msgstr ""
 
 #: cms/templates/asset_index.html
 msgid ""
-"You use the Embed URL value to link to the file or image from a component, a"
-" course update, or a course handout."
+"{em_start}Caution{em_end}: edX recommends that you limit the file size to "
+"{em_start}10 MB{em_end}. In addition, do not upload video or audio files. "
+"You should use a third party service to host multimedia files."
 msgstr ""
 
 #: cms/templates/asset_index.html
 msgid ""
-"You use the External URL value to reference the file or image from outside "
-"of your course. Do not use the External URL as a link value within your "
-"course."
+"The course image, textbook chapters, and files that appear on your Course "
+"Handouts sidebar also appear in this list."
 msgstr ""
 
-#: cms/templates/asset_index.html cms/templates/container.html
-#: cms/templates/group_configurations.html cms/templates/settings_graders.html
-msgid "What can I do on this page?"
+#: cms/templates/asset_index.html
+msgid "Using File URLs"
 msgstr ""
 
 #: cms/templates/asset_index.html
 msgid ""
-"You can upload new files or view, download, or delete existing files. You "
-"can lock a file so that people who are not enrolled in your course cannot "
-"access that file."
+"Use the {em_start}Embed URL{em_end} value to link to the file or image from "
+"a component, a course update, or a course handout."
+msgstr ""
+
+#: cms/templates/asset_index.html
+msgid ""
+"Use the {em_start}External URL{em_end} value to reference the file or image "
+"only from outside of your course."
+msgstr ""
+
+#: cms/templates/asset_index.html
+msgid ""
+"Click in the Embed URL or External URL column to select the value, then copy"
+" it."
+msgstr ""
+
+#: cms/templates/asset_index.html
+msgid "Learn more about managing files"
 msgstr ""
 
 #: cms/templates/asset_index.html
@@ -13184,6 +13171,11 @@ msgstr ""
 
 #: cms/templates/container.html
 msgid "Preview Changes"
+msgstr ""
+
+#: cms/templates/container.html cms/templates/group_configurations.html
+#: cms/templates/settings_graders.html
+msgid "What can I do on this page?"
 msgstr ""
 
 #: cms/templates/container.html
@@ -13449,9 +13441,8 @@ msgid ""
 "subsection, or unit, then select {em_start}Hide from students{em_end}."
 msgstr ""
 
-#: cms/templates/course_outline.html cms/templates/group_configurations.html
-#: cms/templates/textbooks.html
-msgid "Learn More"
+#: cms/templates/course_outline.html
+msgid "Learn more about the course outline"
 msgstr ""
 
 #. Translators: Pages refer to the tabs that appear in the top navigation of
@@ -13778,6 +13769,10 @@ msgid ""
 "You can delete a group configuration only if it is not in use in an "
 "experiment. To delete a configuration, hover over its box and click the "
 "delete icon."
+msgstr ""
+
+#: cms/templates/group_configurations.html
+msgid "Learn More"
 msgstr ""
 
 #: cms/templates/group_configurations.html cms/templates/settings.html
@@ -15004,6 +14999,10 @@ msgid ""
 "If your textbook doesn't have individual chapters, you can upload the entire"
 " text as a single chapter and enter a name of your choice in the Chapter "
 "Name field."
+msgstr ""
+
+#: cms/templates/textbooks.html
+msgid "Learn more about textbooks"
 msgstr ""
 
 #: cms/templates/emails/activation_email.txt

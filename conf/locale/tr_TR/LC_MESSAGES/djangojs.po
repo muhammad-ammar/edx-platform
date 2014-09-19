@@ -1,5 +1,5 @@
 # #-#-#-#-#  djangojs-partial.po (edx-platform)  #-#-#-#-#
-# edX community translations have been downloaded from Turkish (Turkey) (http://www.transifex.com/projects/p/edx-platform/language/tr_TR/).
+# edX translation file.
 # Copyright (C) 2014 EdX
 # This file is distributed under the GNU AFFERO GENERAL PUBLIC LICENSE.
 # 
@@ -18,6 +18,7 @@
 # mustafagedik <mustafa.paul@hotmail.com>, 2014
 # Onur Bektas <mustafaonurbektas@gmail.com>, 2013
 # Onur Bektas <mustafaonurbektas@gmail.com>, 2013
+# Şenol Akkaş <info@senolakkas.com>, 2014
 # ElektrikAkar <volkan.kumtepeli@gmail.com>, 2014
 # #-#-#-#-#  djangojs-studio.po (edx-platform)  #-#-#-#-#
 # edX translation file.
@@ -52,7 +53,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: edx-platform\n"
 "Report-Msgid-Bugs-To: openedx-translation@googlegroups.com\n"
-"POT-Creation-Date: 2014-09-08 10:56-0400\n"
+"POT-Creation-Date: 2014-09-16 08:57-0400\n"
 "PO-Revision-Date: 2014-09-01 07:20+0000\n"
 "Last-Translator: Sarina Canelake <sarina@edx.org>\n"
 "Language-Team: Turkish (Turkey) (http://www.transifex.com/projects/p/edx-platform/language/tr_TR/)\n"
@@ -1872,6 +1873,10 @@ msgstr "Bu gönderiyi silmek istiyor musunuz?"
 
 #: common/static/coffee/src/discussion/views/discussion_user_profile_view.js
 msgid "We had some trouble loading the page you requested. Please try again."
+msgstr ""
+
+#: common/static/coffee/src/discussion/views/new_post_view.js
+msgid "Your post will be discarded."
 msgstr ""
 
 #: common/static/coffee/src/discussion/views/response_comment_show_view.js
