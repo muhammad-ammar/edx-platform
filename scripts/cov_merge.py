@@ -56,8 +56,11 @@ class ReportMerge(object):
 
     DESTINATION = os.path.join(os.environ['HOME'], 'results', os.environ['TDDIUM_SESSION_ID'], 'session')
 
-    def __init__(self):
-        self.reports_dir = os.path.realpath(__file__).replace("scripts/cov_merge.py", "reports/")
+    def __init__(self, reports_path=None):
+        if reports_path:
+            self.reports_dir = reports_path
+        else:
+            self.reports_dir = os.path.realpath(__file__).replace("scripts/cov_merge.py", "reports/")
 
     def _files(self, cover_path):
         """
@@ -66,26 +69,24 @@ class ReportMerge(object):
         include = lambda f: f.endswith('.html') and os.path.basename(f) != 'index.html'
         return [os.path.join(cover_path, f) for f in os.listdir(cover_path) if include(f)]
 
-    def merge(self, modules, output_file=None):
+    def merge(self, modules):
         """
         Merge reports for `modules`
-
-        Arguments:
-            output_file (str): name of output report file -- only used for bok_choy reports
-
         """
+        print 'Reports path is {}'.format(self.reports_dir)
+        print 'Modules are {}'.format(modules)
+
         for module in modules:
             for (path, _, _) in os.walk(os.path.join(self.reports_dir, module)):
                 if os.path.basename(path) == 'cover':
-                    self.merge_report(path, output_file)
+                    self.merge_report(path)
 
-    def merge_report(self, path, output_file):
+    def merge_report(self, path):
         """
         Collect multiple parts of a report and join them to create a single report.
 
         Arguments:
             path (str): path where multiple files are located to be merged
-            output_file (str): name of output report file -- only used for bok_choy reports
 
         """
         content = list()
@@ -115,11 +116,8 @@ class ReportMerge(object):
 
         content.append(LAST)
 
-        if output_file:
-            report_path = os.path.join(self.DESTINATION, output_file)
-        else:
-            report_filename = path.split('reports/')[1].split('/cover')[0].replace('/', '_')
-            report_path = os.path.join(self.DESTINATION, report_filename+'_coverage.html')
+        report_filename = path.split('reports/')[1].split('/cover')[0].replace('/', '_')
+        report_path = os.path.join(self.DESTINATION, report_filename+'_coverage.html')
 
         # Write everything to single report file
         with open(report_path, 'w') as report_file:
@@ -160,8 +158,13 @@ if __name__ == '__main__':
 
     if 'bok_choy' in args[1]:
         paths = ['bok_choy']
-        rm = ReportMerge()
-        rm.merge(paths, output_file=args[2])
+	reports_path = None
+
+	if len(args) >= 2:
+            reports_path = args[2]
+
+        rm = ReportMerge(reports_path)
+        rm.merge(paths)
     elif 'unit' in args[1]:
         paths = ['common', 'cms', 'lms']
         for pth in paths:

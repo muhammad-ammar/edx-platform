@@ -7,6 +7,7 @@ tddium:
       :version: "1.8.5.5"
   :hooks:
     :pre_setup: "virtualenv $HOME/python-env && $HOME/python-env/bin/pip install -r requirements/edx/paver.txt && $HOME/python-env/bin/pip install -r requirements/edx/pre.txt && $HOME/python-env/bin/pip install -r requirements/edx/base.txt && $HOME/python-env/bin/pip install -r requirements/edx/github.txt && $HOME/python-env/bin/pip install -r requirements/edx/local.txt && $HOME/python-env/bin/pip install -r requirements/edx/post.txt"
+    :post_build: 'bash ./scripts/combine_bokchoy_coverage.sh'
     :post_worker: 'python ./scripts/post_worker.py'
   :cache:
     :key_paths:

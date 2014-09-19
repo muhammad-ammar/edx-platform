@@ -1,24 +1,24 @@
 #!/bin/bash
- 
+
+current_path=`pwd`
+bok_choy_reports_path=$current_path/reports/bok_choy
+bok_choy_cov_data=$bok_choy_reports_path/.coverage
+dest_path=$HOME/results/$TDDIUM_SESSION_ID/session/bok_choy
+
+mkdir -p $dest_path 
 
 case $1 in
    "shard1")	
-	echo "Collecting Coverage for Bok-Choy Shard1"
-	paver bokchoy_coverage 
-	echo "Merging Coverage into a Single HTML File for Bok-Choy Shard1"
-	python ./scripts/cov_merge.py bok_choy bok_choy_shard1_coverage.html	
+	echo "Copying Coverage Data Bok-Choy Shard1"
+	cp -f $bok_choy_cov_data $dest_path/.coverage.1
 	;;
    "shard2")
-	echo "Collecting Coverage for Bok-Choy Shard2"
-	paver bokchoy_coverage 
-	echo "Merging Coverage into a Single HTML File for Bok-Choy Shard2"
-	python ./scripts/cov_merge.py bok_choy bok_choy_shard2_coverage.html
+	echo "Copying Coverage Data Bok-Choy Shard2"
+	cp -f $bok_choy_cov_data $dest_path/.coverage.2
 	;;
    "shard3")
-	echo "Collecting Coverage for Bok-Choy Shard3"
-	paver bokchoy_coverage 
-	echo "Merging Coverage into a Single HTML File for Bok-Choy Shard3"
-	python ./scripts/cov_merge.py bok_choy bok_choy_shard3_coverage.html
+	echo "Copying Coverage Data Bok-Choy Shard3"
+	cp -f $bok_choy_cov_data $dest_path/.coverage.3
 	;;
    *)
 	echo "Invalid Bok-Choy Shard Value!";;
