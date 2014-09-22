@@ -160,7 +160,7 @@ if __name__ == '__main__':
         paths = ['bok_choy']
 	reports_path = None
 
-	if len(args) >= 2:
+	if len(args) >= 3:
             reports_path = args[2]
 
         rm = ReportMerge(reports_path)

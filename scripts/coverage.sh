@@ -9,15 +9,15 @@ mkdir -p $dest_path
 
 case $1 in
    "shard1")	
-	echo "Copying Coverage Data Bok-Choy Shard1"
+	echo "Copying Bok-Choy Shard1 Coverage Data to "$dest_path
 	cp -f $bok_choy_cov_data $dest_path/.coverage.1
 	;;
    "shard2")
-	echo "Copying Coverage Data Bok-Choy Shard2"
+	echo "Copying Bok-Choy Shard2 Coverage Data to "$dest_path
 	cp -f $bok_choy_cov_data $dest_path/.coverage.2
 	;;
    "shard3")
-	echo "Copying Coverage Data Bok-Choy Shard3"
+	echo "Copying Bok-Choy Shard3 Coverage Data to "$dest_path
 	cp -f $bok_choy_cov_data $dest_path/.coverage.3
 	;;
    *)

@@ -26,11 +26,7 @@ ignore_errors = True
 [html]
 title = Bok Choy Test Coverage Report
 directory = reports/bok_choy/cover
-
-[xml]
-output = acceptance_coverage.xml
 EOL
-
 
 
 echo 'Combining Bok-Choy Coverage...'
