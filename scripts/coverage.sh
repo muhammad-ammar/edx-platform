@@ -7,6 +7,10 @@ dest_path=$HOME/results/$TDDIUM_SESSION_ID/session/bok_choy
 
 mkdir -p $dest_path 
 
+echo '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
+ls -aR $bok_choy_reports_path
+echo '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
+
 case $1 in
    "shard1")	
 	echo "Copying Bok-Choy Shard1 Coverage Data to "$dest_path
