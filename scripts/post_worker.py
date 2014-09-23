@@ -2,6 +2,20 @@ import tarfile
 import os
 import shutil
 
+
+def copy_bokchoy_coverage_data(source_path, files):
+
+    destination_path = os.path.join(session_path, 'bok_choy')
+
+    if not os.path.exists(destination_path):
+        os.makedirs(destination_path)
+
+    for f in files:
+        if f.startswith('.coverage.'):
+            file_path = os.path.join(source_path, f)
+            shutil.copyfile(file_path, destination_path)
+
+
 full_path = os.path.realpath(__file__)
 source_dir = full_path.replace("scripts/post_worker.py", "reports/")
 output_filename = full_path.replace("post_worker.py", "reports.tar.gz")
@@ -50,17 +64,3 @@ for (path, dirs, files) in os.walk('test_root/log'):
             shutil.copyfile(filepath, destpath)
 
 print 'TDDIUM_SESSION_ID:', os.environ['TDDIUM_SESSION_ID']
-
-
-def copy_bokchoy_coverage_data(source_path, files):
-
-    destination_path = os.path.join(session_path, 'bok_choy')
-
-    if not os.path.exists(destination_path):
-        os.makedirs(destination_path)
-    
-    for f in files:
-        if f.startswith('.coverage.'):
-            file_path = os.path.join(source_path, f)
-            shutil.copyfile(file_path, destination_path)
-
