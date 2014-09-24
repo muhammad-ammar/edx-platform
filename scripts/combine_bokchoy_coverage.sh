@@ -6,6 +6,9 @@ echo "Root path is "$root_path
 
 cov_path=$HOME/results/$TDDIUM_SESSION_ID/session/bok_choy
 
+echo "Session path is "$HOME/results/$TDDIUM_SESSION_ID/session/
+ls -aR $HOME/results/$TDDIUM_SESSION_ID/session/
+
 ls -R $cov_path
 
 cat >$cov_path/.coveragerc <<EOL
