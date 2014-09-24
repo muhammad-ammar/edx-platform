@@ -5,16 +5,16 @@ import shutil
 
 def copy_bokchoy_coverage_data(source_path, files):
     """Copy coverage data `files` present in `source_path` to solano results directory"""
-    destination_path = os.path.join(session_path, 'bok_choy')
+#    destination_path = os.path.join(session_path, 'bok_choy')
 
-    if not os.path.exists(destination_path):
-        print 'Creating {}'.format(destination_path)
-        os.makedirs(destination_path)
+#    if not os.path.exists(destination_path):
+#        print 'Creating {}'.format(destination_path)
+#        os.makedirs(destination_path)
 
     for f in files:
         if f.startswith('.coverage.'):
             src_file = os.path.join(source_path, f)
-            dst_file = os.path.join(destination_path, f)
+            dst_file = os.path.join(session_path, f)
             print 'Copying {src} to {dst}'.format(src=src_file, dst=dst_file)
             shutil.copyfile(src_file, dst_file)
 
