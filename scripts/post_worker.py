@@ -8,6 +8,7 @@ def copy_bokchoy_coverage_data(source_path, files):
     destination_path = os.path.join(session_path, 'bok_choy')
 
     if not os.path.exists(destination_path):
+        print 'Creating {}'.format(destination_path)
         os.makedirs(destination_path)
 
     for f in files:
